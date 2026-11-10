@@ -1,0 +1,44 @@
+name: estateflow
+
+services:
+    mysql:
+        image: mysql:8.4
+        environment:
+            MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Set a local root password}
+            MYSQL_DATABASE: estateflow
+            MYSQL_USER: estateflow
+            MYSQL_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD}
+        ports:
+            - '127.0.0.1:${FORWARD_DB_PORT:-3306}:3306'
+        command:
+            [
+                '--character-set-server=utf8mb4',
+                '--collation-server=utf8mb4_unicode_ci',
+            ]
+        volumes:
+            - mysql-data:/var/lib/mysql
+        healthcheck:
+            test:
+                [
+                    'CMD-SHELL',
+                    'MYSQL_PWD=$$MYSQL_ROOT_PASSWORD mysqladmin ping -h 127.0.0.1 -u root --silent',
+                ]
+            interval: 10s
+            timeout: 5s
+            retries: 10
+    redis:
+        image: redis:7.4-alpine
+        command: ['redis-server', '--appendonly', 'yes']
+        ports:
+            - '127.0.0.1:${FORWARD_REDIS_PORT:-6379}:6379'
+        volumes:
+            - redis-data:/data
+        healthcheck:
+            test: ['CMD', 'redis-cli', 'ping']
+            interval: 10s
+            timeout: 5s
+            retries: 5
+
+volumes:
+    mysql-data:
+    redis-data:

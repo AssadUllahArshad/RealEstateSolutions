@@ -1,0 +1,39 @@
+# Proposed pricing and installment plans — 4 November 2026
+
+[Index](README.md) · [Sales drafts](SALES_DRAFT_STATUS.md) · [Purchasers](PURCHASERS_STATUS.md) · [Operating rules](OPERATING_RULES_STATUS.md)
+
+## Delivered scope and authority
+
+U3 permits admin discounts and monthly/quarterly/other plans, with main-admin financial settings. The new **Pricing & installments** screen is available from every saved booking draft. It prepares proposed prices and dates; it is not a final contract, allotment, receivable, receipt, title record, charge or commission event. The gross price is the draft's current quoted price, explicitly still a proposal. A future final contract must distinguish and validate catalogue/list price, agreed gross price and approved discount; this screen does not grant agents final discount authority through a lower quote.
+
+Admin/super_admin plus explicit `sales.discounts` ability may set/remove a fixed PKR discount or rebase it to a changed quote. The ability is seeded additively only to these two roles; a misgranted ability alone does not grant agent discount authority. A positive discount requires a reason and records the authorizing staff reference. Agents may prepare or revise a plan carrying the same discount/reason on the same gross amount. No percentage-discount policy, approval threshold, separate approver requirement or rate has been invented. Fixed PKR discount entry is the first supported input format; it does not imply approval of percentage rebates.
+
+Both booking and installment settings must be saved and complete. All policy versions are checked under lock and retained with their full snapshots. Unset money/date/rounding choices block calculation rather than supplying defaults. Planned down payment must be positive, meet the configured fixed/percentage minimum and not exceed net price. Percentage minimum is rounded to two decimals using the explicitly configured PKR rounding mode. No uploaded document or planned payment becomes received funds.
+
+## Exact calculation and calendar rules
+
+The [calculator](../app/Domain/Sales/InstallmentCalculator.php) uses BCMath decimal strings throughout, including values at the `DECIMAL(18,2)` price limit. PHP 8.4 `bcround` maps saved `half_up`, `half_even` and `down` rules explicitly. Discount is subtracted once from gross; planned down payment is subtracted once from net. Future installment amounts plus planned down payment equal net exactly.
+
+Recurring plans support monthly, quarterly, half-yearly and yearly intervals only when enabled in settings. Staff enters the first due date and count (technical bound 1–360). Dates are Karachi business dates, not UTC timestamps. Each later due month is computed from the original first-date month/day, avoiding accidental permanent day drift. With clamp, 31 January 2028 → 29 February → 31 March. With rollover, it becomes 31 January → 2 March → 31 March. Month-end behavior is selected by main admin; neither is an approved fallback. Dates beyond year 9999 are rejected. Holidays/weekends are not adjusted without a future explicit rule.
+
+Equal installments are rounded with the configured mode. The exact difference between balance and the rounded repeated amount is applied only to the configured first/last installment; this difference may be positive or negative. Every resulting installment must remain positive. A too-small balance/count combination is rejected with a request to reduce count or enter a custom plan. There is no hidden extra rounding charge.
+
+Custom plans require positive individually entered amounts and strictly increasing distinct dates, totaling the remaining balance exactly. Full-payment proposals require planned payment equal to net and produce no future installment rows. This is a representation of planned full payment, not an assertion that payment has cleared. No first date, down-payment amount or ownership/commission default is prefilled.
+
+## Persistence, access and UI
+
+The additive [migration](../database/migrations/2026_11_04_000200_create_draft_terms.php) adds one latest `draft_terms` row per draft and append-only application-model `draft_term_events` revisions. Snapshots contain exact input/result strings, source draft version, calendar/financial settings and policy versions; no customer identity or bank information is copied. JSON keeps these preparatory artifacts separate from future posted financial tables. Restrictive FKs and unique draft/revision prevent orphaned or duplicate revision records.
+
+The [domain action](../app/Domain/Sales/DraftTerms.php) checks a fresh actor, serializes settings with the installation lock, locks/rechecks the currently assigned CRM contact and draft, locks the relevant policies and latest terms, and revalidates discount authority. A changed source draft, policy version or different-content stale terms version conflicts. Canonically identical resubmission creates no extra event. Recursive key normalization preserves strict string comparisons and avoids both MySQL JSON key-order false changes and float coercion when comparing large monetary strings. Audit failure rolls back the latest row and revision together. Deadlocks have three bounded retries.
+
+Reads use the same sales/inventory/customer abilities and current-assignment scope as draft editing. Accountant has no sales grant. Settings saves or draft changes mark old terms stale but never rewrite them silently; staff must explicitly recalculate. Latest ten revision summaries show version, staff reference, net, installment count and UTC event time. All endpoints require verified authentication; writes use CSRF and a 30/minute throttle.
+
+The [responsive screen](../resources/js/pages/sales/terms.tsx) includes a proposed-price header, labeled pricing/plan inputs, admin-only discount controls, custom rows, server validation, setup/stale warnings and saved totals/schedule. The preparation checklist links directly to it and distinguishes prepared pricing from final contract execution. Input fields disable during submission; navigation warns about unsaved changes. Saved results remain separate from unsaved inputs until server calculation succeeds.
+
+## Verification and next slice
+
+Fourteen focused real-MySQL terms/sales tests passed (258 assertions), including all rounding modes, leap/calendar anchors, exact residuals, large money, custom/full plans, lower-than-required down payment, invalid dates/float input, discount role/ability checks, agent discount retention, quote rebasing, replay/stale versions, assignment scope, policy changes and audit rollback. PHPStan passed with zero errors. Final broader/browser results are in [operating status](OPERATING_RULES_STATUS.md).
+
+Final regression: 124 backend tests passed, one explicit Redis skip (1,226 assertions). Five focused terms tests passed again (75 assertions) after verifying that incomplete custom rows cannot block a switch to full payment. Desktop/mobile Chrome sales flows both passed (2.3 minutes), including configured rules, admin discount, leap-day schedule, exact net amount and persistence after reload. Screenshots at both widths were inspected. Frontend lint/format, TypeScript, production build and Pint passed; all fourteen migrations rolled back/reapplied only on the disposable test schema. Local application migration preserved existing records and added the discount permission only to authorized admin roles.
+
+Subsequent increment: [financial accounts and unposted receipt preparation](COLLECTION_PREPARATION_STATUS.md) are now delivered. Explicit posting controls and recognition precede controlled final booking with verified down payment, documents, purchasers, current terms and the shared occupancy lock. Account opening balances, receipt series, backdating/closure and reversal/refund rules must be explicit before affected financial posting. Optional GL, automated messaging and SaaS tenancy remain outside MVP.
