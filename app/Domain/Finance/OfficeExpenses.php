@@ -63,6 +63,7 @@ class OfficeExpenses
             if (! $account->active) {
                 throw ValidationException::withMessages(['financial_account_id' => 'Select an active financial account.']);
             }
+            app(BankReconciliations::class)->assertPostingAllowed($account->id, $data['business_date']);
             $next = (int) OfficeExpense::query()->lockForUpdate()->max('id') + 1;
 
             return OfficeExpense::create([

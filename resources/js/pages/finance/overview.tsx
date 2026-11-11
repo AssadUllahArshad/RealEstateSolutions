@@ -20,6 +20,9 @@ type Props = {
         inflow: string;
         reversals: string;
         expenses: string;
+        refunds: string;
+        ownerPayouts: string;
+        commissionPayments: string;
         outflow: string;
         net: string;
     };
@@ -78,6 +81,7 @@ export default function FinanceOverview({
 
                 <section className="ef-panel p-5">
                     <form
+                        aria-label={t('Finance period filters')}
                         className="flex flex-wrap items-end gap-3"
                         method="get"
                     >
@@ -97,7 +101,9 @@ export default function FinanceOverview({
                                 defaultValue={filters.to}
                             />
                         </label>
-                        <Button variant="outline">{t('Apply period')}</Button>
+                        <Button className="h-11" variant="outline">
+                            {t('Apply period')}
+                        </Button>
                     </form>
                     <p className="mt-3 text-xs leading-5 text-muted-foreground">
                         {t('Karachi business date')}: {businessDate}
@@ -127,6 +133,27 @@ export default function FinanceOverview({
                         tone="amber"
                     />
                     <StatCard
+                        title={t('Customer refunds')}
+                        value={formatPkr(summary.refunds)}
+                        detail={t('Approved cash refunds')}
+                        icon={RotateCcw}
+                        tone="rose"
+                    />
+                    <StatCard
+                        title={t('Owner payouts')}
+                        value={formatPkr(summary.ownerPayouts)}
+                        detail={t('Approved owner settlements')}
+                        icon={HandCoins}
+                        tone="amber"
+                    />
+                    <StatCard
+                        title={t('Commission payments')}
+                        value={formatPkr(summary.commissionPayments)}
+                        detail={t('Approved agent payments')}
+                        icon={ArrowUpRight}
+                        tone="amber"
+                    />
+                    <StatCard
                         title={t('Net movement')}
                         value={formatPkr(summary.net)}
                         detail={t('Inflow minus period outflows')}
@@ -141,7 +168,7 @@ export default function FinanceOverview({
 
                 <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-950 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-100">
                     {t(
-                        'These figures are period movements. Opening balances are not configured, so they are not account balances, a bank reconciliation, profit and loss, or a formal general ledger.',
+                        'These figures are period movements and exclude opening balances. Use account details for balances and bank reconciliation for statement matching; they are not profit and loss or a formal general ledger.',
                     )}
                 </div>
 

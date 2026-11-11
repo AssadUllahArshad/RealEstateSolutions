@@ -77,7 +77,7 @@ class CustomerRefunds
                     throw new ConflictHttpException('This refund key was reused with different details.');
                 }
 
-return $prior;
+                return $prior;
             }
             $b = Booking::query()->whereKey((int) $d['booking_id'])->lockForUpdate()->firstOrFail();
             if (! BookingChangeRequest::where('booking_id', $b->id)->where('kind', 'cancellation')->where('state', 'approved')->lockForUpdate()->exists()) {
@@ -115,6 +115,7 @@ return $prior;
                 throw new ConflictHttpException('This refund was already decided.');
             }
             if ($d['decision'] === 'approve') {
+                app(BankReconciliations::class)->assertPostingAllowed($r->financial_account_id, $r->business_date);
                 $available = $this->available($r->booking_id, true, false);
                 if (bccomp(bcadd($this->numeric($r->amount), $this->numeric($r->deduction_amount), 2), $available, 2) > 0) {
                     throw ValidationException::withMessages(['decision' => 'Available refundable credit changed.']);
@@ -141,6 +142,6 @@ return $prior;
             throw new \UnexpectedValueException('Expected exact numeric value.');
         }
 
-return bcadd((string) $value,'0',2);
+        return bcadd((string) $value, '0', 2);
     }
 }

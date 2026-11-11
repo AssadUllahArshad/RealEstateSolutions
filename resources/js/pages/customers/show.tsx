@@ -387,7 +387,7 @@ export default function CustomerProfile({
                             setEdit(value);
                     }}
                 >
-                    <DialogContent className="max-h-[90vh] overflow-y-auto">
+                    <DialogContent>
                         <DialogHeader>
                             <DialogTitle>{t('Edit customer')}</DialogTitle>
                             <DialogDescription>

@@ -174,6 +174,9 @@ class ReceiptPosting
                 }
                 DB::table('receipt_series')->where('prefix', $posting['prefix'])->update(['next_number' => $sequence + 1]);
                 $recognized = ! $cheque || $data['stage'] === 'cleared' || $collections['cheque_recognition'] === 'deposited';
+                if ($recognized) {
+                    app(BankReconciliations::class)->assertPostingAllowed($account->id, $data['business_date']);
+                }
                 $receipt = PaymentReceipt::create(['receipt_draft_id' => $draft->id, 'customer_id' => $draft->customer_id, 'financial_account_id' => $account->id,
                     'number' => $posting['prefix'].'-'.str_pad((string) $sequence, $posting['padding'], '0', STR_PAD_LEFT), 'series_prefix' => $posting['prefix'], 'sequence' => $sequence,
                     'amount' => $draft->amount, 'method' => $draft->method, 'state' => $recognized ? 'recognized' : 'pending_clearance', 'bank_stage' => $cheque ? $data['stage'] : null,
@@ -202,6 +205,7 @@ class ReceiptPosting
                     $receipt->bank_stage = 'cleared';
                     $receipt->cleared_on = $data['business_date'];
                     if ($receipt->state === 'pending_clearance') {
+                        app(BankReconciliations::class)->assertPostingAllowed($receipt->financial_account_id, $data['business_date']);
                         $receipt->state = 'recognized';
                         $receipt->recognized_on = $data['business_date'];
                         $this->movement($receipt, $fresh, 'receipt_credit', $data['business_date']);
@@ -213,6 +217,7 @@ class ReceiptPosting
                     }
                     app(ChargePayments::class)->reverseReceipt($receipt->id, $fresh->id, $data['business_date']);
                     if (AccountMovement::where('payment_receipt_id', $receipt->id)->where('kind', 'receipt_credit')->lockForUpdate()->first()) {
+                        app(BankReconciliations::class)->assertPostingAllowed($receipt->financial_account_id, $data['business_date']);
                         $this->movement($receipt, $fresh, 'receipt_reversal', $data['business_date']);
                     }
                     $receipt->state = 'reversed';

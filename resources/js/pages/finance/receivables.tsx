@@ -127,8 +127,9 @@ export default function Receivables({
 
                 <section className="ef-panel overflow-hidden">
                     <form
+                        aria-label={t('Receivables filters')}
                         method="get"
-                        className="grid gap-3 border-b p-5 md:grid-cols-[minmax(14rem,1fr)_minmax(12rem,.5fr)_auto]"
+                        className="grid grid-cols-1 gap-3 border-b p-5 md:grid-cols-[minmax(14rem,1fr)_minmax(12rem,.5fr)_auto]"
                     >
                         <Input
                             aria-label={t('Search receivables')}
@@ -138,7 +139,7 @@ export default function Receivables({
                         />
                         <select
                             aria-label={t('Filter receivable state')}
-                            className="ef-input"
+                            className="ef-input w-full min-w-0"
                             name="state"
                             defaultValue={filters.state}
                         >
@@ -151,7 +152,9 @@ export default function Receivables({
                                 {t('Any outstanding')}
                             </option>
                         </select>
-                        <Button variant="outline">{t('Filter')}</Button>
+                        <Button className="h-11" variant="outline">
+                            {t('Filter')}
+                        </Button>
                     </form>
 
                     {receivables.data.length ? (

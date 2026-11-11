@@ -1,5 +1,8 @@
 # Changelog
 
+- Added immutable account opening balances with append-only linked corrections, exact-match bank reconciliation with maker/checker finalization, prepared-period overlap protection and finalized-period posting locks across receipts, expenses, refunds, owner payouts and commission payments.
+- Added a unified cashbook ledger and finance overview totals that include approved refunds, owner payouts and commission payments, plus a bilingual reconciliation screen and account opening-balance panel.
+- Hardened filter toolbars, dialogs and sheets for mobile/desktop layouts, associated form labels with controls, and added browser coverage for filter alignment and refund-form accessibility.
 - Added owner default and per-plot rate snapshots, immutable collection-linked owner entitlement events, exact half-up paisa calculations, final-booking rate gating, and entitlement totals in bilingual owner reports.
 - Added accountant-prepared, admin-authorized partial owner payouts with immutable rejection, cash/bank/wallet evidence rules, available-balance controls, bilingual UI, and approved cashbook outflows.
 - Added branded printable owner settlement statements with exact opening/activity/closing reconciliation, optional date filters, a separate pending section, and masked non-cash references.

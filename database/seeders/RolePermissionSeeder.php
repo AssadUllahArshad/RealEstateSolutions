@@ -70,12 +70,16 @@ class RolePermissionSeeder extends Seeder
         foreach (['finance.accounts.view', 'finance.accounts.manage', 'finance.receipts.view', 'finance.receipts.view_all', 'finance.receipts.prepare'] as $ability) {
             Permission::findOrCreate($ability, 'web');
         }
+        Permission::findOrCreate('finance.reconciliation.prepare', 'web');
+        Permission::findOrCreate('finance.reconciliation.approve', 'web');
         foreach (['super_admin', 'admin', 'accountant'] as $role) {
             Role::findByName($role, 'web')->givePermissionTo(['finance.accounts.view', 'finance.receipts.view_all']);
         }
         foreach (['super_admin', 'admin'] as $role) {
             Role::findByName($role, 'web')->givePermissionTo('finance.accounts.manage');
+            Role::findByName($role, 'web')->givePermissionTo('finance.reconciliation.approve');
         }
+        Role::findByName('accountant', 'web')->givePermissionTo('finance.reconciliation.prepare');
         foreach (['super_admin', 'admin', 'accountant', 'sales_agent'] as $role) {
             Role::findByName($role, 'web')->givePermissionTo(['finance.receipts.view', 'finance.receipts.prepare']);
         }

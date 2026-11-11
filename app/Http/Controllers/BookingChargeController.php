@@ -12,28 +12,30 @@ use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
+use UnexpectedValueException;
 
 class BookingChargeController extends Controller
 {
+    private const REMAINING_EXPRESSION = 'booking_charges.amount - COALESCE((SELECT SUM(allocations.amount) FROM booking_charge_payment_allocations allocations JOIN booking_charge_payment_batches batches ON batches.id = allocations.booking_charge_payment_batch_id LEFT JOIN booking_charge_payment_reversals reversals ON reversals.booking_charge_payment_batch_id = batches.id WHERE allocations.booking_charge_id = booking_charges.id AND reversals.id IS NULL), 0) - COALESCE((SELECT SUM(waivers.amount) FROM booking_charge_waivers waivers WHERE waivers.booking_charge_id = booking_charges.id), 0)';
+
     public function index(Request $request, ManualCharges $charges): Response
     {
         $filters = $request->validate(['booking' => ['nullable', 'integer', 'min:1'], 'state' => ['nullable', 'in:active,settled,waived']]);
-        $remaining = $this->remainingExpression();
         $query = $charges->query($request->user())->with(['booking:id,snapshot', 'waivers'])
             ->withSum('paymentAllocations as paid_amount', 'amount')
             ->withSum('waivers as waived_amount', 'amount')
             ->when($filters['booking'] ?? null, fn ($builder, $id) => $builder->where('booking_id', $id))
-            ->when(($filters['state'] ?? null) === 'active', fn ($builder) => $builder->whereRaw($remaining.' > 0'))
-            ->when(($filters['state'] ?? null) === 'settled', fn ($builder) => $builder->whereRaw($remaining.' = 0')
+            ->when(($filters['state'] ?? null) === 'active', fn ($builder) => $builder->whereRaw(self::REMAINING_EXPRESSION.' > 0'))
+            ->when(($filters['state'] ?? null) === 'settled', fn ($builder) => $builder->whereRaw(self::REMAINING_EXPRESSION.' = 0')
                 ->whereRaw('COALESCE((SELECT SUM(waivers.amount) FROM booking_charge_waivers waivers WHERE waivers.booking_charge_id = booking_charges.id), 0) = 0'))
-            ->when(($filters['state'] ?? null) === 'waived', fn ($builder) => $builder->whereRaw($remaining.' = 0')
+            ->when(($filters['state'] ?? null) === 'waived', fn ($builder) => $builder->whereRaw(self::REMAINING_EXPRESSION.' = 0')
                 ->whereRaw('COALESCE((SELECT SUM(waivers.amount) FROM booking_charge_waivers waivers WHERE waivers.booking_charge_id = booking_charges.id), 0) > 0'));
-        $activeTotal = (clone $query)->whereRaw($remaining.' > 0')->sum(DB::raw($remaining));
+        $activeTotal = (clone $query)->whereRaw(self::REMAINING_EXPRESSION.' > 0')->sum(DB::raw(self::REMAINING_EXPRESSION));
         $records = $query->latest('business_date')->latest('id')->paginate(25)->withQueryString();
         $records->getCollection()->transform(function ($charge): object {
-            $paid = bcadd((string) ($charge->paid_amount ?? '0'), '0', 2);
-            $waived = bcadd((string) ($charge->waived_amount ?? '0'), '0', 2);
-            $balance = bcsub(bcsub($charge->amount, $paid, 2), $waived, 2);
+            $paid = $this->decimal($charge->paid_amount ?? '0');
+            $waived = $this->decimal($charge->waived_amount ?? '0');
+            $balance = bcsub(bcsub($this->decimal($charge->amount), $paid, 2), $waived, 2);
             $charge->setAttribute('paidAmount', $paid);
             $charge->setAttribute('waivedAmount', $waived);
             $charge->setAttribute('remainingAmount', $balance);
@@ -76,8 +78,13 @@ class BookingChargeController extends Controller
         return back();
     }
 
-    private function remainingExpression(): string
+    /** @return numeric-string */
+    private function decimal(mixed $value): string
     {
-        return "booking_charges.amount - COALESCE((SELECT SUM(allocations.amount) FROM booking_charge_payment_allocations allocations JOIN booking_charge_payment_batches batches ON batches.id = allocations.booking_charge_payment_batch_id LEFT JOIN booking_charge_payment_reversals reversals ON reversals.booking_charge_payment_batch_id = batches.id WHERE allocations.booking_charge_id = booking_charges.id AND reversals.id IS NULL), 0) - COALESCE((SELECT SUM(waivers.amount) FROM booking_charge_waivers waivers WHERE waivers.booking_charge_id = booking_charges.id), 0)";
+        if ((! is_string($value) && ! is_int($value)) || ! is_numeric((string) $value)) {
+            throw new UnexpectedValueException('Expected an exact database decimal.');
+        }
+
+        return bcadd((string) $value, '0', 2);
     }
 }

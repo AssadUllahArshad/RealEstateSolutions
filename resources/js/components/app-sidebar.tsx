@@ -82,6 +82,11 @@ export function AppSidebar() {
             href: '/finance/accounts',
             icon: WalletCards,
         });
+        finance.push({
+            title: 'Bank reconciliation',
+            href: '/finance/reconciliation',
+            icon: Landmark,
+        });
     }
     if (auth.abilities.includes('finance.expenses.view')) {
         finance.push({

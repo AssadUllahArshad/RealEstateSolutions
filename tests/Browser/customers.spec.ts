@@ -17,6 +17,31 @@ test('agent manages a customer, schedules and completes a follow-up, and finds t
         .getByRole('button', { name: 'Add customer', exact: true })
         .first()
         .click();
+    const dialog = page.getByRole('dialog', { name: 'Add customer' });
+    await expect(dialog).toBeVisible();
+    const dialogBox = await dialog.boundingBox();
+    const viewport = page.viewportSize();
+    expect(dialogBox).not.toBeNull();
+    expect(viewport).not.toBeNull();
+    if (!dialogBox || !viewport) {
+        throw new Error('Customer dialog bounds are unavailable.');
+    }
+    const createButton = page.getByRole('button', {
+        name: 'Create customer',
+        exact: true,
+    });
+    await createButton.scrollIntoViewIfNeeded();
+    const buttonBox = await createButton.boundingBox();
+    expect(buttonBox).not.toBeNull();
+    if (!buttonBox) {
+        throw new Error('Create customer button bounds are unavailable.');
+    }
+    expect(dialogBox.y).toBeGreaterThanOrEqual(0);
+    expect(dialogBox.y + dialogBox.height).toBeLessThanOrEqual(viewport.height);
+    expect(buttonBox.y).toBeGreaterThanOrEqual(dialogBox.y);
+    expect(buttonBox.y + buttonBox.height).toBeLessThanOrEqual(
+        dialogBox.y + dialogBox.height,
+    );
     await page.getByLabel('Full name').fill(name);
     await page.getByLabel('Phone number').fill('0300-0000000');
     await expect(page.getByLabel('Assigned staff member')).toHaveCount(0);

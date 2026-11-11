@@ -196,6 +196,8 @@ class AgentCommissions
                 return $p;
             }if ($p->state !== 'prepared') {
                 throw new ConflictHttpException('This payment was already decided.');
+            }if ($d['decision'] === 'approve') {
+                app(BankReconciliations::class)->assertPostingAllowed($p->financial_account_id, $p->business_date);
             }if ($d['decision'] === 'approve' && bccomp($this->numeric($p->amount), $this->payable($p->agent_id, true), 2) > 0) {
                 throw ValidationException::withMessages(['decision' => 'Available commission changed.']);
             }$p->update(['state' => $d['decision'] === 'approve' ? 'approved' : 'rejected', 'decided_by' => $u->id, 'decision_note' => $d['decision_note'], 'decided_at' => now(), 'decision_key' => strtolower($d['decision_key'])]);

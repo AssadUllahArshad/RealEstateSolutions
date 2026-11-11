@@ -179,7 +179,7 @@ class InstallmentLedger
         usort($data['rows'], fn ($a, $b) => $a['sequence'] <=> $b['sequence']);
         usort($data['charge_rows'], fn ($a, $b) => $a['charge_id'] <=> $b['charge_id']);
         $payload = json_encode([$id, (int) $data['receipt_id'], (int) $data['version'], (int) $data['policy_version'], $data['mode'], $data['amount'], $data['rows'], $data['charge_rows']], JSON_THROW_ON_ERROR);
-        $hashes = array_map(fn ($key) => hash_hmac('sha256', $payload, $key), [config('app.key'), ...config('app.previous_keys', [])]);
+        $hashes = array_values(array_map(fn ($key) => hash_hmac('sha256', $payload, $key), [config('app.key'), ...config('app.previous_keys', [])]));
 
         return DB::transaction(function () use ($actor, $id, $data, $hashes) {
             $fresh = User::whereKey($actor->id)->lockForUpdate()->firstOrFail();

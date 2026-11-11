@@ -70,13 +70,14 @@ export default function Customers({
                 </div>
                 <section className="ef-panel overflow-hidden">
                     <form
-                        className="ef-toolbar"
+                        aria-label={t('Customer filters')}
+                        className="ef-toolbar grid grid-cols-2 items-stretch sm:flex sm:items-center"
                         onSubmit={(e) => {
                             e.preventDefault();
                             router.get('/customers', { q, agent });
                         }}
                     >
-                        <div className="relative min-w-48 flex-1">
+                        <div className="relative col-span-2 min-w-0 sm:min-w-48 sm:flex-1">
                             <Search className="absolute start-3 top-3 size-4 text-muted-foreground" />
                             <Input
                                 aria-label={t('Search customers')}
@@ -89,7 +90,7 @@ export default function Customers({
                         {agents.length > 0 && (
                             <select
                                 aria-label={t('Filter customers by staff')}
-                                className="min-w-40"
+                                className="col-span-2 min-w-0 sm:min-w-40"
                                 value={agent}
                                 onChange={(e) => setAgent(e.target.value)}
                             >
@@ -101,9 +102,12 @@ export default function Customers({
                                 ))}
                             </select>
                         )}
-                        <Button variant="outline">{t('Search')}</Button>
+                        <Button className="h-11" variant="outline">
+                            {t('Search')}
+                        </Button>
                         <Button
                             type="button"
+                            className="h-11"
                             variant="ghost"
                             onClick={() => router.get('/customers')}
                         >
@@ -296,7 +300,7 @@ export default function Customers({
                             setOpen(value);
                     }}
                 >
-                    <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
+                    <DialogContent className="sm:max-w-lg">
                         <DialogHeader>
                             <DialogTitle>{t('Add customer')}</DialogTitle>
                             <DialogDescription>

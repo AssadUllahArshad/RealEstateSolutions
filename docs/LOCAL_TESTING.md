@@ -20,6 +20,24 @@ The generated test admin is explicitly verified for local testing so SMTP is unn
 
 Process-local PATH selects PHP 8.4 for PHP/Wayfinder builds; TEMP/TMP select project-local temporary storage because system temporary storage has previously filled. The PHP helper command [php.cmd](../scripts/php.cmd) also selects this runtime and temporary directory. The project PHP CA bundle now resides inside its own runtime directory; existing XAMPP files are not edited.
 
+## Synthetic browser-test users
+
+The guarded `BrowserTestSeeder` creates these accounts only in `estateflow_test`:
+
+| Email | Role |
+|---|---|
+| `demo.admin@estateflow.test` | Super admin |
+| `demo.office-admin@estateflow.test` | Admin |
+| `demo.accountant@estateflow.test` | Accountant |
+| `demo.agent@estateflow.test` | Sales agent |
+| `demo.booking@estateflow.test` | Sales agent (booking test) |
+
+All synthetic users use the same password supplied through `E2E_PASSWORD` when the test fixtures are seeded; there is no committed or default password. Set a private value of at least 12 characters, then run `php artisan db:seed --env=e2e --class=BrowserTestSeeder`. The seeder refuses to run outside local/testing/E2E environments or against any database other than `estateflow_test`. These are test identities, not office accounts.
+
+To prepare the final-booking browser test, set `E2E_PASSWORD` in the current shell and run `php artisan db:seed --env=e2e --class=BrowserBookingSeeder`. This guarded seeder provisions fresh desktop and mobile booking/customer/receipt fixtures through the application domain services, and writes their IDs to the ignored `.runtime/booking-browser.json` file consumed by `tests/Browser/final-booking.spec.ts`. It does not reset or delete test data; reruns use unique synthetic records. Then run `npm run test:browser -- tests/Browser/final-booking.spec.ts`. Never point this workflow at the office database.
+
+The existing local administrator credentials remain in the ignored `.runtime/local-login.txt` file described above. Passwords for other existing accounts cannot be read back from the application database; use the approved password-reset or staff-provisioning flow rather than sharing or guessing them.
+
 ## Verification
 
 Verified: project PHP reports 8.4.27; actual local startup, test-admin provisioning, Chrome sign-in, verified dashboard access, inventory and society setup navigation passed. Repeated Start retains the existing account/password and reports the server already running. Stop and restart passed while MySQL remained running. The helper refused `APP_ENV=production` before any database operation. PowerShell parsing, PHP syntax, Pint and frontend formatting/lint passed. No framework/package versions changed.

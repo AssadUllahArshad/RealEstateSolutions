@@ -24,7 +24,7 @@ class InstallmentLedgerController extends Controller
         } catch (ConflictHttpException $exception) {
             return back()->withErrors(['conflict' => $exception->getMessage()]);
         }
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Recognized credit allocated to installments.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Recognized credit allocation recorded.']);
 
         return to_route('bookings.ledger', $booking);
     }

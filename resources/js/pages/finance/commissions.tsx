@@ -117,13 +117,17 @@ export default function Commissions({
                 />
                 <section className="ef-panel p-5">
                     <form
+                        aria-label={t('Commission filters')}
                         action="/finance/commissions"
-                        className="grid gap-4 md:grid-cols-[1.3fr_1fr_1fr_auto]"
+                        className="grid gap-4 md:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)_minmax(0,1fr)_auto]"
                         method="get"
                     >
                         <div>
-                            <Label>{t('Sales agent')}</Label>
+                            <Label htmlFor="commission-agent">
+                                {t('Sales agent')}
+                            </Label>
                             <select
+                                id="commission-agent"
                                 className="ef-input mt-2"
                                 defaultValue={filters.agent_id}
                                 name="agent_id"
@@ -137,8 +141,11 @@ export default function Commissions({
                             </select>
                         </div>
                         <div>
-                            <Label>{t('From date')}</Label>
+                            <Label htmlFor="commission-from">
+                                {t('From date')}
+                            </Label>
                             <Input
+                                id="commission-from"
                                 className="mt-2"
                                 defaultValue={filters.from}
                                 name="from"
@@ -146,15 +153,18 @@ export default function Commissions({
                             />
                         </div>
                         <div>
-                            <Label>{t('To date')}</Label>
+                            <Label htmlFor="commission-to">
+                                {t('To date')}
+                            </Label>
                             <Input
+                                id="commission-to"
                                 className="mt-2"
                                 defaultValue={filters.to}
                                 name="to"
                                 type="date"
                             />
                         </div>
-                        <Button className="self-end">
+                        <Button className="h-11 w-full self-end md:w-auto">
                             {t('Apply filters')}
                         </Button>
                     </form>

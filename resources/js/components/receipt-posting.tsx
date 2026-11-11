@@ -68,7 +68,7 @@ export default function ReceiptPostingPanel({
                         </h2>
                         <p className="mt-2 text-sm leading-6 text-muted-foreground">
                             {t('Saved amount')}:{' '}
-                            <strong>{formatPkr(receipt.amount)}</strong>. This
+                            <strong>{formatPkr(receipt.amount)}</strong>.{' '}
                             {t(
                                 'This step freezes the preparation and assigns an official number. Recognition follows the saved payment rules.',
                             )}

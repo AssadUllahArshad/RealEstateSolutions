@@ -82,7 +82,9 @@ export default function Sales({
                                 )}
                                 maxLength={160}
                             />
-                            <Button variant="outline">{t('Search')}</Button>
+                            <Button className="h-11" variant="outline">
+                                {t('Search')}
+                            </Button>
                         </form>
                         <span className="text-xs text-muted-foreground">
                             {drafts.total} drafts

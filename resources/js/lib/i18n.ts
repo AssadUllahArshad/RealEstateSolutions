@@ -14,9 +14,12 @@ const ur = {
     'Accounting reversals only': 'صرف اکاؤنٹنگ واپسی کے اندراجات',
     'Office expense outflow': 'دفتری اخراجات کا بہاؤ',
     'Posted office expenses': 'درج شدہ دفتری اخراجات',
+    'Approved cash refunds': 'منظور شدہ نقد واپسی',
+    'Approved owner settlements': 'منظور شدہ مالک ادائیگیاں',
+    'Approved agent payments': 'منظور شدہ ایجنٹ ادائیگیاں',
     'Inflow minus period outflows': 'آمد منفی مدت کے اخراجات',
-    'These figures are period movements. Opening balances are not configured, so they are not account balances, a bank reconciliation, profit and loss, or a formal general ledger.':
-        'یہ اعداد منتخب مدت کی نقل و حرکت ہیں۔ ابتدائی بیلنس مقرر نہیں، اس لیے یہ اکاؤنٹ بیلنس، بینک مفاہمت، نفع و نقصان یا باقاعدہ جنرل لیجر نہیں ہیں۔',
+    'These figures are period movements and exclude opening balances. Use account details for balances and bank reconciliation for statement matching; they are not profit and loss or a formal general ledger.':
+        'یہ اعداد منتخب مدت کی نقل و حرکت ہیں اور ابتدائی بیلنس شامل نہیں کرتے۔ بیلنس کے لیے اکاؤنٹ کی تفصیل اور اسٹیٹمنٹ ملانے کے لیے بینک مصالحت استعمال کریں؛ یہ منافع و نقصان یا باضابطہ جنرل لیجر نہیں ہیں۔',
     'Movement by financial account': 'مالیاتی اکاؤنٹ کے لحاظ سے نقل و حرکت',
     'Net posted movement for the selected period, excluding any opening balance.':
         'منتخب مدت کی خالص درج شدہ نقل و حرکت، کسی بھی ابتدائی بیلنس کے بغیر۔',
@@ -31,13 +34,14 @@ const ur = {
     'Authorized admins record each approved customer charge individually. No automatic penalty is calculated.':
         'مجاز ایڈمن ہر منظور شدہ کسٹمر چارج الگ درج کرتے ہیں۔ کوئی خودکار جرمانہ شمار نہیں ہوتا۔',
     'Active manual charges': 'فعال دستی چارجز',
-    'Unpaid charges only; separate from principal': 'صرف غیر ادا شدہ چارجز؛ اصل رقم سے الگ',
+    'Unpaid charges only; separate from principal':
+        'صرف غیر ادا شدہ چارجز؛ اصل رقم سے الگ',
     'Separate from principal and cash movement':
         'اصل رقم اور نقد نقل و حرکت سے الگ',
     'Charge records': 'چارج ریکارڈز',
     'Visible on this page': 'اس صفحے پر نظر آنے والے',
-    'Charges never alter principal or create cashbook movements. Recognized payments apply to principal first, then charges in posting order. Each partial waiver is an immutable compensating record.':
-        'چارج اصل رقم یا کیش بک نقل و حرکت تبدیل نہیں کرتے۔ تصدیق شدہ ادائیگی پہلے اصل رقم اور پھر چارجز کی ترتیب کے مطابق لگتی ہے۔ ہر جزوی معافی ایک ناقابل ترمیم تلافی ریکارڈ ہے۔',
+    'Charges never alter principal or create cashbook movements. Recognized payments apply to principal first, then to the manual charges explicitly selected for that allocation. Each partial waiver is an immutable compensating record.':
+        'چارج اصل رقم یا کیش بک نقل و حرکت تبدیل نہیں کرتے۔ تصدیق شدہ ادائیگی پہلے اصل رقم اور پھر اس تخصیص کے لیے واضح طور پر منتخب کردہ دستی چارجز پر لگتی ہے۔ ہر جزوی معافی ایک ناقابل ترمیم تلافی ریکارڈ ہے۔',
     'Post an approved charge': 'منظور شدہ چارج درج کریں',
     'Select a booking': 'بکنگ منتخب کریں',
     'Charge amount (PKR)': 'چارج کی رقم (PKR)',
@@ -532,11 +536,39 @@ const ur = {
     'Code and type are fixed after creation. Use a recognizable label; do not enter passwords, card details or personal bank information.':
         'بنانے کے بعد کوڈ اور قسم مقرر رہتے ہیں۔ واضح نام استعمال کریں؛ پاس ورڈ، کارڈ یا ذاتی بینک معلومات درج نہ کریں۔',
     'Save account setup': 'اکاؤنٹ سیٹ اپ محفوظ کریں',
-    'Configure where reported customer payments will be received. Balances are not calculated from prepared receipts.':
-        'درج شدہ کسٹمر ادائیگی وصول کرنے کی جگہ ترتیب دیں۔ تیار رسیدوں سے بیلنس شمار نہیں ہوتا۔',
+    'Configure account destinations, record verified opening amounts, review current book balances and open bank reconciliations.':
+        'اکاؤنٹ کی منزلیں ترتیب دیں، تصدیق شدہ ابتدائی رقم درج کریں، موجودہ کتابی بیلنس دیکھیں اور بینک مصالحت کھولیں۔',
+    'Opening balance and account balance': 'ابتدائی بیلنس اور اکاؤنٹ بیلنس',
+    'Opening amounts take effect at the start of their business date. Corrections are linked, immutable entries; finalized bank reconciliation periods cannot be changed.':
+        'ابتدائی رقم کاروباری تاریخ کے آغاز سے مؤثر ہوتی ہے۔ درستی منسلک ناقابلِ تبدیلی اندراجات ہیں؛ مکمل شدہ بینک مصالحت کی مدت تبدیل نہیں ہو سکتی۔',
+    'Current opening balance': 'موجودہ ابتدائی بیلنس',
+    'Not configured': 'ترتیب نہیں دی گئی',
+    'Effective from': 'مؤثر از',
+    'Book balance as of': 'کتابی بیلنس بتاریخ',
+    'Open bank reconciliation': 'بینک مصالحت کھولیں',
+    'Record opening balance': 'ابتدائی بیلنس درج کریں',
+    'Enter the verified statement or cash-count amount. Negative openings are allowed only for bank overdrafts.':
+        'تصدیق شدہ اسٹیٹمنٹ یا نقد گنتی کی رقم درج کریں۔ منفی ابتدائی بیلنس صرف بینک اوور ڈرافٹ کے لیے جائز ہے۔',
+    'Opening amount (PKR)': 'ابتدائی رقم (PKR)',
+    'Verified source note': 'تصدیق شدہ ماخذ کی وضاحت',
+    'Statement or count reference': 'اسٹیٹمنٹ یا گنتی کا حوالہ',
+    'I verified this amount against the opening statement or physical cash count.':
+        'میں نے اس رقم کی تصدیق ابتدائی اسٹیٹمنٹ یا نقد گنتی سے کی ہے۔',
+    'Record immutable opening balance': 'ناقابلِ تبدیلی ابتدائی بیلنس درج کریں',
+    'Opening source': 'ابتدائی بیلنس کا ماخذ',
+    'Recorded by': 'درج کنندہ',
+    'Record linked correction': 'منسلک درستی درج کریں',
+    'Use a signed exact adjustment and explain the verified correction. This changes the opening ledger, not cash received or paid.':
+        'درست علامت والی رقم اور تصدیق شدہ درستی کی وجہ درج کریں۔ اس سے ابتدائی لیجر بدلے گا، وصول یا ادا شدہ نقد نہیں۔',
+    'Signed correction amount (PKR)': 'درستی کی رقم بمع علامت (PKR)',
+    'Correction reason': 'درستی کی وجہ',
+    'I verified the original opening entry and supporting evidence.':
+        'میں نے اصل ابتدائی اندراج اور معاون ثبوت کی تصدیق کی ہے۔',
+    'Opening balance corrections': 'ابتدائی بیلنس کی درستی',
+    'Bank reconciliation': 'بینک مصالحت',
     'Add account': 'اکاؤنٹ شامل کریں',
-    'Account setup is ready for preparation. No opening balance, cash movement or recognized income is created here.':
-        'اکاؤنٹ سیٹ اپ رسید کی تیاری کے لیے ہے۔ یہاں ابتدائی بیلنس، نقد نقل و حرکت یا تسلیم شدہ آمدن نہیں بنتی۔',
+    'Account destinations are configured. Opening balances are maintained separately; no cash movement or recognized income is created here.':
+        'اکاؤنٹ کی منزلیں ترتیب دی گئی ہیں۔ ابتدائی بیلنس الگ منظم ہوتے ہیں؛ یہاں نقد نقل و حرکت یا تسلیم شدہ آمدن نہیں بنتی۔',
     'Account directory': 'اکاؤنٹ ڈائریکٹری',
     'Payment destinations': 'ادائیگی کی منزلیں',
     'configured accounts': 'ترتیب شدہ اکاؤنٹس',
@@ -670,7 +702,6 @@ const ur = {
     'Bank clearance verified': 'بینک کلیئرنس تصدیق شدہ',
     'Verified deposit': 'تصدیق شدہ جمع',
     'Verified bank clearance': 'تصدیق شدہ بینک کلیئرنس',
-    'Not configured': 'ترتیب نہیں دیا گیا',
     'Verification context *': 'تصدیقی تفصیل *',
     'Describe the evidence and destination you checked. Do not enter credentials or full account details.':
         'جانچے گئے ثبوت اور منزل کی وضاحت کریں۔ لاگ اِن معلومات یا مکمل اکاؤنٹ تفصیل درج نہ کریں۔',
@@ -831,10 +862,69 @@ const ur = {
     'Posted by': 'درج کرنے والا',
     Cashbook: 'کیش بک',
     'Finance · Account activity': 'مالیات · اکاؤنٹ سرگرمی',
-    'Recognized receipt inflows, accounting reversals and posted office expenses in one operational view.':
-        'تصدیق شدہ رسیدی آمدن، اکاؤنٹنگ منسوخیاں اور درج شدہ دفتری اخراجات ایک عملی منظر میں۔',
-    'Net movement is inflow minus reversal and expense outflows for the selected period. Opening balances are not configured, so this is not an account balance, bank reconciliation or formal financial statement.':
-        'خالص حرکت منتخب مدت کی آمدن میں سے منسوخی اور اخراجات منہا کرکے بنتی ہے۔ ابتدائی بیلنس ترتیب نہیں دیے گئے، اس لیے یہ اکاؤنٹ بیلنس، بینک مطابقت یا باضابطہ مالی بیان نہیں ہے۔',
+    'Recognized receipts, accounting reversals, expenses and approved payouts in one operational view.':
+        'تصدیق شدہ رسیدیں، اکاؤنٹنگ منسوخیاں، اخراجات اور منظور شدہ ادائیگیاں ایک عملی منظر میں۔',
+    'Net movement is inflow minus outflows for the selected period. Opening balances are shown separately on account details; bank reconciliation is a separate workflow, not a formal financial statement.':
+        'خالص حرکت منتخب مدت کی آمدن میں سے اخراجات منہا کرکے بنتی ہے۔ ابتدائی بیلنس اکاؤنٹ کی تفصیل میں الگ دکھائے جاتے ہیں؛ بینک مصالحت ایک الگ عمل ہے، باضابطہ مالی بیان نہیں۔',
+    'Finance · Bank control': 'مالیات · بینک کنٹرول',
+    'Compare verified bank statements with posted cashbook activity. Finalized periods are locked against later postings.':
+        'تصدیق شدہ بینک اسٹیٹمنٹ کا درج شدہ کیش بک سرگرمی سے موازنہ کریں۔ مکمل شدہ مدت میں بعد کے اندراجات بند رہتے ہیں۔',
+    'This first version requires exact one-to-one matches. Unmatched statement items, timing differences and balance variances cannot be finalized or adjusted here.':
+        'اس پہلے ورژن میں ہر اندراج کا عین ایک سے ایک میل ضروری ہے۔ غیر مماثل اسٹیٹمنٹ اندراجات، وقتی فرق اور بیلنس کا فرق یہاں مکمل یا ایڈجسٹ نہیں ہو سکتے۔',
+    'Choose bank statement period': 'بینک اسٹیٹمنٹ کی مدت منتخب کریں',
+    'Bank account': 'بینک اکاؤنٹ',
+    'Select a bank account': 'بینک اکاؤنٹ منتخب کریں',
+    'Statement period start': 'اسٹیٹمنٹ مدت کا آغاز',
+    'Statement period end': 'اسٹیٹمنٹ مدت کا اختتام',
+    'Load statement period': 'اسٹیٹمنٹ مدت لوڈ کریں',
+    'Record a verified opening balance before reconciling this account.':
+        'اس اکاؤنٹ کی مصالحت سے پہلے تصدیق شدہ ابتدائی بیلنس درج کریں۔',
+    'Configure opening balance': 'ابتدائی بیلنس ترتیب دیں',
+    'The selected period begins before the opening balance takes effect.':
+        'منتخب مدت ابتدائی بیلنس کے مؤثر ہونے سے پہلے شروع ہوتی ہے۔',
+    'Load a valid statement date range to continue.':
+        'جاری رکھنے کے لیے اسٹیٹمنٹ کی درست تاریخیں لوڈ کریں۔',
+    'Expected opening balance': 'متوقع ابتدائی بیلنس',
+    'Expected closing balance': 'متوقع اختتامی بیلنس',
+    'Cashbook entries to match': 'مماثل کیے جانے والے کیش بک اندراجات',
+    'Match cashbook entry': 'کیش بک اندراج سے ملائیں',
+    'Statement direction': 'اسٹیٹمنٹ کی سمت',
+    'Select a cashbook entry to match.':
+        'مماثلت کے لیے کیش بک اندراج منتخب کریں۔',
+    'Select statement direction': 'اسٹیٹمنٹ کی سمت منتخب کریں',
+    'Prepare bank reconciliation': 'بینک مصالحت تیار کریں',
+    'Enter statement values for every posted cashbook entry. Each line must match exactly; unmatched items and differences block submission.':
+        'ہر درج شدہ کیش بک اندراج کے لیے اسٹیٹمنٹ کی تفصیل درج کریں۔ ہر لائن کا عین میل ضروری ہے؛ غیر مماثل اندراجات اور فرق جمع کرانے سے روکتے ہیں۔',
+    'Statement opening balance': 'اسٹیٹمنٹ کا ابتدائی بیلنس',
+    'Statement closing balance': 'اسٹیٹمنٹ کا اختتامی بیلنس',
+    'Expected book balance': 'متوقع کتابی بیلنس',
+    'Review note': 'جائزے کی وضاحت',
+    'Statement lines': 'اسٹیٹمنٹ لائنیں',
+    'Statement lines must match one-to-one with the listed posted entries. Statement dates may differ from book dates.':
+        'اسٹیٹمنٹ لائنیں درج شدہ اندراجات سے ایک بہ ایک ملنی چاہئیں۔ اسٹیٹمنٹ کی تاریخ کتابی تاریخ سے مختلف ہو سکتی ہے۔',
+    'No posted cashbook entries fall within this period. Opening and closing statement balances must still agree.':
+        'اس مدت میں کوئی کیش بک اندراج نہیں۔ پھر بھی اسٹیٹمنٹ کے ابتدائی اور اختتامی بیلنس برابر ہونے چاہئیں۔',
+    'Statement date': 'اسٹیٹمنٹ کی تاریخ',
+    'Statement description': 'اسٹیٹمنٹ کی تفصیل',
+    'Statement amount (PKR)': 'اسٹیٹمنٹ رقم (PKR)',
+    'Statement reference': 'اسٹیٹمنٹ حوالہ',
+    'I verified the source statement and every exact cashbook match.':
+        'میں نے اصل اسٹیٹمنٹ اور ہر عین کیش بک مماثلت کی تصدیق کی ہے۔',
+    'Awaiting admin review': 'ایڈمن کے جائزے کا انتظار',
+    'Reviewed by': 'جائزہ لینے والا',
+    'matched statement lines': 'مماثل اسٹیٹمنٹ لائنیں',
+    Opening: 'ابتدائی',
+    Closing: 'اختتامی',
+    'Admin review note': 'ایڈمن جائزے کی وضاحت',
+    'I reviewed the statement, exact matches and balance totals.':
+        'میں نے اسٹیٹمنٹ، عین مماثلتوں اور بیلنس کے مجموعوں کا جائزہ لیا ہے۔',
+    'Finalize reconciliation': 'مصالحت مکمل کریں',
+    'Reject reconciliation': 'مصالحت مسترد کریں',
+    'Reconciliation history': 'مصالحت کی تاریخ',
+    'No completed reconciliation records.': 'مصالحت کا کوئی مکمل ریکارڈ نہیں۔',
+    inflow: 'آمدن',
+    outflow: 'اخراج',
+    finalized: 'مکمل شدہ',
     'Receipt inflow': 'رسیدی آمدن',
     'Total outflow': 'کل اخراج',
     'Net movement': 'خالص حرکت',
@@ -852,6 +942,11 @@ const ur = {
     'Owner share snapshot (%)': 'مالک کے حصے کا محفوظ تناسب (%)',
     'Leave empty to copy the selected owner default.':
         'منتخب مالک کا طے شدہ تناسب لینے کے لیے خالی چھوڑ دیں۔',
+    'No owners configured': 'کوئی مالک ترتیب نہیں دیا گیا',
+    'Owner assignment can be completed later.':
+        'مالک کی نسبت بعد میں مکمل کی جا سکتی ہے۔',
+    'No owner default is available yet.':
+        'مالک کا طے شدہ تناسب ابھی دستیاب نہیں۔',
     'Rate not set': 'تناسب مقرر نہیں',
     'Owner entitlement': 'مالک کا حق',
     'From approved rate snapshots': 'منظور شدہ محفوظ تناسب سے',

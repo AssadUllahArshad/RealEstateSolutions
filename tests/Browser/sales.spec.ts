@@ -10,7 +10,8 @@ test('staff creates and revises a booking draft without changing plot holds', as
         if (message.type() === 'error' && /same key/i.test(message.text()))
             clientErrors.push(message.text());
     });
-    const suffix = testInfo.project.name.toUpperCase();
+    const suffix =
+        `${testInfo.project.name}-${Date.now().toString(36)}`.toUpperCase();
     const customer = `DEMO Sales ${suffix}`;
     const code = `SALES-${suffix}`;
     const number = `DRAFT-${suffix}-001`;
@@ -173,9 +174,16 @@ test('staff creates and revises a booking draft without changing plot holds', as
     await page.getByRole('link', { name: 'All drafts' }).click();
     await page.getByLabel('Search drafts').fill(customer);
     await page.getByRole('button', { name: 'Search', exact: true }).click();
-    await expect(
-        page.getByRole('cell', { name: 'PKR 4,800,000.99', exact: true }),
-    ).toBeVisible();
+    const listedQuote =
+        testInfo.project.name === 'mobile'
+            ? page
+                  .getByRole('list', { name: 'Booking drafts' })
+                  .getByText('PKR 4,800,000.99', { exact: true })
+            : page.getByRole('cell', {
+                  name: 'PKR 4,800,000.99',
+                  exact: true,
+              });
+    await expect(listedQuote).toBeVisible();
     const saveSettings = async (section: string) => {
         const saved = page.waitForResponse(
             (response) =>

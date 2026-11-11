@@ -289,9 +289,10 @@ export default function Expenses({
                 <section className="ef-panel overflow-hidden">
                     <div className="ef-toolbar">
                         <form
+                            aria-label={t('Expense date filters')}
                             action="/finance/expenses"
                             method="get"
-                            className="flex flex-wrap gap-2"
+                            className="grid grid-cols-1 gap-3 sm:w-auto sm:grid-cols-[minmax(10rem,1fr)_minmax(10rem,1fr)_auto]"
                         >
                             <Input
                                 aria-label={t('From date')}
@@ -305,7 +306,9 @@ export default function Expenses({
                                 type="date"
                                 defaultValue={filters.to ?? ''}
                             />
-                            <Button variant="outline">{t('Apply')}</Button>
+                            <Button className="h-11" variant="outline">
+                                {t('Apply')}
+                            </Button>
                         </form>
                         <p className="font-semibold">
                             {t('Period total')}: {formatPkr(total)}

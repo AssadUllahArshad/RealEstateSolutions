@@ -119,6 +119,7 @@ export default function OwnerReports({
                 </div>
                 <section className="ef-panel overflow-hidden">
                     <form
+                        aria-label={t('Owner report filters')}
                         className="ef-toolbar"
                         onSubmit={(event) => {
                             event.preventDefault();
@@ -130,7 +131,7 @@ export default function OwnerReports({
                             );
                         }}
                     >
-                        <div className="grid w-full gap-4 sm:grid-cols-3 lg:max-w-3xl">
+                        <div className="grid w-full min-w-0 gap-4 sm:grid-cols-3 lg:max-w-3xl">
                             <div>
                                 <Label htmlFor="report-owner">
                                     {t('Plot owner')}
@@ -175,9 +176,12 @@ export default function OwnerReports({
                             </div>
                         </div>
                         <div className="flex gap-2 self-end">
-                            <Button>{t('Apply filters')}</Button>
+                            <Button className="h-11">
+                                {t('Apply filters')}
+                            </Button>
                             <Button
                                 type="button"
+                                className="h-11"
                                 variant="ghost"
                                 onClick={() => router.get('/reports/owners')}
                             >

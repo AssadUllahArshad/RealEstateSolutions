@@ -95,11 +95,20 @@ class InstallmentLedgerTest extends TestCase
             'command_key' => (string) Str::uuid(),
         ]);
         $ledger = app(InstallmentLedger::class);
-        $first = $ledger->allocate($f['admin'], $f['booking']->id, [
+        $firstAllocation = [
             ...$this->command($f['receipt']->id),
             'amount' => '999.99',
             'charge_rows' => [['charge_id' => $charge->id, 'amount' => '99.99']],
-        ]);
+        ];
+        $url = '/bookings/'.$f['booking']->id.'/allocations';
+        $this->actingAs($f['admin'])->post($url, [...$firstAllocation, 'command_key' => (string) Str::uuid(), 'charge_rows' => []])
+            ->assertSessionHasErrors('charge_rows');
+        $this->assertDatabaseCount('installment_batches', 0);
+        $this->assertDatabaseCount('booking_charge_payment_batches', 0);
+
+        $first = $ledger->allocate($f['admin'], $f['booking']->id, $firstAllocation);
+        $this->actingAs($f['admin'])->post($url, [...$firstAllocation, 'charge_rows' => [['charge_id' => $charge->id, 'amount' => '100.00']]])
+            ->assertSessionHasErrors('conflict');
         $this->assertSame('900.00', DB::table('installment_batches')->where('id', $first)->value('amount'));
         $this->assertSame('99.99', DB::table('booking_charge_payment_batches')->value('amount'));
         $this->assertSame('0.00', $ledger->state($f['booking'])['outstanding']);

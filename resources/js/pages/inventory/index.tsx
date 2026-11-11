@@ -49,7 +49,7 @@ type Props = {
         created_at: string;
     }[];
 };
-const selectClass = 'min-w-36';
+const selectClass = 'h-11 w-full min-w-0';
 
 function PlotEditor({
     owners,
@@ -176,9 +176,13 @@ function PlotEditor({
                         onChange={(event) =>
                             form.setData('plot_owner_id', event.target.value)
                         }
-                        required={!plot}
+                        required={owners.length > 0}
                     >
-                        <option value="">Unassigned — choose an owner</option>
+                        <option value="">
+                            {owners.length
+                                ? t('Choose an owner')
+                                : t('No owners configured')}
+                        </option>
                         {owners.map((owner) => (
                             <option key={owner.id} value={owner.id}>
                                 {owner.name}
@@ -186,6 +190,11 @@ function PlotEditor({
                         ))}
                     </select>
                     <InputError message={form.errors.plot_owner_id} />
+                    {owners.length === 0 && (
+                        <p className="mt-1 text-xs text-muted-foreground">
+                            {t('Owner assignment can be completed later.')}
+                        </p>
+                    )}
                     <Label htmlFor="plot-owner-percentage" className="mt-4">
                         {t('Owner share snapshot (%)')}
                     </Label>
@@ -199,7 +208,11 @@ function PlotEditor({
                         className="mt-2"
                     />
                     <p className="mt-1 text-xs text-muted-foreground">
-                        {t('Leave empty to copy the selected owner default.')}
+                        {owners.length > 0
+                            ? t(
+                                  'Leave empty to copy the selected owner default.',
+                              )
+                            : t('No owner default is available yet.')}
                     </p>
                     <InputError message={form.errors.owner_percentage} />
                 </div>
@@ -387,7 +400,7 @@ export default function Inventory({
                                 setEditor(null);
                         }}
                     >
-                        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+                        <DialogContent className="sm:max-w-2xl">
                             <DialogHeader>
                                 <DialogTitle>
                                     {editor.plot ? 'Edit plot' : 'Add a plot'}
@@ -415,13 +428,14 @@ export default function Inventory({
                 >
                     <div className="space-y-4 border-b bg-muted/20 p-4 sm:p-5">
                         <form
-                            className="flex flex-wrap gap-3"
+                            aria-label={t('Plot filters')}
+                            className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-9"
                             onSubmit={(event) => {
                                 event.preventDefault();
                                 visit({ ...search, view: filters.view });
                             }}
                         >
-                            <div className="min-w-40 flex-1">
+                            <div className="min-w-0 sm:col-span-2">
                                 <Label
                                     htmlFor="inventory-search"
                                     className="sr-only"
@@ -544,11 +558,12 @@ export default function Inventory({
                                     </option>
                                 ))}
                             </select>
-                            <Button variant="outline">
+                            <Button className="h-11 w-full" variant="outline">
                                 {t('Apply filters')}
                             </Button>
                             <Button
                                 type="button"
+                                className="h-11 w-full"
                                 variant="ghost"
                                 onClick={() => visit({ view: filters.view })}
                             >

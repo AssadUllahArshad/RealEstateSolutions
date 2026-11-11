@@ -3,8 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Domain\Finance\Accounts;
+use App\Domain\Finance\CashbookLedger;
+use App\Domain\Finance\FinancialAccountOpenings;
 use App\Models\FinancialAccount;
 use App\Models\FinancialAccountEvent;
+use App\Models\FinancialAccountOpeningBalance;
+use App\Models\FinancialAccountOpeningCorrection;
+use App\Support\BusinessClock;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -19,11 +24,30 @@ class FinancialAccountController extends Controller
     {
         Gate::authorize('finance.accounts.view');
         $record = $account ? FinancialAccount::findOrFail($account) : null;
+        $openingData = null;
+        $bookBalance = null;
+        if ($record !== null) {
+            $opening = FinancialAccountOpeningBalance::query()
+                ->where('financial_account_id', $record->id)
+                ->first();
+            if ($opening !== null) {
+                $ledger = app(CashbookLedger::class);
+                $openingData = [
+                    ...$opening->only(['id', 'amount', 'effective_on', 'source_note', 'source_reference', 'created_by', 'created_at']),
+                    'currentAmount' => $ledger->openingBalanceAt($record->id, app(BusinessClock::class)->today()),
+                    'corrections' => FinancialAccountOpeningCorrection::query()->where('opening_balance_id', $opening->id)
+                        ->latest('id')->limit(20)->get(['id', 'amount', 'effective_on', 'reason', 'actor_id', 'created_at']),
+                ];
+                $bookBalance = $ledger->balanceAtEnd($record->id, app(BusinessClock::class)->today());
+            }
+        }
 
         return Inertia::render('finance/accounts', [
             'accounts' => FinancialAccount::orderByDesc('active')->orderBy('code')->paginate(20)->withQueryString(), 'account' => $record,
             'creationKey' => (string) Str::uuid(), 'canManage' => $request->user()->can('finance.accounts.manage') && $request->user()->hasAnyRole(['super_admin', 'admin']),
             'history' => $record ? FinancialAccountEvent::where('financial_account_id', $record->id)->latest('version')->limit(10)->get() : [],
+            'openingBalance' => $openingData, 'bookBalance' => $bookBalance, 'businessDate' => app(BusinessClock::class)->today(),
+            'openingCommandKey' => (string) Str::uuid(), 'correctionCommandKey' => (string) Str::uuid(),
         ]);
     }
 
@@ -37,5 +61,30 @@ class FinancialAccountController extends Controller
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Financial account setup saved.']);
 
         return to_route('finance.accounts.show', $record->id);
+    }
+
+    public function createOpeningBalance(Request $request, FinancialAccountOpenings $openings, int $account): RedirectResponse
+    {
+        try {
+            $openings->create($request->user(), $account, $request->all());
+        } catch (ConflictHttpException $exception) {
+            return back()->withErrors(['conflict' => $exception->getMessage()]);
+        }
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Opening balance recorded as an immutable account entry.']);
+
+        return to_route('finance.accounts.show', $account);
+    }
+
+    public function correctOpeningBalance(Request $request, FinancialAccountOpenings $openings, int $opening): RedirectResponse
+    {
+        try {
+            $record = $openings->correct($request->user(), $opening, $request->all());
+        } catch (ConflictHttpException $exception) {
+            return back()->withErrors(['conflict' => $exception->getMessage()]);
+        }
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Linked opening-balance correction recorded.']);
+        $accountId = (int) FinancialAccountOpeningBalance::query()->whereKey($record->opening_balance_id)->value('financial_account_id');
+
+        return to_route('finance.accounts.show', $accountId);
     }
 }

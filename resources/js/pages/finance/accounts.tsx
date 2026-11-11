@@ -5,6 +5,7 @@ import { EmptyState, PageHeading, Pager } from '@/components/office-ui';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { formatPkr } from '@/lib/format-pkr';
 import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
 import { useTranslate } from '@/lib/i18n';
 
@@ -15,6 +16,24 @@ export type Account = {
     type: string;
     active: boolean;
     version: number;
+};
+type OpeningBalance = {
+    id: number;
+    amount: string;
+    effective_on: string;
+    source_note: string;
+    source_reference: string | null;
+    created_by: number;
+    created_at: string;
+    currentAmount: string;
+    corrections: {
+        id: number;
+        amount: string;
+        effective_on: string;
+        reason: string;
+        actor_id: number;
+        created_at: string;
+    }[];
 };
 const types: Record<string, string> = {
     cash: 'Cash',
@@ -32,6 +51,11 @@ type Props = {
     account: Account | null;
     creationKey: string;
     canManage: boolean;
+    openingBalance: OpeningBalance | null;
+    bookBalance: string | null;
+    businessDate: string;
+    openingCommandKey: string;
+    correctionCommandKey: string;
     history: {
         id: number;
         version: number;
@@ -177,6 +201,363 @@ function Editor({
     );
 }
 
+function OpeningBalancePanel({
+    account,
+    openingBalance,
+    bookBalance,
+    businessDate,
+    openingCommandKey,
+    correctionCommandKey,
+    canManage,
+}: Pick<
+    Props,
+    | 'account'
+    | 'openingBalance'
+    | 'bookBalance'
+    | 'businessDate'
+    | 'openingCommandKey'
+    | 'correctionCommandKey'
+    | 'canManage'
+>) {
+    const t = useTranslate();
+    const opening = useForm({
+        amount: '',
+        effective_on: businessDate,
+        source_note: '',
+        source_reference: '',
+        command_key: openingCommandKey,
+        confirmed: false,
+    });
+    const correction = useForm({
+        amount: '',
+        reason: '',
+        command_key: correctionCommandKey,
+        confirmed: false,
+    });
+    useUnsavedChanges(opening.isDirty || correction.isDirty);
+
+    if (!account) return null;
+
+    const errors = (form: { errors: Record<string, string> }) =>
+        Object.entries(form.errors).map(([key, message]) => (
+            <InputError key={key} message={message} />
+        ));
+
+    return (
+        <section className="ef-panel space-y-5 p-5">
+            <div>
+                <h2 className="text-lg font-semibold">
+                    {t('Opening balance and account balance')}
+                </h2>
+                <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                    {t(
+                        'Opening amounts take effect at the start of their business date. Corrections are linked, immutable entries; finalized bank reconciliation periods cannot be changed.',
+                    )}
+                </p>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+                <div className="rounded-lg border p-4">
+                    <p className="text-sm text-muted-foreground">
+                        {t('Current opening balance')}
+                    </p>
+                    <p className="mt-1 text-xl font-semibold">
+                        {openingBalance
+                            ? formatPkr(openingBalance.currentAmount)
+                            : t('Not configured')}
+                    </p>
+                    {openingBalance && (
+                        <p className="mt-1 text-xs text-muted-foreground">
+                            {t('Effective from')} {openingBalance.effective_on}
+                        </p>
+                    )}
+                </div>
+                <div className="rounded-lg border p-4">
+                    <p className="text-sm text-muted-foreground">
+                        {t('Book balance as of')} {businessDate}
+                    </p>
+                    <p className="mt-1 text-xl font-semibold">
+                        {bookBalance === null
+                            ? t('Not configured')
+                            : formatPkr(bookBalance)}
+                    </p>
+                </div>
+            </div>
+            {account.type === 'bank' && (
+                <Button asChild variant="outline">
+                    <Link href="/finance/reconciliation">
+                        {t('Open bank reconciliation')}
+                    </Link>
+                </Button>
+            )}
+            {canManage && !openingBalance && (
+                <form
+                    className="space-y-4 border-t pt-5"
+                    onSubmit={(event) => {
+                        event.preventDefault();
+                        opening.post(
+                            `/finance/accounts/${account.id}/opening-balance`,
+                            {
+                                preserveScroll: true,
+                                onSuccess: () => {
+                                    opening.reset(
+                                        'amount',
+                                        'source_note',
+                                        'source_reference',
+                                        'confirmed',
+                                    );
+                                    opening.setData(
+                                        'command_key',
+                                        crypto.randomUUID(),
+                                    );
+                                },
+                            },
+                        );
+                    }}
+                >
+                    <h3 className="font-semibold">
+                        {t('Record opening balance')}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                        {t(
+                            'Enter the verified statement or cash-count amount. Negative openings are allowed only for bank overdrafts.',
+                        )}
+                    </p>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                        <div>
+                            <Label htmlFor="opening-amount">
+                                {t('Opening amount (PKR)')}
+                            </Label>
+                            <Input
+                                id="opening-amount"
+                                className="mt-2"
+                                inputMode="decimal"
+                                value={opening.data.amount}
+                                onChange={(event) =>
+                                    opening.setData(
+                                        'amount',
+                                        event.target.value,
+                                    )
+                                }
+                            />
+                        </div>
+                        <div>
+                            <Label htmlFor="opening-date">
+                                {t('Effective from')}
+                            </Label>
+                            <Input
+                                id="opening-date"
+                                className="mt-2"
+                                type="date"
+                                max={businessDate}
+                                value={opening.data.effective_on}
+                                onChange={(event) =>
+                                    opening.setData(
+                                        'effective_on',
+                                        event.target.value,
+                                    )
+                                }
+                            />
+                        </div>
+                    </div>
+                    <div>
+                        <Label htmlFor="opening-source">
+                            {t('Verified source note')}
+                        </Label>
+                        <textarea
+                            id="opening-source"
+                            className="ef-input mt-2 min-h-24"
+                            value={opening.data.source_note}
+                            onChange={(event) =>
+                                opening.setData(
+                                    'source_note',
+                                    event.target.value,
+                                )
+                            }
+                        />
+                    </div>
+                    <div>
+                        <Label htmlFor="opening-reference">
+                            {t('Statement or count reference')}
+                        </Label>
+                        <Input
+                            id="opening-reference"
+                            className="mt-2"
+                            maxLength={160}
+                            value={opening.data.source_reference}
+                            onChange={(event) =>
+                                opening.setData(
+                                    'source_reference',
+                                    event.target.value,
+                                )
+                            }
+                        />
+                    </div>
+                    <label className="flex items-start gap-3 rounded-lg border p-4 text-sm">
+                        <input
+                            type="checkbox"
+                            className="mt-1 size-4"
+                            checked={opening.data.confirmed}
+                            onChange={(event) =>
+                                opening.setData(
+                                    'confirmed',
+                                    event.target.checked,
+                                )
+                            }
+                        />
+                        <span>
+                            {t(
+                                'I verified this amount against the opening statement or physical cash count.',
+                            )}
+                        </span>
+                    </label>
+                    <div role="alert">{errors(opening)}</div>
+                    <Button
+                        disabled={opening.processing || !opening.data.confirmed}
+                    >
+                        {t('Record immutable opening balance')}
+                    </Button>
+                </form>
+            )}
+            {openingBalance && (
+                <>
+                    <div className="rounded-lg border p-4 text-sm">
+                        <p className="font-medium">
+                            {t('Opening source')}: {openingBalance.source_note}
+                        </p>
+                        {openingBalance.source_reference && (
+                            <p className="mt-1 text-muted-foreground">
+                                {t('Reference')}:{' '}
+                                {openingBalance.source_reference}
+                            </p>
+                        )}
+                        <p className="mt-1 text-xs text-muted-foreground">
+                            {t('Recorded by')} #{openingBalance.created_by}
+                        </p>
+                    </div>
+                    {canManage && (
+                        <form
+                            className="space-y-4 border-t pt-5"
+                            onSubmit={(event) => {
+                                event.preventDefault();
+                                correction.post(
+                                    `/finance/opening-balances/${openingBalance.id}/corrections`,
+                                    {
+                                        preserveScroll: true,
+                                        onSuccess: () => {
+                                            correction.reset(
+                                                'amount',
+                                                'reason',
+                                                'confirmed',
+                                            );
+                                            correction.setData(
+                                                'command_key',
+                                                crypto.randomUUID(),
+                                            );
+                                        },
+                                    },
+                                );
+                            }}
+                        >
+                            <h3 className="font-semibold">
+                                {t('Record linked correction')}
+                            </h3>
+                            <p className="text-sm text-muted-foreground">
+                                {t(
+                                    'Use a signed exact adjustment and explain the verified correction. This changes the opening ledger, not cash received or paid.',
+                                )}
+                            </p>
+                            <div>
+                                <Label htmlFor="opening-correction-amount">
+                                    {t('Signed correction amount (PKR)')}
+                                </Label>
+                                <Input
+                                    id="opening-correction-amount"
+                                    className="mt-2"
+                                    inputMode="decimal"
+                                    value={correction.data.amount}
+                                    onChange={(event) =>
+                                        correction.setData(
+                                            'amount',
+                                            event.target.value,
+                                        )
+                                    }
+                                />
+                            </div>
+                            <div>
+                                <Label htmlFor="opening-correction-reason">
+                                    {t('Correction reason')}
+                                </Label>
+                                <textarea
+                                    id="opening-correction-reason"
+                                    className="ef-input mt-2 min-h-24"
+                                    value={correction.data.reason}
+                                    onChange={(event) =>
+                                        correction.setData(
+                                            'reason',
+                                            event.target.value,
+                                        )
+                                    }
+                                />
+                            </div>
+                            <label className="flex items-start gap-3 rounded-lg border p-4 text-sm">
+                                <input
+                                    type="checkbox"
+                                    className="mt-1 size-4"
+                                    checked={correction.data.confirmed}
+                                    onChange={(event) =>
+                                        correction.setData(
+                                            'confirmed',
+                                            event.target.checked,
+                                        )
+                                    }
+                                />
+                                <span>
+                                    {t(
+                                        'I verified the original opening entry and supporting evidence.',
+                                    )}
+                                </span>
+                            </label>
+                            <div role="alert">{errors(correction)}</div>
+                            <Button
+                                disabled={
+                                    correction.processing ||
+                                    !correction.data.confirmed
+                                }
+                            >
+                                {t('Record linked correction')}
+                            </Button>
+                        </form>
+                    )}
+                    {openingBalance.corrections.length > 0 && (
+                        <div className="border-t pt-5">
+                            <h3 className="font-semibold">
+                                {t('Opening balance corrections')}
+                            </h3>
+                            <ul className="mt-3 space-y-3">
+                                {openingBalance.corrections.map((entry) => (
+                                    <li
+                                        key={entry.id}
+                                        className="rounded-lg border p-4 text-sm"
+                                    >
+                                        <p className="font-medium">
+                                            {formatPkr(entry.amount)} ·{' '}
+                                            {entry.effective_on}
+                                        </p>
+                                        <p className="mt-1">{entry.reason}</p>
+                                        <p className="mt-1 text-xs text-muted-foreground">
+                                            {t('Staff')} #{entry.actor_id}
+                                        </p>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
+                </>
+            )}
+        </section>
+    );
+}
+
 export default function Accounts(props: Props) {
     const t = useTranslate();
     return (
@@ -187,7 +568,7 @@ export default function Accounts(props: Props) {
                     eyebrow="Finance · Account setup"
                     title={t('Financial accounts')}
                     description={t(
-                        'Configure where reported customer payments will be received. Balances are not calculated from prepared receipts.',
+                        'Configure account destinations, record verified opening amounts, review current book balances and open bank reconciliations.',
                     )}
                 >
                     <Button asChild variant="outline">
@@ -208,7 +589,7 @@ export default function Accounts(props: Props) {
                     <Landmark className="mt-1 size-5 shrink-0" />
                     <p>
                         {t(
-                            'Account setup is ready for preparation. No opening balance, cash movement or recognized income is created here.',
+                            'Account destinations are configured. Opening balances are maintained separately; no cash movement or recognized income is created here.',
                         )}
                     </p>
                 </div>
@@ -356,6 +737,15 @@ export default function Accounts(props: Props) {
                         />
                     )}
                 </div>
+                <OpeningBalancePanel
+                    account={props.account}
+                    openingBalance={props.openingBalance}
+                    bookBalance={props.bookBalance}
+                    businessDate={props.businessDate}
+                    openingCommandKey={props.openingCommandKey}
+                    correctionCommandKey={props.correctionCommandKey}
+                    canManage={props.canManage}
+                />
                 {props.account && (
                     <section
                         className="ef-panel p-5"

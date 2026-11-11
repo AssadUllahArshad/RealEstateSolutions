@@ -118,7 +118,9 @@ export default function Charges({
                     <StatCard
                         title={t('Active manual charges')}
                         value={formatPkr(activeTotal)}
-                        detail={t('Unpaid charges only; separate from principal')}
+                        detail={t(
+                            'Unpaid charges only; separate from principal',
+                        )}
                         icon={CircleDollarSign}
                         tone="amber"
                     />
@@ -131,7 +133,7 @@ export default function Charges({
                 </div>
                 <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-950 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-100">
                     {t(
-                        'Charges never alter principal or create cashbook movements. Recognized payments apply to principal first, then charges in posting order. Each partial waiver is an immutable compensating record.',
+                        'Charges never alter principal or create cashbook movements. Recognized payments apply to principal first, then to the manual charges explicitly selected for that allocation. Each partial waiver is an immutable compensating record.',
                     )}
                 </div>
                 {canManage && (
@@ -287,7 +289,9 @@ export default function Charges({
                         >
                             <option value="">{t('All charge states')}</option>
                             <option value="active">{t('Active')}</option>
-                            <option value="settled">{t('Settled by payment')}</option>
+                            <option value="settled">
+                                {t('Settled by payment')}
+                            </option>
                             <option value="waived">{t('Waived')}</option>
                         </select>
                         <Button variant="outline">{t('Filter')}</Button>
@@ -305,13 +309,20 @@ export default function Charges({
                                                     </strong>
                                                     <StatusBadge
                                                         label={t(
-                                                            charge.status === 'active'
+                                                            charge.status ===
+                                                                'active'
                                                                 ? 'Active'
-                                                                : charge.status === 'waived'
+                                                                : charge.status ===
+                                                                    'waived'
                                                                   ? 'Waived'
                                                                   : 'Settled by payment',
                                                         )}
-                                                        tone={charge.status === 'active' ? 'warning' : 'neutral'}
+                                                        tone={
+                                                            charge.status ===
+                                                            'active'
+                                                                ? 'warning'
+                                                                : 'neutral'
+                                                        }
                                                     />
                                                 </div>
                                                 <p className="mt-2 text-sm">
@@ -334,18 +345,43 @@ export default function Charges({
                                                         : ''}
                                                 </p>
                                                 <p className="mt-2 text-xs text-muted-foreground">
-                                                    {t('Paid')} {formatPkr(charge.paidAmount)} · {t('Waived')} {formatPkr(charge.waivedAmount)} · {t('Remaining')} {formatPkr(charge.remainingAmount)}
+                                                    {t('Paid')}{' '}
+                                                    {formatPkr(
+                                                        charge.paidAmount,
+                                                    )}{' '}
+                                                    · {t('Waived')}{' '}
+                                                    {formatPkr(
+                                                        charge.waivedAmount,
+                                                    )}{' '}
+                                                    · {t('Remaining')}{' '}
+                                                    {formatPkr(
+                                                        charge.remainingAmount,
+                                                    )}
                                                 </p>
-                                                {charge.waivers.map((record) => (
-                                                    <p key={`${record.business_date}-${record.amount}-${record.reason}`} className="mt-1 text-xs text-muted-foreground">
-                                                        {t('Waiver')} {formatPkr(record.amount)} · {record.business_date} · {record.reason}
-                                                    </p>
-                                                ))}
+                                                {charge.waivers.map(
+                                                    (record) => (
+                                                        <p
+                                                            key={`${record.business_date}-${record.amount}-${record.reason}`}
+                                                            className="mt-1 text-xs text-muted-foreground"
+                                                        >
+                                                            {t('Waiver')}{' '}
+                                                            {formatPkr(
+                                                                record.amount,
+                                                            )}{' '}
+                                                            ·{' '}
+                                                            {
+                                                                record.business_date
+                                                            }{' '}
+                                                            · {record.reason}
+                                                        </p>
+                                                    ),
+                                                )}
                                             </div>
                                             <div className="text-end">
                                                 <strong
                                                     className={
-                                                        charge.status === 'waived'
+                                                        charge.status ===
+                                                        'waived'
                                                             ? 'text-muted-foreground line-through'
                                                             : 'text-amber-700 dark:text-amber-300'
                                                     }
@@ -353,7 +389,8 @@ export default function Charges({
                                                     {formatPkr(charge.amount)}
                                                 </strong>
                                                 {canManage &&
-                                                    charge.status === 'active' && (
+                                                    charge.status ===
+                                                        'active' && (
                                                         <form
                                                             className="mt-3 space-y-2"
                                                             onSubmit={(e) => {
@@ -362,10 +399,18 @@ export default function Charges({
                                                                     `/finance/charges/${charge.id}/waive`,
                                                                     {
                                                                         preserveScroll: true,
-                                                                        onSuccess: () => {
-                                                                            waiver.reset('amount', 'reason', 'confirmed');
-                                                                            waiver.setData('command_key', crypto.randomUUID());
-                                                                        },
+                                                                        onSuccess:
+                                                                            () => {
+                                                                                waiver.reset(
+                                                                                    'amount',
+                                                                                    'reason',
+                                                                                    'confirmed',
+                                                                                );
+                                                                                waiver.setData(
+                                                                                    'command_key',
+                                                                                    crypto.randomUUID(),
+                                                                                );
+                                                                            },
                                                                     },
                                                                 );
                                                             }}
@@ -378,15 +423,25 @@ export default function Charges({
                                                                     'Waiver amount (PKR)',
                                                                 )}
                                                                 inputMode="decimal"
-                                                                value={waiver.data.amount}
+                                                                value={
+                                                                    waiver.data
+                                                                        .amount
+                                                                }
                                                                 onChange={(e) =>
                                                                     waiver.setData(
                                                                         'amount',
-                                                                        e.target.value,
+                                                                        e.target
+                                                                            .value,
                                                                     )
                                                                 }
                                                             />
-                                                            <InputError message={waiver.errors.amount} />
+                                                            <InputError
+                                                                message={
+                                                                    waiver
+                                                                        .errors
+                                                                        .amount
+                                                                }
+                                                            />
                                                             <Input
                                                                 aria-label={t(
                                                                     'Waiver reason',
@@ -432,14 +487,31 @@ export default function Charges({
                                                             <Button
                                                                 size="sm"
                                                                 variant="outline"
-                                                                disabled={waiver.processing || !waiver.data.amount || !waiver.data.reason || !waiver.data.confirmed}
+                                                                disabled={
+                                                                    waiver.processing ||
+                                                                    !waiver.data
+                                                                        .amount ||
+                                                                    !waiver.data
+                                                                        .reason ||
+                                                                    !waiver.data
+                                                                        .confirmed
+                                                                }
                                                             >
                                                                 <Ban />
                                                                 {t(
                                                                     'Record waiver',
                                                                 )}
                                                             </Button>
-                                                            <InputError message={(waiver.errors as Record<string, string>).conflict} />
+                                                            <InputError
+                                                                message={
+                                                                    (
+                                                                        waiver.errors as Record<
+                                                                            string,
+                                                                            string
+                                                                        >
+                                                                    ).conflict
+                                                                }
+                                                            />
                                                         </form>
                                                     )}
                                             </div>

@@ -51,3 +51,5 @@ yarn-error.log
 /.browser-runtime/
 /test-results/
 /playwright-report/
+
+/storage/logs/*.log

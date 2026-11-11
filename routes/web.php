@@ -3,6 +3,7 @@
 use App\Http\Controllers\AgentCommissionController;
 use App\Http\Controllers\BookingChangeController;
 use App\Http\Controllers\BookingChargeController;
+use App\Http\Controllers\BankReconciliationController;
 use App\Http\Controllers\BookingDraftController;
 use App\Http\Controllers\BookingTransferController;
 use App\Http\Controllers\BusinessSettingsController;
@@ -64,6 +65,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('finance/movements/export', [ReceiptPostingController::class, 'exportMovements'])->middleware('throttle:10,1')->name('finance.movements.export');
     Route::get('finance/accounts', [FinancialAccountController::class, 'index'])->name('finance.accounts');
     Route::get('finance/accounts/{account}', [FinancialAccountController::class, 'index'])->whereNumber('account')->name('finance.accounts.show');
+    Route::get('finance/reconciliation', [BankReconciliationController::class, 'index'])->name('finance.reconciliation');
+    Route::post('finance/reconciliation', [BankReconciliationController::class, 'store'])->middleware('throttle:10,1')->name('finance.reconciliation.store');
+    Route::post('finance/reconciliation/{reconciliation}/decision', [BankReconciliationController::class, 'decide'])->whereNumber('reconciliation')->middleware('throttle:20,1')->name('finance.reconciliation.decide');
     Route::get('finance/expenses', [OfficeExpenseController::class, 'index'])->name('finance.expenses');
     Route::get('finance/owner-payouts', [OwnerPayoutController::class, 'index'])->name('finance.owner-payouts');
     Route::get('finance/refunds', [CustomerRefundController::class, 'index'])->name('finance.refunds');
@@ -80,6 +84,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('finance/expenses', [OfficeExpenseController::class, 'store'])->middleware('throttle:20,1')->name('finance.expenses.store');
     Route::post('finance/accounts', [FinancialAccountController::class, 'save'])->middleware('throttle:20,1')->name('finance.accounts.store');
     Route::patch('finance/accounts/{account}', [FinancialAccountController::class, 'save'])->whereNumber('account')->middleware('throttle:20,1')->name('finance.accounts.update');
+    Route::post('finance/accounts/{account}/opening-balance', [FinancialAccountController::class, 'createOpeningBalance'])->whereNumber('account')->middleware('throttle:10,1')->name('finance.accounts.opening');
+    Route::post('finance/opening-balances/{opening}/corrections', [FinancialAccountController::class, 'correctOpeningBalance'])->whereNumber('opening')->middleware('throttle:10,1')->name('finance.accounts.opening-corrections');
     Route::get('finance/receipts', [ReceiptDraftController::class, 'index'])->name('finance.receipts');
     Route::get('finance/receipts/new', [ReceiptDraftController::class, 'edit'])->name('finance.receipts.create');
     Route::get('finance/receipts/{receipt}', [ReceiptDraftController::class, 'edit'])->whereNumber('receipt')->name('finance.receipts.edit');

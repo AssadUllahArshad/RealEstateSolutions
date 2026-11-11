@@ -34,6 +34,11 @@ class CustomerRefundTest extends TestCase
         $this->actingAs($f['admin'])->post('/finance/refunds/'.$refund->id.'/decision', ['decision' => 'approve', 'decision_note' => 'Refund evidence and deduction approved.', 'decision_key' => (string) Str::uuid(), 'confirmed' => true])->assertSessionHasNoErrors();
         $this->assertSame('approved', $refund->fresh()->state);
         $this->assertSame('30.00', app(CustomerRefunds::class)->available($booking->id));
+        $this->get('/finance')->assertInertia(fn ($page) => $page
+            ->where('summary.refunds', '60.01')
+            ->where('summary.outflow', '60.01')
+            ->where('summary.net', '90.01')
+            ->where('accounts.0.net_movement', '90.01'));
         $this->get('/finance/movements')->assertOk()->assertSee('60.01');
         $this->actingAs($f['admin'])->get('/finance/refunds/'.$refund->id.'/print')->assertOk()
             ->assertSee('Customer cancellation refund')->assertSee($refund->number)

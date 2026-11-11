@@ -53,9 +53,12 @@ class AccessControlTest extends TestCase
 
     public function test_admin_and_accountant_include_the_sales_agent_workflow(): void
     {
+        $agentAbilities = User::factory()->create()->assignRole('sales_agent')
+            ->getAllPermissions()->pluck('name')->all();
+
         foreach (['admin', 'accountant'] as $role) {
             $user = User::factory()->create()->assignRole($role);
-            foreach (['inventory.view', 'inventory.reservation', 'customers.view', 'customers.manage', 'sales.drafts', 'sales.confirm', 'finance.receipts.view', 'finance.receipts.prepare'] as $ability) {
+            foreach ($agentAbilities as $ability) {
                 $this->assertTrue($user->can($ability), $role.' is missing '.$ability);
             }
         }

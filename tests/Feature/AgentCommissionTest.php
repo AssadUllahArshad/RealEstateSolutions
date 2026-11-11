@@ -35,6 +35,11 @@ class AgentCommissionTest extends TestCase
         $this->post('/finance/commissions/'.$p->id.'/decision', ['decision' => 'approve', 'decision_note' => 'Collection and rate snapshot verified.', 'decision_key' => (string) Str::uuid(), 'confirmed' => true])->assertForbidden();
         $this->actingAs($f['admin'])->post('/finance/commissions/'.$p->id.'/decision', ['decision' => 'approve', 'decision_note' => 'Collection and rate snapshot verified.', 'decision_key' => (string) Str::uuid(), 'confirmed' => true])->assertSessionHasNoErrors();
         $this->assertSame('2.00', app(AgentCommissions::class)->payable($f['agent']->id));
+        $this->actingAs($f['admin'])->get('/finance')->assertInertia(fn ($page) => $page
+            ->where('summary.commissionPayments', '3.00')
+            ->where('summary.outflow', '3.00')
+            ->where('summary.net', '147.02')
+            ->where('accounts.0.net_movement', '147.02'));
     }
 
     public function test_reconciliation_csv_uses_date_filters_and_safe_agent_names(): void

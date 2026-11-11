@@ -120,7 +120,9 @@ export default function Receipts({
                                 defaultValue={q}
                                 placeholder={t('Search customer name')}
                             />
-                            <Button variant="outline">{t('Search')}</Button>
+                            <Button className="h-11" variant="outline">
+                                {t('Search')}
+                            </Button>
                         </form>
                         <span className="text-xs text-muted-foreground">
                             {receipts.total} {t('prepared records')}

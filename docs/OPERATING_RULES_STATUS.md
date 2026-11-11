@@ -4,6 +4,8 @@
 
 The current workflows now include final booking, receipt recognition, installment allocation and live statements, linked reverse-only allocation corrections, customer refunds, purchaser transfers, owner entitlements/payouts and agent commissions. The current [roadmap](ROADMAP.md) and each linked status page supersede historical “next slice” notes below.
 
+Account opening balances and exact-match bank reconciliation are implemented. The [status report](ACCOUNT_OPENING_RECONCILIATION_STATUS.md) records the maker/checker, period-lock and validation rules. No real financial balances have been entered.
+
 Second-admin provisioning, outbound email configuration and Owner 2 setup are intentionally deferred until the end of the remaining work. The local mailer currently uses `log`; no second admin or Owner 2 profile was created.
 
 Later installment allocation, the live principal ledger and linked admin-approved reverse-only allocation corrections are implemented. Finance staff follow saved oldest-first/manual/hybrid rules, with shared receipt credit preventing reuse across down payments and installments. Agents read assignment-scoped balances; accountant access stays separate from CRM identity. See [ledger rules, verification and remaining work](INSTALLMENT_LEDGER_STATUS.md).

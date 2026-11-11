@@ -74,7 +74,11 @@ class ChargePayments
         return $total;
     }
 
-    /** @param list<string> $hashes */
+    /**
+     * @param  numeric-string  $amount
+     * @param  list<string>  $hashes
+     * @param  list<array{charge_id:int,amount:numeric-string}>  $rows
+     */
     public function allocate(int $bookingId, int $receiptId, int $actorId, int $version, string $amount, string $businessDate, string $commandKey, array $hashes, array $rows): BookingChargePaymentBatch
     {
         $balances = array_column($this->balances($bookingId, true), null, 'id');

@@ -42,6 +42,11 @@ class OwnerPayoutTest extends TestCase
         $service->decide($admin, $payout, ['decision' => 'approve', 'decision_note' => 'Approved against entitlement.', 'decision_key' => (string) Str::uuid(), 'confirmed' => true]);
         $this->assertSame('59.75', $service->payable($owner->id));
         $this->assertDatabaseHas('owner_payouts', ['id' => $payout->id, 'state' => 'approved', 'amount' => '40.25']);
+        $this->actingAs($admin)->get('/finance')->assertInertia(fn ($page) => $page
+            ->where('summary.ownerPayouts', '40.25')
+            ->where('summary.outflow', '40.25')
+            ->where('summary.net', '-40.25')
+            ->where('accounts.0.net_movement', '-40.25'));
         $this->actingAs($admin)->get('/finance/movements')->assertInertia(fn ($page) => $page
             ->where('summary.outflow', '40.25')
             ->where('movements.data.0.entry_kind', 'owner_payout')

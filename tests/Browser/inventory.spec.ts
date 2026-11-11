@@ -5,7 +5,8 @@ test('administrator configures a society and maintains its custom plot catalogue
     browser,
 }, testInfo) => {
     test.setTimeout(180000);
-    const suffix = testInfo.project.name.toUpperCase();
+    const suffix =
+        `${testInfo.project.name}-${Date.now().toString(36)}`.toUpperCase();
     const code = `BROWSER-${suffix}`;
     const blockName = `Browser ${suffix} gardens`;
     const sizeLabel = `Browser ${suffix} custom size`;
@@ -39,6 +40,29 @@ test('administrator configures a society and maintains its custom plot catalogue
     await expect(page.getByText(sizeLabel, { exact: true })).toBeVisible();
     await page.goto('/inventory');
     await page.getByRole('button', { name: 'Add plot', exact: true }).click();
+    const plotDialog = page.getByRole('dialog', { name: 'Add a plot' });
+    await expect(plotDialog).toBeVisible();
+    expect(
+        await plotDialog.evaluate((element) => {
+            const bounds = element.getBoundingClientRect();
+            return bounds.top >= 0 && bounds.bottom <= window.innerHeight;
+        }),
+    ).toBeTruthy();
+    await page.screenshot({
+        path: testInfo.outputPath('plot-editor.png'),
+        fullPage: true,
+    });
+    await plotDialog.evaluate((element) =>
+        element.scrollTo(0, element.scrollHeight),
+    );
+    expect(
+        await page
+            .getByLabel('Plot owner / admin', { exact: true })
+            .evaluate((element) => element.matches(':required')),
+    ).toBe(false);
+    await expect(
+        page.getByRole('button', { name: 'Save plot', exact: true }),
+    ).toBeInViewport();
     await page.getByLabel('Plot number *', { exact: true }).fill(number);
     await page
         .getByLabel('Block *', { exact: true })

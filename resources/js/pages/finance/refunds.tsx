@@ -64,16 +64,19 @@ export default function Refunds({
                     <section className="ef-panel p-6">
                         <h2 className="font-semibold">{t('Prepare refund')}</h2>
                         <form
-                            className="mt-5 grid gap-4 md:grid-cols-2"
+                            className="mt-5 grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] [&>div]:min-w-0"
                             onSubmit={(e) => {
                                 e.preventDefault();
                                 form.post('/finance/refunds');
                             }}
                         >
                             <div>
-                                <Label>{t('Cancelled booking')}</Label>
+                                <Label htmlFor="refund-booking">
+                                    {t('Cancelled booking')}
+                                </Label>
                                 <select
-                                    className="ef-input mt-2"
+                                    id="refund-booking"
+                                    className="ef-input mt-2 w-full min-w-0"
                                     required
                                     value={form.data.booking_id}
                                     onChange={(e) =>
@@ -94,9 +97,12 @@ export default function Refunds({
                                 </select>
                             </div>
                             <div>
-                                <Label>{t('Payment account')}</Label>
+                                <Label htmlFor="refund-account">
+                                    {t('Payment account')}
+                                </Label>
                                 <select
-                                    className="ef-input mt-2"
+                                    id="refund-account"
+                                    className="ef-input mt-2 w-full min-w-0"
                                     required
                                     value={form.data.financial_account_id}
                                     onChange={(e) =>
@@ -117,8 +123,11 @@ export default function Refunds({
                                 </select>
                             </div>
                             <div>
-                                <Label>{t('Refund amount (PKR)')}</Label>
+                                <Label htmlFor="refund-amount">
+                                    {t('Refund amount (PKR)')}
+                                </Label>
                                 <Input
+                                    id="refund-amount"
                                     className="mt-2"
                                     inputMode="decimal"
                                     required
@@ -129,8 +138,11 @@ export default function Refunds({
                                 />
                             </div>
                             <div>
-                                <Label>{t('Approved deduction (PKR)')}</Label>
+                                <Label htmlFor="refund-deduction">
+                                    {t('Approved deduction (PKR)')}
+                                </Label>
                                 <Input
+                                    id="refund-deduction"
                                     className="mt-2"
                                     inputMode="decimal"
                                     value={form.data.deduction_amount}
@@ -143,9 +155,12 @@ export default function Refunds({
                                 />
                             </div>
                             <div className="md:col-span-2">
-                                <Label>{t('Deduction reason')}</Label>
+                                <Label htmlFor="refund-deduction-reason">
+                                    {t('Deduction reason')}
+                                </Label>
                                 <textarea
-                                    className="ef-input mt-2 min-h-20"
+                                    id="refund-deduction-reason"
+                                    className="ef-input mt-2 min-h-20 w-full min-w-0"
                                     value={form.data.deduction_reason}
                                     onChange={(e) =>
                                         form.setData(
@@ -156,8 +171,11 @@ export default function Refunds({
                                 />
                             </div>
                             <div>
-                                <Label>{t('Reference')}</Label>
+                                <Label htmlFor="refund-reference">
+                                    {t('Reference')}
+                                </Label>
                                 <Input
+                                    id="refund-reference"
                                     className="mt-2"
                                     value={form.data.reference}
                                     onChange={(e) =>
@@ -172,9 +190,12 @@ export default function Refunds({
                                 </p>
                             </div>
                             <div>
-                                <Label>{t('Verification note')}</Label>
+                                <Label htmlFor="refund-verification-note">
+                                    {t('Verification note')}
+                                </Label>
                                 <textarea
-                                    className="ef-input mt-2 min-h-20"
+                                    id="refund-verification-note"
+                                    className="ef-input mt-2 min-h-20 w-full min-w-0"
                                     required
                                     minLength={10}
                                     value={form.data.verification_note}
@@ -268,7 +289,7 @@ export default function Refunds({
                                     )}
                                     {canApprove && r.state === 'prepared' && (
                                         <form
-                                            className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto_auto]"
+                                            className="mt-4 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto_auto]"
                                             onSubmit={(e) => {
                                                 e.preventDefault();
                                                 decision.post(
@@ -277,6 +298,9 @@ export default function Refunds({
                                             }}
                                         >
                                             <Input
+                                                aria-label={t(
+                                                    'Admin refund decision note',
+                                                )}
                                                 required
                                                 minLength={5}
                                                 value={

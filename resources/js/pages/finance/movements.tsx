@@ -73,7 +73,7 @@ export default function Movements({
                     eyebrow={t('Finance · Account activity')}
                     title={t('Cashbook')}
                     description={t(
-                        'Recognized receipt inflows, accounting reversals and posted office expenses in one operational view.',
+                        'Recognized receipts, accounting reversals, expenses and approved payouts in one operational view.',
                     )}
                 >
                     <Button asChild variant="outline">
@@ -87,6 +87,11 @@ export default function Movements({
                         </Link>
                     </Button>
                     <Button asChild variant="outline">
+                        <Link href="/finance/reconciliation">
+                            {t('Bank reconciliation')}
+                        </Link>
+                    </Button>
+                    <Button asChild variant="outline">
                         <a
                             href={`/finance/movements/export${exportQuery ? `?${exportQuery}` : ''}`}
                         >
@@ -96,7 +101,7 @@ export default function Movements({
                 </PageHeading>
                 <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-950 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-100">
                     {t(
-                        'Net movement is inflow minus reversal and expense outflows for the selected period. Opening balances are not configured, so this is not an account balance, bank reconciliation or formal financial statement.',
+                        'Net movement is inflow minus outflows for the selected period. Opening balances are shown separately on account details; bank reconciliation is a separate workflow, not a formal financial statement.',
                     )}
                 </div>
                 <div className="grid gap-4 sm:grid-cols-3">
@@ -129,12 +134,13 @@ export default function Movements({
                 </div>
                 <section className="ef-panel overflow-hidden">
                     <form
+                        aria-label={t('Cashbook filters')}
                         method="get"
-                        className="grid gap-3 border-b p-5 md:grid-cols-[minmax(12rem,1fr)_auto_auto_auto]"
+                        className="grid grid-cols-1 gap-3 border-b p-5 md:grid-cols-[minmax(12rem,1fr)_auto_auto_auto]"
                     >
                         <select
                             aria-label={t('Filter financial account')}
-                            className="ef-input"
+                            className="ef-input w-full min-w-0"
                             name="account"
                             defaultValue={filters.account}
                         >
@@ -159,7 +165,9 @@ export default function Movements({
                             type="date"
                             defaultValue={filters.to}
                         />
-                        <Button variant="outline">{t('Filter')}</Button>
+                        <Button className="h-11" variant="outline">
+                            {t('Filter')}
+                        </Button>
                     </form>
                     {movements.data.length ? (
                         <>

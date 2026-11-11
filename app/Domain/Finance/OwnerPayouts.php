@@ -90,6 +90,9 @@ class OwnerPayouts
             if ($record->state !== 'prepared') {
                 throw new ConflictHttpException('This payout request has already been decided.');
             }
+            if ($data['decision'] === 'approve') {
+                app(BankReconciliations::class)->assertPostingAllowed($record->financial_account_id, $record->business_date);
+            }
             if ($data['decision'] === 'approve' && bccomp($this->numeric($record->amount), $this->payable($record->plot_owner_id, true), 2) > 0) {
                 throw ValidationException::withMessages(['decision' => 'The available entitlement changed and no longer covers this payout.']);
             }

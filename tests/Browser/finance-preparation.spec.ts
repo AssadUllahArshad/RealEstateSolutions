@@ -5,7 +5,8 @@ test('staff configures an account and prepares an unposted cheque report', async
     page,
 }, testInfo) => {
     test.setTimeout(180000);
-    const suffix = testInfo.project.name.toUpperCase();
+    const suffix =
+        `${testInfo.project.name}-${Date.now().toString(36)}`.toUpperCase();
     const customer = `DEMO Receipt ${suffix}`;
     const code = `FIN-${suffix}`;
     const businessDate = new Intl.DateTimeFormat('en-CA', {
@@ -226,6 +227,25 @@ test('staff configures an account and prepares an unposted cheque report', async
         name: 'Verify & issue receipt',
         exact: true,
     });
+    await expect(issue.locator('p').first()).toHaveText(
+        /^Saved amount: PKR 100,000\.26\. This step freezes the preparation and assigns an official number\. Recognition follows the saved payment rules\.$/,
+    );
+    const issueButton = issue.getByRole('button', {
+        name: 'Verify & issue official receipt',
+        exact: true,
+    });
+    await issueButton.scrollIntoViewIfNeeded();
+    const issueButtonBounds = await issueButton.boundingBox();
+    const viewport = page.viewportSize();
+    expect(issueButtonBounds).not.toBeNull();
+    expect(viewport).not.toBeNull();
+    if (!issueButtonBounds || !viewport) {
+        throw new Error('Receipt issuance action bounds are unavailable.');
+    }
+    expect(issueButtonBounds.y).toBeGreaterThanOrEqual(0);
+    expect(issueButtonBounds.y + issueButtonBounds.height).toBeLessThanOrEqual(
+        viewport.height,
+    );
     await page
         .getByLabel('Reported amount (PKR) *', { exact: true })
         .fill('200.00');
