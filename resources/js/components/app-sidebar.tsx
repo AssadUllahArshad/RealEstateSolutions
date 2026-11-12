@@ -138,6 +138,13 @@ export function AppSidebar() {
             icon: ChartNoAxesColumnIncreasing,
         });
     }
+    if (auth.abilities.includes('reports.operations.view')) {
+        items.push({
+            title: 'Operational reports',
+            href: '/reports/operations',
+            icon: ChartNoAxesColumnIncreasing,
+        });
+    }
     if (auth.abilities.includes('sales.drafts')) {
         items.push({ title: 'Sales desk', href: '/sales', icon: FilePenLine });
         items.push({

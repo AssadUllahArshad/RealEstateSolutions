@@ -21,6 +21,7 @@ use App\Http\Controllers\InstallmentLedgerController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\OfficeExpenseController;
+use App\Http\Controllers\OperationalReportController;
 use App\Http\Controllers\OwnerPayoutController;
 use App\Http\Controllers\OwnerReportController;
 use App\Http\Controllers\PlotHoldController;
@@ -96,6 +97,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('calculator', [CalculatorController::class, 'calculate'])->middleware('throttle:30,1')->name('calculator.calculate');
     Route::get('dashboard', WorkspaceController::class)->name('dashboard');
     Route::get('reports/owners', OwnerReportController::class)->name('reports.owners');
+    Route::get('reports/operations', OperationalReportController::class)->name('reports.operations');
+    Route::get('reports/operations/export', [OperationalReportController::class, 'export'])->middleware('throttle:10,1')->name('reports.operations.export');
     Route::get('reports/owners/{owner}/statement/print', [DocumentPrintController::class, 'ownerStatement'])->whereNumber('owner')->middleware('throttle:30,1')->name('reports.owners.statement.print');
     Route::get('search', SearchController::class)->name('search');
     Route::get('business-settings', [BusinessSettingsController::class, 'index'])->name('business-settings.index');

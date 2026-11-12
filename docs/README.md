@@ -20,6 +20,8 @@ Current cash control implementation: [account opening balances and bank reconcil
 
 Current preview implementation: [payment plan calculator](CALCULATOR_STATUS.md).
 
+Current operational reporting implementation: [operational reports](OPERATIONAL_REPORT_STATUS.md).
+
 Current owner-settlement foundation: [owner defaults, plot rate snapshots and booking gate](OWNER_SETTLEMENT_STATUS.md).
 
 Current document implementation: [branded receipts and booking printouts](PRINT_DOCUMENTS_STATUS.md).

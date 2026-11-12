@@ -91,6 +91,7 @@ class RolePermissionSeeder extends Seeder
         Permission::findOrCreate('business-settings.manage', 'web');
         Role::findByName('super_admin', 'web')->givePermissionTo('business-settings.manage');
         Permission::findOrCreate('reports.owners.view', 'web');
+        Permission::findOrCreate('reports.operations.view', 'web');
         foreach (['finance.owner-payouts.view', 'finance.owner-payouts.prepare', 'finance.owner-payouts.approve'] as $ability) {
             Permission::findOrCreate($ability, 'web');
         }
@@ -137,6 +138,7 @@ class RolePermissionSeeder extends Seeder
         }
         foreach (['super_admin', 'admin', 'accountant'] as $role) {
             Role::findByName($role, 'web')->givePermissionTo('reports.owners.view');
+            Role::findByName($role, 'web')->givePermissionTo('reports.operations.view');
         }
         foreach (['super_admin', 'admin', 'sales_agent', 'accountant'] as $role) {
             Role::findByName($role, 'web')->givePermissionTo('sales.drafts');
