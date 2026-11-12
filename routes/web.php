@@ -1,12 +1,13 @@
 <?php
 
 use App\Http\Controllers\AgentCommissionController;
+use App\Http\Controllers\BankReconciliationController;
 use App\Http\Controllers\BookingChangeController;
 use App\Http\Controllers\BookingChargeController;
-use App\Http\Controllers\BankReconciliationController;
 use App\Http\Controllers\BookingDraftController;
 use App\Http\Controllers\BookingTransferController;
 use App\Http\Controllers\BusinessSettingsController;
+use App\Http\Controllers\CalculatorController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CustomerDocumentController;
 use App\Http\Controllers\CustomerRefundController;
@@ -91,6 +92,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('finance/receipts/{receipt}', [ReceiptDraftController::class, 'edit'])->whereNumber('receipt')->name('finance.receipts.edit');
     Route::post('finance/receipts', [ReceiptDraftController::class, 'store'])->middleware('throttle:30,1')->name('finance.receipts.store');
     Route::patch('finance/receipts/{receipt}', [ReceiptDraftController::class, 'update'])->whereNumber('receipt')->middleware('throttle:30,1')->name('finance.receipts.update');
+    Route::get('calculator', [CalculatorController::class, 'show'])->name('calculator');
+    Route::post('calculator', [CalculatorController::class, 'calculate'])->middleware('throttle:30,1')->name('calculator.calculate');
     Route::get('dashboard', WorkspaceController::class)->name('dashboard');
     Route::get('reports/owners', OwnerReportController::class)->name('reports.owners');
     Route::get('reports/owners/{owner}/statement/print', [DocumentPrintController::class, 'ownerStatement'])->whereNumber('owner')->middleware('throttle:30,1')->name('reports.owners.statement.print');

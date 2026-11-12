@@ -18,6 +18,8 @@ Current adjustment implementation: [admin-posted manual charges and compensating
 
 Current cash control implementation: [account opening balances and bank reconciliation](ACCOUNT_OPENING_RECONCILIATION_STATUS.md).
 
+Current preview implementation: [payment plan calculator](CALCULATOR_STATUS.md).
+
 Current owner-settlement foundation: [owner defaults, plot rate snapshots and booking gate](OWNER_SETTLEMENT_STATUS.md).
 
 Current document implementation: [branded receipts and booking printouts](PRINT_DOCUMENTS_STATUS.md).

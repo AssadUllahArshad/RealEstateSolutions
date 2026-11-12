@@ -1,5 +1,6 @@
 # Changelog
 
+- Added a bilingual payment plan calculator (`/calculator`) for users with the `sales.drafts` ability: previews plot price, fixed or percentage discount, planned down payment, configured minimum, installment balance, commission estimate and the full schedule using the shared `InstallmentCalculator` and saved booking/installment/commission policies. Preview only; nothing is saved, booked, collected or approved.
 - Added immutable account opening balances with append-only linked corrections, exact-match bank reconciliation with maker/checker finalization, prepared-period overlap protection and finalized-period posting locks across receipts, expenses, refunds, owner payouts and commission payments.
 - Added a unified cashbook ledger and finance overview totals that include approved refunds, owner payouts and commission payments, plus a bilingual reconciliation screen and account opening-balance panel.
 - Hardened filter toolbars, dialogs and sheets for mobile/desktop layouts, associated form labels with controls, and added browser coverage for filter alignment and refund-form accessibility.

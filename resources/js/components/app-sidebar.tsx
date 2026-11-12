@@ -17,6 +17,7 @@ import {
     CircleDollarSign,
     CalendarClock,
     BadgeDollarSign,
+    Calculator,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavMain } from '@/components/nav-main';
@@ -139,6 +140,11 @@ export function AppSidebar() {
     }
     if (auth.abilities.includes('sales.drafts')) {
         items.push({ title: 'Sales desk', href: '/sales', icon: FilePenLine });
+        items.push({
+            title: 'Payment plan calculator',
+            href: '/calculator',
+            icon: Calculator,
+        });
     }
     if (auth.abilities.includes('customers.view')) {
         items.push(
