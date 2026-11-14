@@ -1,6 +1,6 @@
 import { Head, useForm } from '@inertiajs/react';
-import { WalletCards, CheckCircle2 } from 'lucide-react';
-import { PageHeading, StatusBadge } from '@/components/office-ui';
+import { WalletCards } from 'lucide-react';
+import { PageHeading } from '@/components/office-ui';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -123,9 +123,7 @@ export default function OpeningBalances({
                         }}
                     >
                         <div className="grid gap-2">
-                            <Label htmlFor="ob-customer">
-                                {t('Customer')}
-                            </Label>
+                            <Label htmlFor="ob-customer">{t('Customer')}</Label>
                             <select
                                 id="ob-customer"
                                 className="ef-input mt-1 w-full"
@@ -140,10 +138,7 @@ export default function OpeningBalances({
                             >
                                 <option value="">—</option>
                                 {customerOptions.map((option) => (
-                                    <option
-                                        key={option.id}
-                                        value={option.id}
-                                    >
+                                    <option key={option.id} value={option.id}>
                                         {option.name}
                                     </option>
                                 ))}
@@ -288,10 +283,9 @@ export default function OpeningBalances({
                         className="mt-4 grid gap-4 sm:grid-cols-2"
                         onSubmit={(event) => {
                             event.preventDefault();
-                            ownerForm.post(
-                                '/finance/opening-balances/owner',
-                                { preserveScroll: true },
-                            );
+                            ownerForm.post('/finance/opening-balances/owner', {
+                                preserveScroll: true,
+                            });
                         }}
                     >
                         <div className="grid gap-2">
@@ -310,10 +304,7 @@ export default function OpeningBalances({
                             >
                                 <option value="">—</option>
                                 {ownerOptions.map((option) => (
-                                    <option
-                                        key={option.id}
-                                        value={option.id}
-                                    >
+                                    <option key={option.id} value={option.id}>
                                         {option.name}
                                     </option>
                                 ))}
@@ -480,10 +471,7 @@ export default function OpeningBalances({
                             >
                                 <option value="">—</option>
                                 {agentOptions.map((option) => (
-                                    <option
-                                        key={option.id}
-                                        value={option.id}
-                                    >
+                                    <option key={option.id} value={option.id}>
                                         {option.name}
                                     </option>
                                 ))}

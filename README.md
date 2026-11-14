@@ -99,5 +99,6 @@ When using file cache for browser tests, give `.env.e2e` distinct `CACHE_FILE_PA
 ## Attribution
 
 Based on the official [Laravel React starter](https://github.com/laravel/react-starter-kit), commit `98d9b821baba4f4cc4120c96d35971366cec53e6`. The upstream starter is MIT licensed. Original supplied requirements and prototype remain unchanged.
-#   R e a l E s t a t e S o l u t i o n s  
+#   R e a l E s t a t e S o l u t i o n s 
+ 
  

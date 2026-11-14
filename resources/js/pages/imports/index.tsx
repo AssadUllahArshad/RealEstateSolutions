@@ -1,6 +1,6 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import { Download, Upload, FileSpreadsheet } from 'lucide-react';
-import { EmptyState, PageHeading, Pager } from '@/components/office-ui';
+import { EmptyState, PageHeading } from '@/components/office-ui';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -87,10 +87,7 @@ export default function Imports({
                                 className="ef-input mt-1 w-full"
                                 value={form.data.template}
                                 onChange={(event) =>
-                                    form.setData(
-                                        'template',
-                                        event.target.value,
-                                    )
+                                    form.setData('template', event.target.value)
                                 }
                             >
                                 {templates.map((template) => (
@@ -104,9 +101,7 @@ export default function Imports({
                             </select>
                         </div>
                         <div className="grid gap-2">
-                            <Label htmlFor="import-file">
-                                {t('CSV file')}
-                            </Label>
+                            <Label htmlFor="import-file">{t('CSV file')}</Label>
                             <Input
                                 id="import-file"
                                 type="file"
@@ -143,9 +138,7 @@ export default function Imports({
 
                 <section className="ef-panel overflow-hidden">
                     <div className="border-b p-5">
-                        <h2 className="font-semibold">
-                            {t('Import batch')}
-                        </h2>
+                        <h2 className="font-semibold">{t('Import batch')}</h2>
                     </div>
                     {batches.length ? (
                         <div className="overflow-x-auto">
@@ -180,9 +173,7 @@ export default function Imports({
                                             <td>
                                                 {batch.source_filename ?? '—'}
                                             </td>
-                                            <td>
-                                                {batch.actor?.name ?? '—'}
-                                            </td>
+                                            <td>{batch.actor?.name ?? '—'}</td>
                                             <td>{batch.created_at}</td>
                                         </tr>
                                     ))}

@@ -33,8 +33,7 @@ export default function ImportShow({
 }) {
     const t = useTranslate();
     const form = useForm({});
-    const canCommit =
-        batch.state === 'dry_run' && batch.error_count === 0;
+    const canCommit = batch.state === 'dry_run' && batch.error_count === 0;
 
     return (
         <>
@@ -69,9 +68,7 @@ export default function ImportShow({
                         <p className="text-sm text-muted-foreground">
                             {t('Status')}
                         </p>
-                        <p className="mt-2 text-2xl font-bold">
-                            {batch.state}
-                        </p>
+                        <p className="mt-2 text-2xl font-bold">{batch.state}</p>
                     </div>
                     <div className="ef-panel p-5">
                         <p className="text-sm text-muted-foreground">
@@ -136,7 +133,8 @@ export default function ImportShow({
                                                 tone={
                                                     row.state === 'valid'
                                                         ? 'success'
-                                                        : row.state === 'invalid'
+                                                        : row.state ===
+                                                            'invalid'
                                                           ? 'danger'
                                                           : 'info'
                                                 }

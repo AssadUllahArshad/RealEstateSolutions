@@ -263,8 +263,8 @@ function AllocationForm(props: Props) {
                             .map((charge) => (
                                 <div key={charge.id}>
                                     <Label htmlFor={`charge-row-${charge.id}`}>
-                                        {charge.number} · {charge.business_date} ·{' '}
-                                        {t('Remaining')}{' '}
+                                        {charge.number} · {charge.business_date}{' '}
+                                        · {t('Remaining')}{' '}
                                         {formatPkr(charge.remaining)}
                                     </Label>
                                     <Input
@@ -615,15 +615,19 @@ export default function Ledger(props: Props) {
                 {props.canAllocate &&
                     (props.outstanding !== '0.00' ||
                         props.outstandingCharges !== '0.00') && (
-                    <AllocationForm
-                        key={`${props.booking.id}-${props.version}-${props.policyVersion}`}
-                        {...props}
-                    />
-                )}
+                        <AllocationForm
+                            key={`${props.booking.id}-${props.version}-${props.policyVersion}`}
+                            {...props}
+                        />
+                    )}
                 <section className="ef-panel p-6">
-                    <h2 className="font-semibold">{t('Manual charge balances')}</h2>
+                    <h2 className="font-semibold">
+                        {t('Manual charge balances')}
+                    </h2>
                     <p className="mt-2 text-sm text-muted-foreground">
-                        {t('Charges are separate from principal. Any payment remainder is assigned to charges selected above.')}
+                        {t(
+                            'Charges are separate from principal. Any payment remainder is assigned to charges selected above.',
+                        )}
                     </p>
                     {props.charges.length === 0 ? (
                         <p className="mt-4 text-sm text-muted-foreground">
@@ -634,12 +638,21 @@ export default function Ledger(props: Props) {
                             {props.charges.map((charge) => (
                                 <li key={charge.id} className="py-3 text-sm">
                                     <div className="flex flex-wrap justify-between gap-2">
-                                        <strong>{charge.number} · {charge.business_date}</strong>
-                                        <strong>{formatPkr(charge.remaining)}</strong>
+                                        <strong>
+                                            {charge.number} ·{' '}
+                                            {charge.business_date}
+                                        </strong>
+                                        <strong>
+                                            {formatPkr(charge.remaining)}
+                                        </strong>
                                     </div>
-                                    <p className="mt-1 text-muted-foreground">{charge.reason}</p>
+                                    <p className="mt-1 text-muted-foreground">
+                                        {charge.reason}
+                                    </p>
                                     <p className="mt-1 text-xs text-muted-foreground">
-                                        {t('Charge')} {formatPkr(charge.amount)} · {t('Paid')} {formatPkr(charge.paid)} · {t('Waived')} {formatPkr(charge.waived)}
+                                        {t('Charge')} {formatPkr(charge.amount)}{' '}
+                                        · {t('Paid')} {formatPkr(charge.paid)} ·{' '}
+                                        {t('Waived')} {formatPkr(charge.waived)}
                                     </p>
                                 </li>
                             ))}
@@ -647,7 +660,9 @@ export default function Ledger(props: Props) {
                     )}
                 </section>
                 <section className="ef-panel p-6">
-                    <h2 className="font-semibold">{t('Installment allocation history')}</h2>
+                    <h2 className="font-semibold">
+                        {t('Installment allocation history')}
+                    </h2>
                     {props.history.length === 0 && (
                         <p className="mt-4 text-sm text-muted-foreground">
                             {t('No later installment allocations recorded.')}
@@ -666,7 +681,9 @@ export default function Ledger(props: Props) {
                         </div>
                     ))}
                     <div className="mt-6 border-t pt-5">
-                        <h3 className="font-semibold">{t('Charge payment history')}</h3>
+                        <h3 className="font-semibold">
+                            {t('Charge payment history')}
+                        </h3>
                         {props.chargeHistory.length === 0 ? (
                             <p className="mt-3 text-sm text-muted-foreground">
                                 {t('No charge payments recorded.')}
@@ -677,8 +694,22 @@ export default function Ledger(props: Props) {
                                     key={row.version}
                                     className="mt-4 flex flex-wrap justify-between gap-3 border-t pt-4 text-sm"
                                 >
-                                    <span>{row.number} · {row.business_date} · {t('Revision')} {row.version}{row.reversed ? ` · ${t('Reversed')}` : ''}</span>
-                                    <strong className={row.reversed ? 'line-through text-muted-foreground' : ''}>{formatPkr(row.amount)}</strong>
+                                    <span>
+                                        {row.number} · {row.business_date} ·{' '}
+                                        {t('Revision')} {row.version}
+                                        {row.reversed
+                                            ? ` · ${t('Reversed')}`
+                                            : ''}
+                                    </span>
+                                    <strong
+                                        className={
+                                            row.reversed
+                                                ? 'text-muted-foreground line-through'
+                                                : ''
+                                        }
+                                    >
+                                        {formatPkr(row.amount)}
+                                    </strong>
                                 </div>
                             ))
                         )}

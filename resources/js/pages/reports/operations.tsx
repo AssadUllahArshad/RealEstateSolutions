@@ -20,7 +20,13 @@ type BlockRow = { code: string; name: string; plots: number };
 type SizeRow = { label: string; area_marla: string; plots: number };
 type OwnerRow = { owner_id: number | null; owner_name: string; plots: number };
 type AgingRow = { bucket: string; installments: number; remaining: string };
-type OutstandingRow = { owner_id?: number; agent_id?: number; owner_name?: string; agent_name?: string; outstanding: string };
+type OutstandingRow = {
+    owner_id?: number;
+    agent_id?: number;
+    owner_name?: string;
+    agent_name?: string;
+    outstanding: string;
+};
 
 type Report = {
     inventory: {
@@ -57,12 +63,10 @@ type Report = {
 };
 
 export default function OperationalReports({
-    businessDate,
     filters,
     report,
     basis,
 }: {
-    businessDate: string;
     filters: { from: string; to: string; as_of: string };
     report: Report;
     basis: string;
@@ -148,7 +152,9 @@ export default function OperationalReports({
                                 type="button"
                                 className="h-11"
                                 variant="ghost"
-                                onClick={() => router.get('/reports/operations')}
+                                onClick={() =>
+                                    router.get('/reports/operations')
+                                }
                             >
                                 {t('Clear')}
                             </Button>
@@ -246,7 +252,9 @@ export default function OperationalReports({
                     />
                     <StatCard
                         title={t('Allocated to installments')}
-                        value={formatPkr(report.collections.allocated_installments)}
+                        value={formatPkr(
+                            report.collections.allocated_installments,
+                        )}
                         detail={t('Recognized and allocated')}
                         icon={CircleDollarSign}
                         tone="blue"
@@ -292,11 +300,13 @@ export default function OperationalReports({
                         <table className="ef-table">
                             <thead>
                                 <tr>
-                                    {['Bucket', 'Installments', 'Remaining (PKR)'].map(
-                                        (label) => (
-                                            <th key={label}>{t(label)}</th>
-                                        ),
-                                    )}
+                                    {[
+                                        'Bucket',
+                                        'Installments',
+                                        'Remaining (PKR)',
+                                    ].map((label) => (
+                                        <th key={label}>{t(label)}</th>
+                                    ))}
                                 </tr>
                             </thead>
                             <tbody>
@@ -331,11 +341,13 @@ export default function OperationalReports({
                             <table className="ef-table">
                                 <thead>
                                     <tr>
-                                        {['Block code', 'Block name', 'Plots'].map(
-                                            (label) => (
-                                                <th key={label}>{t(label)}</th>
-                                            ),
-                                        )}
+                                        {[
+                                            'Block code',
+                                            'Block name',
+                                            'Plots',
+                                        ].map((label) => (
+                                            <th key={label}>{t(label)}</th>
+                                        ))}
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -367,11 +379,13 @@ export default function OperationalReports({
                             <table className="ef-table">
                                 <thead>
                                     <tr>
-                                        {['Size label', 'Area (marla)', 'Plots'].map(
-                                            (label) => (
-                                                <th key={label}>{t(label)}</th>
-                                            ),
-                                        )}
+                                        {[
+                                            'Size label',
+                                            'Area (marla)',
+                                            'Plots',
+                                        ].map((label) => (
+                                            <th key={label}>{t(label)}</th>
+                                        ))}
                                     </tr>
                                 </thead>
                                 <tbody>

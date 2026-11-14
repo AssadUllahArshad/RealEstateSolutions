@@ -28,11 +28,18 @@ type Result = {
     discount_type: 'fixed' | 'percentage';
     discount_value: string;
     commission: { amount: string | null; formula: string; note: string };
-    policy_versions: { booking: number; installments: number; commissions: number };
+    policy_versions: {
+        booking: number;
+        installments: number;
+        commissions: number;
+    };
 };
 type Props = {
     policies: {
-        booking: { down_payment_type: string | null; down_payment_value: string | null };
+        booking: {
+            down_payment_type: string | null;
+            down_payment_value: string | null;
+        };
         installments: {
             frequencies: string[];
             rounding: string | null;
@@ -144,7 +151,10 @@ export default function CalculatorPage({
                                     required
                                     value={form.data.gross}
                                     onChange={(event) =>
-                                        form.setData('gross', event.target.value)
+                                        form.setData(
+                                            'gross',
+                                            event.target.value,
+                                        )
                                     }
                                 />
                             </div>
@@ -159,11 +169,15 @@ export default function CalculatorPage({
                                     onChange={(event) =>
                                         form.setData(
                                             'discount_type',
-                                            event.target.value as 'fixed' | 'percentage',
+                                            event.target.value as
+                                                | 'fixed'
+                                                | 'percentage',
                                         )
                                     }
                                 >
-                                    <option value="fixed">{t('Fixed PKR')}</option>
+                                    <option value="fixed">
+                                        {t('Fixed PKR')}
+                                    </option>
                                     <option value="percentage">
                                         {t('Percentage of price')}
                                     </option>
@@ -227,7 +241,10 @@ export default function CalculatorPage({
                                     required
                                     value={form.data.frequency}
                                     onChange={(event) =>
-                                        form.setData('frequency', event.target.value)
+                                        form.setData(
+                                            'frequency',
+                                            event.target.value,
+                                        )
                                     }
                                 >
                                     <option value="">
@@ -297,7 +314,9 @@ export default function CalculatorPage({
                                         key={index}
                                     >
                                         <div>
-                                            <Label htmlFor={`calc-custom-date-${index}`}>
+                                            <Label
+                                                htmlFor={`calc-custom-date-${index}`}
+                                            >
                                                 {t('Due date')} {index + 1}
                                             </Label>
                                             <Input
@@ -311,7 +330,8 @@ export default function CalculatorPage({
                                                         'custom',
                                                         form.data.custom.map(
                                                             (item, position) =>
-                                                                position === index
+                                                                position ===
+                                                                index
                                                                     ? {
                                                                           ...item,
                                                                           due_date:
@@ -326,7 +346,9 @@ export default function CalculatorPage({
                                             />
                                         </div>
                                         <div>
-                                            <Label htmlFor={`calc-custom-amount-${index}`}>
+                                            <Label
+                                                htmlFor={`calc-custom-amount-${index}`}
+                                            >
                                                 {t('Amount')} {index + 1} (PKR)
                                             </Label>
                                             <Input
@@ -340,7 +362,8 @@ export default function CalculatorPage({
                                                         'custom',
                                                         form.data.custom.map(
                                                             (item, position) =>
-                                                                position === index
+                                                                position ===
+                                                                index
                                                                     ? {
                                                                           ...item,
                                                                           amount: event
@@ -388,9 +411,11 @@ export default function CalculatorPage({
                             </section>
                         )}
                         <div role="alert">
-                            {Object.entries(form.errors).map(([key, message]) => (
-                                <InputError key={key} message={message} />
-                            ))}
+                            {Object.entries(form.errors).map(
+                                ([key, message]) => (
+                                    <InputError key={key} message={message} />
+                                ),
+                            )}
                         </div>
                         <div className="flex flex-wrap items-center justify-between gap-4 border-t pt-5">
                             <span className="text-xs text-muted-foreground">
@@ -413,7 +438,9 @@ export default function CalculatorPage({
                         aria-label={t('Preview result')}
                     >
                         <div className="border-b p-5 sm:p-6">
-                            <h2 className="font-semibold">{t('Preview result')}</h2>
+                            <h2 className="font-semibold">
+                                {t('Preview result')}
+                            </h2>
                             <p className="mt-1 text-xs text-muted-foreground">
                                 {t(
                                     'Estimate only. Not a contract, receipt or financial transaction.',
@@ -425,7 +452,10 @@ export default function CalculatorPage({
                                 ['Net price', result.net],
                                 ['Discount', result.discount],
                                 ['Planned down payment', result.down_payment],
-                                ['Required minimum', result.minimum_down_payment],
+                                [
+                                    'Required minimum',
+                                    result.minimum_down_payment,
+                                ],
                                 ['Installment balance', result.balance],
                             ].map(([label, value]) => (
                                 <div
