@@ -963,6 +963,9 @@ const ur = {
     'Recognized receipts, reversals and posted office expenses will appear here.':
         'تصدیق شدہ رسیدیں، منسوخیاں اور درج شدہ دفتری اخراجات یہاں ظاہر ہوں گے۔',
     'Export CSV': 'CSV برآمد کریں',
+    'Export Excel': 'Excel برآمد کریں',
+    Export: 'برآمد کریں',
+    'Full data export': 'مکمل ڈیٹا برآمد کریں',
     'Default owner share (%)': 'مالک کا طے شدہ حصہ (%)',
     'Owner share snapshot (%)': 'مالک کے حصے کا محفوظ تناسب (%)',
     'Leave empty to copy the selected owner default.':

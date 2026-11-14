@@ -9,6 +9,7 @@ import {
     WalletCards,
 } from 'lucide-react';
 import { PageHeading, StatCard } from '@/components/office-ui';
+import ExportMenu from '@/components/export-menu';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -82,13 +83,9 @@ export default function OperationalReports({
                         'Current inventory, period bookings and collections, receivables aging and outstanding owner payouts and agent commissions.',
                     )}
                 >
-                    <Button asChild variant="outline">
-                        <a
-                            href={`/reports/operations/export${exportQuery ? `?${exportQuery}` : ''}`}
-                        >
-                            {t('Export CSV')}
-                        </a>
-                    </Button>
+                    <ExportMenu
+                        href={`/reports/operations/export${exportQuery ? `?${exportQuery}` : ''}`}
+                    />
                 </PageHeading>
 
                 <section className="ef-panel overflow-hidden">

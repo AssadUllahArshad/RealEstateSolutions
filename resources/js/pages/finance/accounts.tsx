@@ -2,6 +2,7 @@ import { Head, Link, useForm } from '@inertiajs/react';
 import { Landmark, Plus, Save } from 'lucide-react';
 import InputError from '@/components/input-error';
 import { EmptyState, PageHeading, Pager } from '@/components/office-ui';
+import ExportMenu from '@/components/export-menu';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -571,6 +572,7 @@ export default function Accounts(props: Props) {
                         'Configure account destinations, record verified opening amounts, review current book balances and open bank reconciliations.',
                     )}
                 >
+                    <ExportMenu href="/finance/accounts/export" />
                     <Button asChild variant="outline">
                         <Link href="/finance/receipts">
                             {t('Receipt preparations')}

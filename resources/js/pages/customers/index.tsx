@@ -2,6 +2,7 @@ import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import { Plus, Search, UsersRound, ArrowUpRight } from 'lucide-react';
 import CustomerEditor from '@/components/customer-editor';
+import ExportMenu from '@/components/export-menu';
 import type { CustomerRecord, AgentOption } from '@/components/customer-editor';
 import { EmptyState, PageHeading, Pager } from '@/components/office-ui';
 import { Button } from '@/components/ui/button';
@@ -52,6 +53,13 @@ export default function Customers({
                         'Your people, conversations and next steps — together in one place.',
                     )}
                 >
+                    <ExportMenu
+                        href={`/customers/export?${new URLSearchParams(
+                            Object.entries({ q, agent }).filter(
+                                ([, value]) => value !== '',
+                            ),
+                        ).toString()}`}
+                    />
                     {auth.abilities.includes('customers.manage') && (
                         <Button onClick={() => setOpen(true)}>
                             <Plus className="size-4" />

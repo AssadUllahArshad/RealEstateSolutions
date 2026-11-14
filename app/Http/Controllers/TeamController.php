@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Domain\Access\Actions\AssignUserRole;
+use App\Domain\Export\CsvExport;
 use App\Http\Requests\UpdateUserAccessRequest;
 use App\Models\AuditEvent;
 use App\Models\User;
@@ -10,6 +11,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class TeamController extends Controller
 {
@@ -28,6 +30,21 @@ class TeamController extends Controller
             'recentChanges' => AuditEvent::query()->where('event', 'access.role_changed')
                 ->latest('id')->limit(10)->get(['id', 'actor_id', 'subject_user_id', 'metadata', 'created_at']),
         ]);
+    }
+
+    public function export(CsvExport $export): StreamedResponse
+    {
+        Gate::authorize('viewAny', User::class);
+        $rows = User::query()->with('roles')->orderBy('name')->lazy(500)->map(fn (User $user) => [
+            $user->id,
+            $user->name,
+            $user->email,
+            $user->getRoleNames()->implode(', '),
+            $user->email_verified_at?->toDateString(),
+        ]);
+        $headers = ['ID', 'Name', 'Email', 'Roles', 'Verified on'];
+
+        return $export->stream('estateflow-team.csv', $headers, $rows);
     }
 
     public function show(User $user): Response

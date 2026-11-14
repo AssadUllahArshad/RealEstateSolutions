@@ -2,6 +2,7 @@ import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import { Building2, Grid2X2, List, Plus, Settings2 } from 'lucide-react';
 import InputError from '@/components/input-error';
+import ExportMenu from '@/components/export-menu';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -302,7 +303,7 @@ export default function Inventory({
                     </div>
                     <div className="flex flex-wrap gap-2">
                         {auth.abilities.includes('inventory.export') && (
-                            <a
+                            <ExportMenu
                                 href={`/inventory/export?${new URLSearchParams(
                                     Object.entries(filters)
                                         .filter(
@@ -314,10 +315,8 @@ export default function Inventory({
                                             String(value),
                                         ]),
                                 )}`}
-                                className="inline-flex h-10 items-center rounded-xl border bg-background/90 px-4 text-sm font-semibold transition hover:border-primary/35 hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-                            >
-                                {t('Export filtered CSV')}
-                            </a>
+                                label={t('Export filtered CSV')}
+                            />
                         )}
                         {configure && (
                             <Link

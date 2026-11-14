@@ -12,6 +12,7 @@ import {
     StatCard,
     StatusBadge,
 } from '@/components/office-ui';
+import ExportMenu from '@/components/export-menu';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { formatPkr } from '@/lib/format-pkr';
@@ -75,13 +76,9 @@ export default function Receivables({
                     <Button asChild variant="outline">
                         <Link href="/finance">{t('Finance overview')}</Link>
                     </Button>
-                    <Button asChild variant="outline">
-                        <a
-                            href={`/finance/receivables/export${exportQuery ? `?${exportQuery}` : ''}`}
-                        >
-                            {t('Export CSV')}
-                        </a>
-                    </Button>
+                    <ExportMenu
+                        href={`/finance/receivables/export${exportQuery ? `?${exportQuery}` : ''}`}
+                    />
                     <Button asChild>
                         <Link href="/finance/receipts">
                             {t('Customer receipts')}

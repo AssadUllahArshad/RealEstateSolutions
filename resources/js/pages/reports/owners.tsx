@@ -7,6 +7,7 @@ import {
     FileCheck2,
 } from 'lucide-react';
 import { PageHeading, StatCard } from '@/components/office-ui';
+import ExportMenu from '@/components/export-menu';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -81,7 +82,19 @@ export default function OwnerReports({
                     description={t(
                         'Compare current plot inventory, confirmed contracts and allocated collections by assigned plot owner.',
                     )}
-                />
+                >
+                    <ExportMenu
+                        href={`/reports/owners/export?${new URLSearchParams(
+                            Object.entries({
+                                owner_id: filters.owner_id ?? '',
+                                from: filters.from,
+                                to: filters.to,
+                            })
+                                .filter(([, value]) => value !== '')
+                                .map(([key, value]) => [key, String(value)]),
+                        ).toString()}`}
+                    />
+                </PageHeading>
                 <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
                     <StatCard
                         title={t('Inventory plots')}

@@ -2,6 +2,7 @@ import { Head, useForm } from '@inertiajs/react';
 import { Plus } from 'lucide-react';
 import { useState } from 'react';
 import { EmptyState, PageHeading, Pager } from '@/components/office-ui';
+import ExportMenu from '@/components/export-menu';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -76,6 +77,13 @@ export default function Expenses({
                         'Post verified office spending against a cash, bank or wallet account. Entries remain immutable audit records.',
                     )}
                 >
+                    <ExportMenu
+                        href={`/finance/expenses/export?${new URLSearchParams(
+                            Object.entries(filters).filter(
+                                ([, value]) => value !== '',
+                            ),
+                        ).toString()}`}
+                    />
                     {canPost && (
                         <Button
                             type="button"

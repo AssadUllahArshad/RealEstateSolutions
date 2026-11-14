@@ -1,5 +1,6 @@
 import { Head, useForm } from '@inertiajs/react';
 import { PageHeading, Pager, StatusBadge } from '@/components/office-ui';
+import ExportMenu from '@/components/export-menu';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -168,13 +169,11 @@ export default function Commissions({
                             {t('Apply filters')}
                         </Button>
                     </form>
-                    <div className="mt-4 flex flex-wrap gap-4 text-sm">
-                        <a
-                            className="ef-text-link"
+                    <div className="mt-4 flex flex-wrap items-center gap-4 text-sm">
+                        <ExportMenu
                             href={`/finance/commissions/export?${new URLSearchParams(filters).toString()}`}
-                        >
-                            {t('Export reconciliation CSV')}
-                        </a>
+                            label={t('Export reconciliation CSV')}
+                        />
                         {filters.agent_id && (
                             <a
                                 className="ef-text-link"

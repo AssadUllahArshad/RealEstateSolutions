@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Domain\Export\CsvExport;
 use App\Domain\Finance\Accounts;
 use App\Domain\Finance\CashbookLedger;
 use App\Domain\Finance\FinancialAccountOpenings;
@@ -16,6 +17,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
 class FinancialAccountController extends Controller
@@ -49,6 +51,25 @@ class FinancialAccountController extends Controller
             'openingBalance' => $openingData, 'bookBalance' => $bookBalance, 'businessDate' => app(BusinessClock::class)->today(),
             'openingCommandKey' => (string) Str::uuid(), 'correctionCommandKey' => (string) Str::uuid(),
         ]);
+    }
+
+    public function export(Request $request, CsvExport $export): StreamedResponse
+    {
+        Gate::authorize('finance.accounts.view');
+        $filters = $request->validate(['format' => ['nullable', 'in:csv,xlsx']]);
+        $rows = FinancialAccount::orderByDesc('active')->orderBy('code')->lazy(500)->map(fn ($account) => [
+            $account->id,
+            $account->code,
+            $account->name,
+            $account->type,
+            $account->active ? 'Active' : 'Inactive',
+        ]);
+        $headers = ['ID', 'Code', 'Name', 'Type', 'Status'];
+        $format = $filters['format'] ?? 'csv';
+
+        return $format === 'xlsx'
+            ? $export->xlsx('estateflow-financial-accounts.xlsx', $headers, $rows)
+            : $export->stream('estateflow-financial-accounts.csv', $headers, $rows);
     }
 
     public function save(Request $request, Accounts $accounts, ?int $account = null): RedirectResponse

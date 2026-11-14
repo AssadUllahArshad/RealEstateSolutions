@@ -43,6 +43,8 @@ Modules depending on unapproved policies remain gated; completion of unrelated s
 
 The [reservation execution plan](RESERVATION_EXECUTION_PLAN.md) decomposes the remaining M2 gate into policy questions, transaction/locking design, proposed files and concrete acceptance tests. Filtered catalogue CSV export is implemented ahead of broader M6 reporting; it does not imply completion of imports or financial reports.
 
+2026-11-13 continuation: the [export slice](EXPORT_STATUS.md) adds CSV/Excel exports for every list/report and a super_admin-only full data export (zip of CSVs). Import (PR15b) and opening balances (PR15c) remain outstanding.
+
 On 2026-11-02 the user selected immediate staff-attributed manual holds and authorized-admin-only release/block. The [hold slice](HOLD_STATUS.md) implements this subset without an approval queue, expiry worker or customer placeholder. M2's final allotment/booking conversion gate remains open; do not mark the entire milestone complete from hold tests alone.
 
 ## Concrete verification plan

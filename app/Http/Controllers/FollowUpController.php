@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Domain\CRM\Customers;
+use App\Domain\Export\CsvExport;
 use App\Models\FollowUp;
 use App\Models\User;
 use App\Support\BusinessClock;
@@ -12,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class FollowUpController extends Controller
 {
@@ -29,6 +31,36 @@ class FollowUpController extends Controller
         }
 
         return Inertia::render('follow-ups/index', ['followUps' => $query->with('customer:id,name,phone')->orderBy('due_date')->orderBy('id')->paginate(20)->withQueryString(), 'state' => $state, 'today' => $clock->today()]);
+    }
+
+    public function export(Request $request, Customers $customers, BusinessClock $clock, CsvExport $export): StreamedResponse
+    {
+        Gate::authorize('customers.view');
+        $filters = $request->validate(['state' => ['nullable', 'in:open,overdue,today,completed'], 'format' => ['nullable', 'in:csv,xlsx']]);
+        $state = $filters['state'] ?? 'open';
+        $customerIds = $customers->query($request->user())->pluck('id')->all();
+        $query = FollowUp::query()->whereIn('customer_id', $customerIds);
+        $state === 'completed' ? $query->whereNotNull('completed_at') : $query->whereNull('completed_at');
+        if ($state === 'overdue') {
+            $query->where('due_date', '<', $clock->today());
+        }
+        if ($state === 'today') {
+            $query->where('due_date', $clock->today());
+        }
+        $rows = $query->with('customer:id,name,phone')->orderBy('due_date')->orderBy('id')->lazy(500)->map(fn (FollowUp $followUp) => [
+            $followUp->id,
+            $followUp->customer?->name,
+            $followUp->customer?->phone,
+            $followUp->due_date,
+            $followUp->note,
+            $followUp->completed_at?->toDateString() ?? '',
+        ]);
+        $headers = ['ID', 'Customer', 'Phone', 'Due date', 'Note', 'Completed on'];
+        $format = $filters['format'] ?? 'csv';
+
+        return $format === 'xlsx'
+            ? $export->xlsx('estateflow-follow-ups.xlsx', $headers, $rows)
+            : $export->stream('estateflow-follow-ups.csv', $headers, $rows);
     }
 
     public function store(Request $request, int $customer, Customers $customers): RedirectResponse

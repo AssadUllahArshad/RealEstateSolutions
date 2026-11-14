@@ -2,6 +2,7 @@ import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import {
     Check,
     ChevronRight,
+    Download,
     Save,
     Settings2,
     ShieldCheck,
@@ -380,7 +381,14 @@ export default function BusinessSettings(props: Props) {
                     description={t(
                         "One place to configure your office's booking, collection, owner and commission rules.",
                     )}
-                />
+                >
+                    <Button asChild variant="outline">
+                        <a href="/exports/full">
+                            <Download className="size-4" />
+                            {t('Full data export')}
+                        </a>
+                    </Button>
+                </PageHeading>
                 <div className="flex gap-3 rounded-xl border border-blue-100 bg-blue-50 p-4 text-sm leading-6 text-blue-900">
                     <ShieldCheck className="mt-1 size-5 shrink-0" />
                     <p>

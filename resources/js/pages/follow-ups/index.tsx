@@ -1,6 +1,7 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { CalendarDays, ArrowUpRight } from 'lucide-react';
 import { EmptyState, PageHeading, Pager } from '@/components/office-ui';
+import ExportMenu from '@/components/export-menu';
 import type { FollowUpRecord } from '@/pages/customers/show';
 export default function FollowUps({
     followUps,
@@ -24,7 +25,9 @@ export default function FollowUps({
                     eyebrow="Relationship desk"
                     title="Follow-ups"
                     description="A clear view of the calls, conversations and visits that need your attention."
-                />
+                >
+                    <ExportMenu href={`/follow-ups/export?state=${state}`} />
+                </PageHeading>
                 <div className="ef-panel overflow-hidden">
                     <div className="flex flex-wrap items-center justify-between gap-4 border-b p-5">
                         <div className="flex flex-wrap gap-1 rounded-xl bg-muted/60 p-1">

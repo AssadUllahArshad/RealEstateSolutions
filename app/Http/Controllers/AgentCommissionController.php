@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Domain\Export\CsvExport;
 use App\Domain\Finance\AgentCommissions;
 use App\Models\Booking;
 use App\Models\CommissionEvent;
@@ -59,29 +60,26 @@ class AgentCommissionController extends Controller
         ]);
     }
 
-    public function export(Request $request): StreamedResponse
+    public function export(Request $request, CsvExport $export): StreamedResponse
     {
         abort_unless($request->user()->can('finance.commissions.view'), 403);
-        $filters = $request->validate(['agent_id' => ['nullable', 'integer', 'exists:users,id'], 'from' => ['nullable', 'date_format:Y-m-d'], 'to' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:from']]);
+        $filters = $request->validate(['agent_id' => ['nullable', 'integer', 'exists:users,id'], 'from' => ['nullable', 'date_format:Y-m-d'], 'to' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:from'], 'format' => ['nullable', 'in:csv,xlsx']]);
         $agents = User::role('sales_agent')->get(['id', 'name'])->keyBy('id');
         $events = CommissionEvent::query()->when($filters['agent_id'] ?? null, fn ($query, $id) => $query->where('agent_id', $id))->when($filters['from'] ?? null, fn ($query, $date) => $query->where('business_date', '>=', $date))->when($filters['to'] ?? null, fn ($query, $date) => $query->where('business_date', '<=', $date))->orderBy('business_date')->orderBy('id');
         $payments = CommissionPayment::where('state', 'approved')->when($filters['agent_id'] ?? null, fn ($query, $id) => $query->where('agent_id', $id))->when($filters['from'] ?? null, fn ($query, $date) => $query->where('business_date', '>=', $date))->when($filters['to'] ?? null, fn ($query, $date) => $query->where('business_date', '<=', $date))->orderBy('business_date')->orderBy('id');
+        $rows = collect();
+        foreach ($events->lazy(500) as $event) {
+            $rows->push([$event->business_date, $agents->get($event->agent_id)?->name, 'event', $event->booking_id, $event->source_kind.'#'.$event->source_id, $event->eligible_amount, $event->percentage, $event->commission_amount, '0.00']);
+        }
+        foreach ($payments->lazy(500) as $payment) {
+            $rows->push([$payment->business_date, $agents->get($payment->agent_id)?->name, 'approved_payment', '', $payment->number, '0.00', '', '0.00', $payment->amount]);
+        }
+        $headers = ['Business date', 'Agent', 'Entry type', 'Booking', 'Reference', 'Eligible principal (PKR)', 'Rate (%)', 'Commission earned/reversed (PKR)', 'Payment (PKR)'];
+        $format = $filters['format'] ?? 'csv';
 
-        return response()->streamDownload(function () use ($events, $payments, $agents): void {
-            $stream = fopen('php://output', 'wb');
-            if ($stream === false) {
-                throw new \RuntimeException('Unable to open CSV output.');
-            }
-            fwrite($stream, "\xEF\xBB\xBF");
-            fputcsv($stream, ['Business date', 'Agent', 'Entry type', 'Booking', 'Reference', 'Eligible principal (PKR)', 'Rate (%)', 'Commission earned/reversed (PKR)', 'Payment (PKR)'], ',', '"', '');
-            foreach ($events->lazy(500) as $event) {
-                fputcsv($stream, [$event->business_date, $this->spreadsheetText($agents->get($event->agent_id)?->name), 'event', $event->booking_id, $event->source_kind.'#'.$event->source_id, $event->eligible_amount, $event->percentage, $event->commission_amount, '0.00'], ',', '"', '');
-            }
-            foreach ($payments->lazy(500) as $payment) {
-                fputcsv($stream, [$payment->business_date, $this->spreadsheetText($agents->get($payment->agent_id)?->name), 'approved_payment', '', $payment->number, '0.00', '', '0.00', $payment->amount], ',', '"', '');
-            }
-            fclose($stream);
-        }, 'estateflow-agent-commissions.csv', ['Content-Type' => 'text/csv; charset=UTF-8', 'Cache-Control' => 'private, no-store', 'X-Content-Type-Options' => 'nosniff']);
+        return $format === 'xlsx'
+            ? $export->xlsx('estateflow-agent-commissions.xlsx', $headers, $rows)
+            : $export->stream('estateflow-agent-commissions.csv', $headers, $rows);
     }
 
     public function assignLegacy(Request $request, int $booking, AgentCommissions $service): RedirectResponse
@@ -136,14 +134,5 @@ class AgentCommissionController extends Controller
     private function numeric(mixed $value): string
     {
         return is_numeric((string) $value) ? bcadd((string) $value, '0', 2) : '0.00';
-    }
-
-    private function spreadsheetText(?string $value): string
-    {
-        if ($value === null) {
-            return '';
-        }
-
-        return preg_match('/^[\s\x00-\x20]*[=+@-]|^[\t\r\n]/u', $value) === 1 ? "'".$value : $value;
     }
 }

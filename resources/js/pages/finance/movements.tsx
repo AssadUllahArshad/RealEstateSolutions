@@ -1,6 +1,7 @@
 import { Head, Link } from '@inertiajs/react';
 import { ArrowDownLeft, ArrowUpRight } from 'lucide-react';
 import { EmptyState, PageHeading, Pager } from '@/components/office-ui';
+import ExportMenu from '@/components/export-menu';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { formatPkr } from '@/lib/format-pkr';
@@ -91,13 +92,9 @@ export default function Movements({
                             {t('Bank reconciliation')}
                         </Link>
                     </Button>
-                    <Button asChild variant="outline">
-                        <a
-                            href={`/finance/movements/export${exportQuery ? `?${exportQuery}` : ''}`}
-                        >
-                            {t('Export CSV')}
-                        </a>
-                    </Button>
+                    <ExportMenu
+                        href={`/finance/movements/export${exportQuery ? `?${exportQuery}` : ''}`}
+                    />
                 </PageHeading>
                 <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-950 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-100">
                     {t(

@@ -9,6 +9,7 @@ import {
     StatCard,
     StatusBadge,
 } from '@/components/office-ui';
+import ExportMenu from '@/components/export-menu';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -105,6 +106,13 @@ export default function Charges({
                         'Authorized admins record each approved customer charge individually. No automatic penalty is calculated.',
                     )}
                 >
+                    <ExportMenu
+                        href={`/finance/charges/export?${new URLSearchParams(
+                            Object.entries(filters).filter(
+                                ([, value]) => value !== '',
+                            ),
+                        ).toString()}`}
+                    />
                     <Button asChild variant="outline">
                         <Link href="/finance/receivables">
                             {t('Receivables')}

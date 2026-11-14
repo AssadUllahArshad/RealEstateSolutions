@@ -1,5 +1,6 @@
 import { Form, Head, Link, usePage } from '@inertiajs/react';
 import InputError from '@/components/input-error';
+import ExportMenu from '@/components/export-menu';
 import { Button } from '@/components/ui/button';
 
 type Staff = { id: number; name: string; email: string; roles: string[] };
@@ -30,16 +31,19 @@ export default function Team({ users, recentChanges }: Props) {
         <>
             <Head title="Team & access" />
             <div className="mx-auto w-full max-w-6xl space-y-6 p-5 md:p-8">
-                <header>
-                    <p className="mb-2 text-xs font-semibold tracking-widest text-muted-foreground uppercase">
-                        Administration
-                    </p>
-                    <h1 className="text-3xl font-semibold tracking-tight">
-                        Team & access
-                    </h1>
-                    <p className="mt-2 text-sm text-muted-foreground">
-                        Review staff accounts and their assigned roles.
-                    </p>
+                <header className="flex flex-wrap items-start justify-between gap-4">
+                    <div>
+                        <p className="mb-2 text-xs font-semibold tracking-widest text-muted-foreground uppercase">
+                            Administration
+                        </p>
+                        <h1 className="text-3xl font-semibold tracking-tight">
+                            Team & access
+                        </h1>
+                        <p className="mt-2 text-sm text-muted-foreground">
+                            Review staff accounts and their assigned roles.
+                        </p>
+                    </div>
+                    <ExportMenu href="/team/export" />
                 </header>
                 <div className="rounded-xl border bg-card p-4 text-sm text-muted-foreground">
                     Role changes are recorded. Your own role cannot be changed

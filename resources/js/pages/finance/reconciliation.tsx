@@ -1,6 +1,7 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import InputError from '@/components/input-error';
 import { PageHeading, StatusBadge } from '@/components/office-ui';
+import ExportMenu from '@/components/export-menu';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -617,6 +618,7 @@ export default function Reconciliation(props: Props) {
                         'Compare verified bank statements with posted cashbook activity. Finalized periods are locked against later postings.',
                     )}
                 >
+                    <ExportMenu href="/finance/reconciliation/export" />
                     <Button asChild variant="outline">
                         <Link href="/finance/accounts">
                             {t('Financial accounts')}

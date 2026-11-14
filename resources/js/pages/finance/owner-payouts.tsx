@@ -5,6 +5,7 @@ import {
     Pager,
     StatusBadge,
 } from '@/components/office-ui';
+import ExportMenu from '@/components/export-menu';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -81,7 +82,9 @@ export default function OwnerPayouts({
                     description={t(
                         'Accountants prepare partial payouts from earned owner entitlement. An admin must approve before money is posted.',
                     )}
-                />
+                >
+                    <ExportMenu href="/finance/owner-payouts/export" />
+                </PageHeading>
                 <div className="grid gap-4 sm:grid-cols-2">
                     {owners.map((o) => {
                         const balance = balances[String(o.id)] ?? '0.00';

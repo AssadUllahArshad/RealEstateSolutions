@@ -2,14 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Domain\Export\CsvExport;
 use App\Domain\Finance\OfficeExpenses;
 use App\Models\FinancialAccount;
 use App\Support\BusinessClock;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
 class OfficeExpenseController extends Controller
@@ -32,6 +35,29 @@ class OfficeExpenseController extends Controller
             'businessDate' => app(BusinessClock::class)->today(), 'commandKey' => (string) Str::uuid(),
             'canPost' => $request->user()->can('finance.expenses.post') && $request->user()->hasAnyRole(['super_admin', 'admin', 'accountant']),
         ]);
+    }
+
+    public function export(Request $request, OfficeExpenses $expenses, CsvExport $export): StreamedResponse
+    {
+        Gate::authorize('finance.expenses.post');
+        $filters = $request->validate(['from' => ['nullable', 'date_format:Y-m-d'], 'to' => ['nullable', 'date_format:Y-m-d'], 'format' => ['nullable', 'in:csv,xlsx']]);
+        $query = $expenses->query($request->user())
+            ->when($filters['from'] ?? null, fn ($builder, $date) => $builder->whereDate('business_date', '>=', $date))
+            ->when($filters['to'] ?? null, fn ($builder, $date) => $builder->whereDate('business_date', '<=', $date));
+        $rows = $query->with('poster:id,name')->latest('business_date')->latest('id')->lazy(500)->map(fn ($expense) => [
+            $expense->id,
+            $expense->number,
+            $expense->business_date,
+            $expense->amount,
+            $expense->poster?->name,
+            $expense->note,
+        ]);
+        $headers = ['ID', 'Number', 'Business date', 'Amount (PKR)', 'Posted by', 'Note'];
+        $format = $filters['format'] ?? 'csv';
+
+        return $format === 'xlsx'
+            ? $export->xlsx('estateflow-office-expenses.xlsx', $headers, $rows)
+            : $export->stream('estateflow-office-expenses.csv', $headers, $rows);
     }
 
     public function store(Request $request, OfficeExpenses $expenses): RedirectResponse

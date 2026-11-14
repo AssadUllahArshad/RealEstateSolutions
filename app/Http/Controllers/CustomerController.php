@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Domain\CRM\Customers;
+use App\Domain\Export\CsvExport;
 use App\Models\CustomerDocument;
 use App\Models\FollowUp;
 use App\Models\User;
@@ -15,6 +16,7 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
 class CustomerController extends Controller
@@ -37,6 +39,34 @@ class CustomerController extends Controller
             'agents' => $this->agents($request), 'creationKey' => (string) Str::uuid(),
             'totalCustomers' => $customers->query($request->user())->count(),
         ]);
+    }
+
+    public function export(Request $request, Customers $customers, CsvExport $export): StreamedResponse
+    {
+        Gate::authorize('customers.view');
+        $filters = $request->validate(['q' => ['nullable', 'string', 'max:160'], 'agent' => ['nullable', 'integer'], 'format' => ['nullable', 'in:csv,xlsx']]);
+        $query = $customers->query($request->user());
+        if (isset($filters['q']) && $filters['q'] !== '') {
+            $literal = '%'.str_replace(['!', '%', '_'], ['!!', '!%', '!_'], $filters['q']).'%';
+            $query->where(fn ($q) => $q->whereRaw("name LIKE ? ESCAPE '!'", [$literal])->orWhereRaw("phone LIKE ? ESCAPE '!'", [$literal])->orWhereRaw("email LIKE ? ESCAPE '!'", [$literal]));
+        }
+        if (! empty($filters['agent'])) {
+            $query->where('assigned_to', $filters['agent']);
+        }
+        $rows = $query->with('agent:id,name')->orderBy('name')->orderBy('id')->lazy(500)->map(fn ($customer) => [
+            $customer->id,
+            $customer->name,
+            $customer->phone,
+            $customer->email,
+            $customer->agent?->name,
+            $customer->created_at?->toDateString(),
+        ]);
+        $headers = ['ID', 'Name', 'Phone', 'Email', 'Assigned to', 'Added on'];
+        $format = $filters['format'] ?? 'csv';
+
+        return $format === 'xlsx'
+            ? $export->xlsx('estateflow-customers.xlsx', $headers, $rows)
+            : $export->stream('estateflow-customers.csv', $headers, $rows);
     }
 
     public function show(Request $request, Customers $customers, int $customer): Response

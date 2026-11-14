@@ -1,5 +1,6 @@
 import { Head, useForm } from '@inertiajs/react';
 import { PageHeading, Pager, StatusBadge } from '@/components/office-ui';
+import ExportMenu from '@/components/export-menu';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -59,7 +60,9 @@ export default function Refunds({
                     description={t(
                         'Accountants prepare partial refunds after an approved cancellation. An admin authorizes every cash movement.',
                     )}
-                />
+                >
+                    <ExportMenu href="/finance/refunds/export" />
+                </PageHeading>
                 {canPrepare && (
                     <section className="ef-panel p-6">
                         <h2 className="font-semibold">{t('Prepare refund')}</h2>

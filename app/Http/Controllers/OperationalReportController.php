@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Domain\Export\CsvExport;
 use App\Domain\Finance\Receivables;
 use App\Models\AccountMovement;
 use App\Models\Booking;
@@ -36,88 +37,80 @@ class OperationalReportController extends Controller
         ]);
     }
 
-    public function export(Request $request): StreamedResponse
+    public function export(Request $request, CsvExport $export): StreamedResponse
     {
         Gate::authorize('reports.operations.view');
         $today = app(BusinessClock::class)->today();
         $filters = $this->filters($request, $today);
+        $format = $request->validate(['format' => ['nullable', 'in:csv,xlsx']])['format'] ?? 'csv';
         $report = $this->build($request->user(), $filters, $today);
+        $rows = [];
+        $rows[] = ['EstateFlow operational report'];
+        $rows[] = ['As of', $filters['as_of']];
+        $rows[] = ['Period from', $filters['from']];
+        $rows[] = ['Period to', $filters['to']];
+        $rows[] = [];
+        $rows[] = ['Inventory (current)'];
+        $rows[] = ['Total plots', $report['inventory']['total']];
+        $rows[] = ['Available', $report['inventory']['available']];
+        $rows[] = ['Held', $report['inventory']['held']];
+        $rows[] = ['Booked', $report['inventory']['booked']];
+        $rows[] = [];
+        $rows[] = ['By block'];
+        $rows[] = ['Block code', 'Block name', 'Plots'];
+        foreach ($report['inventory']['byBlock'] as $row) {
+            $rows[] = [$row['code'], $row['name'], $row['plots']];
+        }
+        $rows[] = [];
+        $rows[] = ['By size'];
+        $rows[] = ['Size label', 'Area (marla)', 'Plots'];
+        foreach ($report['inventory']['bySize'] as $row) {
+            $rows[] = [$row['label'], $row['area_marla'], $row['plots']];
+        }
+        $rows[] = [];
+        $rows[] = ['By owner'];
+        $rows[] = ['Owner', 'Plots'];
+        foreach ($report['inventory']['byOwner'] as $row) {
+            $rows[] = [$row['owner_name'], $row['plots']];
+        }
+        $rows[] = [];
+        $rows[] = ['Bookings (period)'];
+        $rows[] = ['Confirmed bookings', $report['bookings']['count']];
+        $rows[] = ['Contract value (PKR)', $report['bookings']['contract_value']];
+        $rows[] = ['Down payment (PKR)', $report['bookings']['down_payment']];
+        $rows[] = [];
+        $rows[] = ['Collections (period)'];
+        $rows[] = ['Recognized receipts', $report['collections']['recognized_count']];
+        $rows[] = ['Recognized amount (PKR)', $report['collections']['recognized_amount']];
+        $rows[] = ['Reversals (PKR)', $report['collections']['reversals']];
+        $rows[] = ['Allocated to down payments (PKR)', $report['collections']['allocated_down']];
+        $rows[] = ['Allocated to installments (PKR)', $report['collections']['allocated_installments']];
+        $rows[] = ['Unallocated (PKR)', $report['collections']['unallocated']];
+        $rows[] = [];
+        $rows[] = ['Receivables aging (as of '.$filters['as_of'].')'];
+        $rows[] = ['Bucket', 'Installments', 'Remaining (PKR)'];
+        foreach ($report['aging'] as $row) {
+            $rows[] = [$row['bucket'], $row['installments'], $row['remaining']];
+        }
+        $rows[] = [];
+        $rows[] = ['Owner payouts'];
+        $rows[] = ['Approved payouts (period, PKR)', $report['ownerPayouts']['approved_total']];
+        $rows[] = ['Owner', 'Outstanding (PKR)'];
+        foreach ($report['ownerPayouts']['outstanding'] as $row) {
+            $rows[] = [$row['owner_name'], $row['outstanding']];
+        }
+        $rows[] = [];
+        $rows[] = ['Agent commissions'];
+        $rows[] = ['Approved commission payments (period, PKR)', $report['commissions']['approved_total']];
+        $rows[] = ['Agent', 'Outstanding (PKR)'];
+        foreach ($report['commissions']['outstanding'] as $row) {
+            $rows[] = [$row['agent_name'], $row['outstanding']];
+        }
+        $headers = ['EstateFlow operational report'];
 
-        return response()->streamDownload(function () use ($report, $filters): void {
-            $stream = fopen('php://output', 'wb');
-            if ($stream === false) {
-                throw new \RuntimeException('Unable to open export stream.');
-            }
-            fwrite($stream, "\xEF\xBB\xBF");
-            fputcsv($stream, ['EstateFlow operational report'], ',', '"', '');
-            fputcsv($stream, ['As of', $filters['as_of']], ',', '"', '');
-            fputcsv($stream, ['Period from', $filters['from']], ',', '"', '');
-            fputcsv($stream, ['Period to', $filters['to']], ',', '"', '');
-            fputcsv($stream, [], ',', '"', '');
-
-            fputcsv($stream, ['Inventory (current)'], ',', '"', '');
-            fputcsv($stream, ['Total plots', $report['inventory']['total']], ',', '"', '');
-            fputcsv($stream, ['Available', $report['inventory']['available']], ',', '"', '');
-            fputcsv($stream, ['Held', $report['inventory']['held']], ',', '"', '');
-            fputcsv($stream, ['Booked', $report['inventory']['booked']], ',', '"', '');
-            fputcsv($stream, [], ',', '"', '');
-            fputcsv($stream, ['By block'], ',', '"', '');
-            fputcsv($stream, ['Block code', 'Block name', 'Plots'], ',', '"', '');
-            foreach ($report['inventory']['byBlock'] as $row) {
-                fputcsv($stream, [$this->safeCell((string) $row['code']), $this->safeCell((string) $row['name']), $row['plots']], ',', '"', '');
-            }
-            fputcsv($stream, [], ',', '"', '');
-            fputcsv($stream, ['By size'], ',', '"', '');
-            fputcsv($stream, ['Size label', 'Area (marla)', 'Plots'], ',', '"', '');
-            foreach ($report['inventory']['bySize'] as $row) {
-                fputcsv($stream, [$this->safeCell((string) $row['label']), $row['area_marla'], $row['plots']], ',', '"', '');
-            }
-            fputcsv($stream, [], ',', '"', '');
-            fputcsv($stream, ['By owner'], ',', '"', '');
-            fputcsv($stream, ['Owner', 'Plots'], ',', '"', '');
-            foreach ($report['inventory']['byOwner'] as $row) {
-                fputcsv($stream, [$this->safeCell((string) $row['owner_name']), $row['plots']], ',', '"', '');
-            }
-            fputcsv($stream, [], ',', '"', '');
-
-            fputcsv($stream, ['Bookings (period)'], ',', '"', '');
-            fputcsv($stream, ['Confirmed bookings', $report['bookings']['count']], ',', '"', '');
-            fputcsv($stream, ['Contract value (PKR)', $report['bookings']['contract_value']], ',', '"', '');
-            fputcsv($stream, ['Down payment (PKR)', $report['bookings']['down_payment']], ',', '"', '');
-            fputcsv($stream, [], ',', '"', '');
-
-            fputcsv($stream, ['Collections (period)'], ',', '"', '');
-            fputcsv($stream, ['Recognized receipts', $report['collections']['recognized_count']], ',', '"', '');
-            fputcsv($stream, ['Recognized amount (PKR)', $report['collections']['recognized_amount']], ',', '"', '');
-            fputcsv($stream, ['Reversals (PKR)', $report['collections']['reversals']], ',', '"', '');
-            fputcsv($stream, ['Allocated to down payments (PKR)', $report['collections']['allocated_down']], ',', '"', '');
-            fputcsv($stream, ['Allocated to installments (PKR)', $report['collections']['allocated_installments']], ',', '"', '');
-            fputcsv($stream, ['Unallocated (PKR)', $report['collections']['unallocated']], ',', '"', '');
-            fputcsv($stream, [], ',', '"', '');
-
-            fputcsv($stream, ['Receivables aging (as of '.$filters['as_of'].')'], ',', '"', '');
-            fputcsv($stream, ['Bucket', 'Installments', 'Remaining (PKR)'], ',', '"', '');
-            foreach ($report['aging'] as $row) {
-                fputcsv($stream, [$row['bucket'], $row['installments'], $row['remaining']], ',', '"', '');
-            }
-            fputcsv($stream, [], ',', '"', '');
-
-            fputcsv($stream, ['Owner payouts'], ',', '"', '');
-            fputcsv($stream, ['Approved payouts (period, PKR)', $report['ownerPayouts']['approved_total']], ',', '"', '');
-            fputcsv($stream, ['Owner', 'Outstanding (PKR)'], ',', '"', '');
-            foreach ($report['ownerPayouts']['outstanding'] as $row) {
-                fputcsv($stream, [$this->safeCell((string) $row['owner_name']), $row['outstanding']], ',', '"', '');
-            }
-            fputcsv($stream, [], ',', '"', '');
-
-            fputcsv($stream, ['Agent commissions'], ',', '"', '');
-            fputcsv($stream, ['Approved commission payments (period, PKR)', $report['commissions']['approved_total']], ',', '"', '');
-            fputcsv($stream, ['Agent', 'Outstanding (PKR)'], ',', '"', '');
-            foreach ($report['commissions']['outstanding'] as $row) {
-                fputcsv($stream, [$this->safeCell((string) $row['agent_name']), $row['outstanding']], ',', '"', '');
-            }
-            fclose($stream);
-        }, 'estateflow-operational-report.csv', ['Content-Type' => 'text/csv; charset=UTF-8', 'Cache-Control' => 'private, no-store', 'X-Content-Type-Options' => 'nosniff']);
+        return $format === 'xlsx'
+            ? $export->xlsx('estateflow-operational-report.xlsx', $headers, $rows)
+            : $export->stream('estateflow-operational-report.csv', $headers, $rows);
     }
 
     /** @return array{from:string,to:string,as_of:string} */
@@ -258,11 +251,6 @@ class OperationalReportController extends Controller
                 'outstanding' => $agentOutstanding,
             ],
         ];
-    }
-
-    private function safeCell(string $cell): string
-    {
-        return preg_match('/^[\s\x00-\x20]*[=+@-]|^[\t\r\n]/u', $cell) ? "'".$cell : $cell;
     }
 
     /** @return numeric-string */

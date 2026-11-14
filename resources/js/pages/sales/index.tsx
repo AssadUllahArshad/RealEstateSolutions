@@ -1,6 +1,7 @@
 import { Head, Link } from '@inertiajs/react';
 import { Plus, ArrowUpRight, FilePenLine } from 'lucide-react';
 import { EmptyState, PageHeading, Pager } from '@/components/office-ui';
+import ExportMenu from '@/components/export-menu';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { formatPkr } from '@/lib/format-pkr';
@@ -48,6 +49,9 @@ export default function Sales({
                         'Keep customer conversations and proposed plot terms together, ready for the next step.',
                     )}
                 >
+                    <ExportMenu
+                        href={`/sales/export${q ? `?q=${encodeURIComponent(q)}` : ''}`}
+                    />
                     <Button asChild>
                         <Link href="/sales/new">
                             <Plus />

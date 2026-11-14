@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Domain\Export\CsvExport;
 use App\Domain\Finance\Receivables;
 use App\Support\BusinessClock;
 use Illuminate\Http\Request;
@@ -28,37 +29,35 @@ class ReceivablesController extends Controller
         ]);
     }
 
-    public function export(Request $request): StreamedResponse
+    public function export(Request $request, CsvExport $export): StreamedResponse
     {
         Gate::authorize('finance.receipts.view');
         $today = app(BusinessClock::class)->today();
-        $query = app(Receivables::class)->query($request->user(), $this->filters($request), $today)
+        $filters = $this->filters($request);
+        $format = $request->validate(['format' => ['nullable', 'in:csv,xlsx']])['format'] ?? 'csv';
+        $query = app(Receivables::class)->query($request->user(), $filters, $today)
             ->orderByDesc('overdue')->orderBy('next_due_date')->orderBy('id');
+        $rows = $query->lazy(500)->map(function ($entry) use ($today) {
+            $state = bccomp($this->decimal($entry->overdue), '0', 2) > 0 ? 'Overdue' : (bccomp($this->decimal($entry->due_today), '0', 2) > 0 ? 'Due today' : 'Upcoming');
 
-        return response()->streamDownload(function () use ($query, $today): void {
-            $stream = fopen('php://output', 'wb');
-            if ($stream === false) {
-                throw new \RuntimeException('Unable to open export stream.');
-            }
-            fwrite($stream, "\xEF\xBB\xBF");
-            fputcsv($stream, ['Booking ID', 'Customer', 'Plot', 'Confirmed on', 'Next due date', 'Outstanding principal (PKR)', 'Overdue principal (PKR)', 'Due today (PKR)', 'State', 'As of'], ',', '"', '');
-            foreach ($query->lazy(500) as $entry) {
-                $state = bccomp($this->decimal($entry->overdue), '0', 2) > 0 ? 'Overdue' : (bccomp($this->decimal($entry->due_today), '0', 2) > 0 ? 'Due today' : 'Upcoming');
-                fputcsv($stream, [
-                    $entry->id,
-                    $this->safeCell((string) $entry->customer_name),
-                    $this->safeCell((string) $entry->plot_number),
-                    $entry->confirmed_on,
-                    $entry->next_due_date ?? '',
-                    $this->decimal($entry->outstanding),
-                    $this->decimal($entry->overdue),
-                    $this->decimal($entry->due_today),
-                    $state,
-                    $today,
-                ], ',', '"', '');
-            }
-            fclose($stream);
-        }, 'estateflow-receivables.csv', ['Content-Type' => 'text/csv; charset=UTF-8', 'Cache-Control' => 'private, no-store', 'X-Content-Type-Options' => 'nosniff']);
+            return [
+                $entry->id,
+                $entry->customer_name,
+                $entry->plot_number,
+                $entry->confirmed_on,
+                $entry->next_due_date ?? '',
+                $this->decimal($entry->outstanding),
+                $this->decimal($entry->overdue),
+                $this->decimal($entry->due_today),
+                $state,
+                $today,
+            ];
+        });
+        $headers = ['Booking ID', 'Customer', 'Plot', 'Confirmed on', 'Next due date', 'Outstanding principal (PKR)', 'Overdue principal (PKR)', 'Due today (PKR)', 'State', 'As of'];
+
+        return $format === 'xlsx'
+            ? $export->xlsx('estateflow-receivables.xlsx', $headers, $rows)
+            : $export->stream('estateflow-receivables.csv', $headers, $rows);
     }
 
     /** @return array{state:string,search:string} */
@@ -70,11 +69,6 @@ class ReceivablesController extends Controller
         ]);
 
         return ['state' => $filters['state'] ?? '', 'search' => $filters['search'] ?? ''];
-    }
-
-    private function safeCell(string $cell): string
-    {
-        return preg_match('/^[\s\x00-\x20]*[=+@-]|^[\t\r\n]/u', $cell) ? "'".$cell : $cell;
     }
 
     /** @return numeric-string */

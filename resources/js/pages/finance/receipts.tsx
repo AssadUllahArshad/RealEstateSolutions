@@ -6,6 +6,7 @@ import {
     Pager,
     StatusBadge,
 } from '@/components/office-ui';
+import ExportMenu from '@/components/export-menu';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { formatPkr } from '@/lib/format-pkr';
@@ -78,6 +79,9 @@ export default function Receipts({
                         'Prepare, verify and track customer payments. Preparation, money recognition and bank clearance remain distinct states.',
                     )}
                 >
+                    <ExportMenu
+                        href={`/finance/receipts/export${q ? `?q=${encodeURIComponent(q)}` : ''}`}
+                    />
                     {canViewAccounts && (
                         <Button asChild variant="outline">
                             <Link href="/finance/accounts">

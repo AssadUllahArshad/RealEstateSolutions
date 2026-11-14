@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Domain\Export\CsvExport;
 use App\Domain\Finance\ReceiptDrafts;
 use App\Domain\Finance\ReceiptPosting;
 use App\Models\AccountMovement;
@@ -104,13 +105,14 @@ class ReceiptPostingController extends Controller
         ]);
     }
 
-    public function exportMovements(Request $request): StreamedResponse
+    public function exportMovements(Request $request, CsvExport $export): StreamedResponse
     {
         Gate::authorize('finance.accounts.view');
         abort_unless(app(ReceiptDrafts::class)->wideAccess($request->user()), 403);
         $filters = $request->validate([
             'account' => ['nullable', 'integer', 'exists:financial_accounts,id'],
             'from' => ['nullable', 'date_format:Y-m-d'], 'to' => ['nullable', 'date_format:Y-m-d'],
+            'format' => ['nullable', 'in:csv,xlsx'],
         ]);
         $apply = function ($query, string $table) use ($filters) {
             return $query->when($filters['account'] ?? null, fn ($builder, $id) => $builder->where($table.'.financial_account_id', $id))
@@ -131,19 +133,13 @@ class ReceiptPostingController extends Controller
         $commissions = $apply(DB::table('commission_payments'), 'commission_payments')->where('state', 'approved')->join('financial_accounts', 'financial_accounts.id', '=', 'commission_payments.financial_account_id')
             ->selectRaw("commission_payments.id, commission_payments.business_date, commission_payments.amount, 'Outflow' AS direction, 'commission_payment' AS entry_kind, commission_payments.number AS source_number, financial_accounts.code AS account_code");
         $entries = DB::query()->fromSub($receipts->unionAll($expenses)->unionAll($payouts)->unionAll($refunds)->unionAll($commissions), 'cashbook_export')->orderBy('business_date')->orderBy('id');
+        $rows = $entries->lazy(500)->map(fn ($entry) => [$entry->business_date, $entry->account_code, $entry->source_number, $entry->entry_kind, $entry->direction, $entry->amount]);
+        $headers = ['Business date', 'Account', 'Source', 'Entry type', 'Direction', 'Amount (PKR)'];
+        $format = $filters['format'] ?? 'csv';
 
-        return response()->streamDownload(function () use ($entries): void {
-            $stream = fopen('php://output', 'wb');
-            if ($stream === false) {
-                throw new \RuntimeException('Unable to open export stream.');
-            }
-            fwrite($stream, "\xEF\xBB\xBF");
-            fputcsv($stream, ['Business date', 'Account', 'Source', 'Entry type', 'Direction', 'Amount (PKR)'], ',', '"', '');
-            foreach ($entries->lazy(500) as $entry) {
-                fputcsv($stream, [$entry->business_date, $entry->account_code, $entry->source_number, $entry->entry_kind, $entry->direction, $entry->amount], ',', '"', '');
-            }
-            fclose($stream);
-        }, 'estateflow-cashbook.csv', ['Content-Type' => 'text/csv; charset=UTF-8', 'Cache-Control' => 'private, no-store', 'X-Content-Type-Options' => 'nosniff']);
+        return $format === 'xlsx'
+            ? $export->xlsx('estateflow-cashbook.xlsx', $headers, $rows)
+            : $export->stream('estateflow-cashbook.csv', $headers, $rows);
     }
 
     /** @return numeric-string */

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Domain\CRM\Customers;
+use App\Domain\Export\CsvExport;
 use App\Domain\Sales\BookingDrafts;
 use App\Domain\Sales\BookingPreparation;
 use App\Domain\Sales\DraftPurchasers;
@@ -15,6 +16,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
 class BookingDraftController extends Controller
@@ -29,6 +31,32 @@ class BookingDraftController extends Controller
         }
 
         return Inertia::render('sales/index', ['drafts' => $query->with(['customer:id,name', 'plot.block:id,code', 'booking:id,booking_draft_id'])->latest('id')->paginate(20)->withQueryString(), 'q' => $filters['q'] ?? '']);
+    }
+
+    public function export(Request $request, BookingDrafts $drafts, CsvExport $export): StreamedResponse
+    {
+        Gate::authorize('sales.drafts');
+        Gate::authorize('inventory.view');
+        $filters = $request->validate(['q' => ['nullable', 'string', 'max:160'], 'format' => ['nullable', 'in:csv,xlsx']]);
+        $query = $drafts->query($request->user());
+        if (isset($filters['q']) && $filters['q'] !== '') {
+            $like = '%'.str_replace(['!', '%', '_'], ['!!', '!%', '!_'], $filters['q']).'%';
+            $query->where(fn ($q) => $q->whereHas('customer', fn ($c) => $c->whereRaw("name LIKE ? ESCAPE '!'", [$like]))->orWhereHas('plot', fn ($p) => $p->whereRaw("number LIKE ? ESCAPE '!'", [$like])));
+        }
+        $rows = $query->with(['customer:id,name', 'plot.block:id,code', 'booking:id,booking_draft_id'])->latest('id')->lazy(500)->map(fn ($draft) => [
+            $draft->id,
+            $draft->customer?->name,
+            ($draft->plot?->block->code ?? '').' / '.($draft->plot->number ?? ''),
+            $draft->quoted_price,
+            $draft->booking ? 'Confirmed' : 'Draft',
+            $draft->created_at?->toDateString(),
+        ]);
+        $headers = ['ID', 'Customer', 'Plot', 'Quoted price (PKR)', 'Status', 'Created on'];
+        $format = $filters['format'] ?? 'csv';
+
+        return $format === 'xlsx'
+            ? $export->xlsx('estateflow-sales-drafts.xlsx', $headers, $rows)
+            : $export->stream('estateflow-sales-drafts.csv', $headers, $rows);
     }
 
     public function edit(Request $request, BookingDrafts $drafts, ?int $draft = null): Response|RedirectResponse

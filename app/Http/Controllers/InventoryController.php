@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Domain\Export\CsvExport;
 use App\Domain\Inventory\Catalogue;
 use App\Http\Requests\Inventory\BlockRequest;
 use App\Http\Requests\Inventory\PlotRequest;
@@ -45,29 +46,27 @@ class InventoryController extends Controller
         ]);
     }
 
-    public function export(Request $request): StreamedResponse
+    public function export(Request $request, CsvExport $export): StreamedResponse
     {
         Gate::authorize('inventory.view');
         Gate::authorize('inventory.export');
-        $query = $this->query($this->filters($request));
+        $filters = $this->filters($request);
+        $format = $request->validate(['format' => ['nullable', 'in:csv,xlsx']])['format'] ?? 'csv';
+        $query = $this->query($filters);
+        $rows = $query->lazy(500)->map(fn ($plot) => [
+            $plot->block->code,
+            $plot->block->name,
+            $plot->number,
+            $plot->size->label,
+            $plot->size->area_marla,
+            $plot->list_price ?? '',
+            data_get($plot, 'owner.name', 'Unassigned'),
+        ]);
+        $headers = ['Block code', 'Block name', 'Plot number', 'Size label', 'Area (marla)', 'List price (PKR)', 'Plot owner'];
 
-        return response()->streamDownload(function () use ($query): void {
-            $stream = fopen('php://output', 'wb');
-            if ($stream === false) {
-                throw new \RuntimeException('Unable to open export stream.');
-            }
-            fputcsv($stream, ['Block code', 'Block name', 'Plot number', 'Size label', 'Area (marla)', 'List price (PKR)', 'Plot owner'], ',', '"', '');
-            foreach ($query->lazy(500) as $plot) {
-                $cells = [$plot->block->code, $plot->block->name, $plot->number, $plot->size->label];
-                // Quoting CSV is insufficient to prevent spreadsheet formula execution.
-                $cells = array_map(static fn (string $cell): string => preg_match('/^[\s\x00-\x20]*[=+@-]|^[\t\r\n]/u', $cell) ? "'".$cell : $cell, $cells);
-                $cells[] = $plot->size->area_marla;
-                $cells[] = $plot->list_price ?? '';
-                $cells[] = data_get($plot, 'owner.name', 'Unassigned');
-                fputcsv($stream, $cells, ',', '"', '');
-            }
-            fclose($stream);
-        }, 'estateflow-inventory.csv', ['Content-Type' => 'text/csv; charset=UTF-8', 'Cache-Control' => 'private, no-store', 'X-Content-Type-Options' => 'nosniff']);
+        return $format === 'xlsx'
+            ? $export->xlsx('estateflow-inventory.xlsx', $headers, $rows)
+            : $export->stream('estateflow-inventory.csv', $headers, $rows);
     }
 
     /** @return array<string, mixed> */

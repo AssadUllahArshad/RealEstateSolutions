@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Domain\Export\CsvExport;
 use App\Domain\Finance\OwnerPayouts;
 use App\Models\FinancialAccount;
 use App\Models\OwnerPayout;
@@ -12,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
 class OwnerPayoutController extends Controller
@@ -30,6 +32,28 @@ class OwnerPayoutController extends Controller
             'canPrepare' => $request->user()->can('finance.owner-payouts.prepare') && $request->user()->hasRole('accountant'),
             'canApprove' => $request->user()->can('finance.owner-payouts.approve') && $request->user()->hasAnyRole(['admin', 'super_admin']),
         ]);
+    }
+
+    public function export(Request $request, CsvExport $export): StreamedResponse
+    {
+        abort_unless($request->user()->can('finance.owner-payouts.view'), 403);
+        $filters = $request->validate(['format' => ['nullable', 'in:csv,xlsx']]);
+        $rows = OwnerPayout::with(['owner:id,name', 'preparer:id,name', 'decider:id,name'])->latest('id')->lazy(500)->map(fn ($payout) => [
+            $payout->id,
+            $payout->number,
+            $payout->owner?->name,
+            $payout->amount,
+            $payout->business_date,
+            $payout->state,
+            $payout->preparer?->name,
+            $payout->decider?->name,
+        ]);
+        $headers = ['ID', 'Number', 'Owner', 'Amount (PKR)', 'Business date', 'State', 'Prepared by', 'Decided by'];
+        $format = $filters['format'] ?? 'csv';
+
+        return $format === 'xlsx'
+            ? $export->xlsx('estateflow-owner-payouts.xlsx', $headers, $rows)
+            : $export->stream('estateflow-owner-payouts.csv', $headers, $rows);
     }
 
     public function store(Request $request, OwnerPayouts $service): RedirectResponse
