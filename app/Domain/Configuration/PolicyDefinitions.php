@@ -59,6 +59,9 @@ class PolicyDefinitions
                 'trigger' => self::select('Commission is earned on', ['booking_confirmed' => 'Final booking confirmation', 'down_payment_cleared' => 'Required down payment has cleared', 'collection_cleared' => 'Each cleared collection']),
                 'cancellation' => self::select('Cancellation/refund handling', ['admin_review' => 'Admin reviews unpaid/paid commission adjustments', 'reverse_and_recover' => 'Reverse unpaid commission and record recovery of paid commission']),
             ]],
+            'cutover' => ['title' => 'Legacy cutover', 'description' => 'Set the date the office switched from legacy records to EstateFlow. Opening balances are recorded as of this date and are kept separate from live ledgers until explicitly activated.', 'fields' => [
+                'cutover_date' => self::field('Cutover date', 'date', 'The Karachi business date the office switched to EstateFlow. Opening balances are effective on this date.'),
+            ]],
         ];
     }
 

@@ -84,6 +84,13 @@ export function AppSidebar() {
             href: '/finance/accounts',
             icon: WalletCards,
         });
+        if (auth.abilities.includes('finance.accounts.manage')) {
+            finance.push({
+                title: 'Opening balances',
+                href: '/finance/opening-balances',
+                icon: WalletCards,
+            });
+        }
         finance.push({
             title: 'Bank reconciliation',
             href: '/finance/reconciliation',

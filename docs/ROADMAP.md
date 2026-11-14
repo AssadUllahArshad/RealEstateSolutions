@@ -47,6 +47,8 @@ The [reservation execution plan](RESERVATION_EXECUTION_PLAN.md) decomposes the r
 
 2026-11-14 continuation: the [import slice](IMPORT_STATUS.md) adds a dry-run CSV import for customers, plot owners, plot inventory and confirmed bookings. Opening balances (PR15c) remain outstanding.
 
+2026-11-14 continuation: the [opening balances slice](OPENING_BALANCES_STATUS.md) adds a configurable legacy cutover date and opening customer/owner/commission balance records. Activation does not post to the live ledger in this slice; the exact posting rules need user sign-off before wiring into payout/commission calculations.
+
 On 2026-11-02 the user selected immediate staff-attributed manual holds and authorized-admin-only release/block. The [hold slice](HOLD_STATUS.md) implements this subset without an approval queue, expiry worker or customer placeholder. M2's final allotment/booking conversion gate remains open; do not mark the entire milestone complete from hold tests alone.
 
 ## Concrete verification plan
