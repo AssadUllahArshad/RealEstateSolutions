@@ -1,8 +1,28 @@
 # Restore drill and deployment checklist
 
-Status: draft runbook for M7 readiness. Not executed against production. D14 (hosting, RPO/RTO, retention, restore owner) and D15 (provisioning, MFA) remain open business decisions; this document records the procedure to rehearse once those are agreed.
+Status: draft runbook for M7 readiness. Not executed against production. D14 (hosting) is partially resolved: o3host.pk Economy plan, domain `datarealestate.online`, staging subdomain on the same plan, o3host.pk email hosting. D15 (provisioning) is resolved: internal company system, mostly non-technical users, no extra protection required, keep things simple. RPO/RTO, retention and restore owner remain open.
 
 [Index](README.md) · [Architecture](ARCHITECTURE.md) · [Roadmap](ROADMAP.md) · [MySQL setup](../MYSQL_SETUP.md)
+
+## Hosting (D14 — partially resolved)
+
+- **Provider:** o3host.pk (Pakistani shared hosting).
+- **Plan:** Economy — Rs 450/month, host 3 domains, 35 GB NVMe storage, 9 MySQL databases (each limited to 1 GB), UK-based server, free SSL/CDN/DDoS, SSH/Git/cron, 7 email accounts (each 3 GB), control panel, DNS management, free malware scanner, free DDoS protection, free SSL, quick data backup, 80+ ready-to-install scripts.
+- **Domain:** `datarealestate.online`.
+- **Staging:** staging subdomain on the same plan (e.g., `staging.datarealestate.online`).
+- **Email:** o3host.pk email hosting (7 mailboxes included).
+- **Redis:** availability TBD at deploy stage; the app currently uses database queues, so Redis is optional.
+- **Constraints:**
+  - MySQL database size limit: 1 GB per database. Monitor growth; for a single-society office this is likely fine for years.
+  - Shared hosting, not a VPS. SSH/Git/cron available, but no root access, no custom PHP-FPM pools, no guaranteed queue worker supervision.
+  - UK-based server. Latency from Pakistan ~100-150ms. Acceptable for an internal office system.
+  - No separate staging environment; use a subdomain on the same plan.
+
+## Provisioning (D15 — resolved)
+
+- Internal company system, mostly non-technical users.
+- No extra protection required. Keep things simple and easy.
+- No MFA, no tight delegation. Standard Laravel session auth with the existing role/permission system is sufficient.
 
 ## Scope
 
@@ -13,8 +33,7 @@ This runbook covers:
 
 It does not cover:
 
-- Choosing a hosting provider, RPO/RTO, retention or restore owner (D14).
-- Provisioning staff accounts, MFA or delegated ability sets (D15).
+- RPO/RTO, retention or restore owner (D14 — still open).
 - Staging UAT sign-off (requires named business/finance approvers).
 - Production recovery validation (requires a live environment and real data).
 
@@ -114,8 +133,8 @@ It does not cover:
 
 ## Open decisions
 
-- D14: hosting provider, RPO/RTO, retention, restore owner, capacity, MFA requirements.
-- D15: staff provisioning, MFA, delegated ability sets, same-person approval exceptions.
+- D14: RPO/RTO, retention, restore owner, capacity. (Hosting provider, plan, domain, staging and email are resolved.)
+- D15: resolved — internal company system, mostly non-technical users, no extra protection required, keep things simple.
 - D12: identity retention and erasure/legal hold (affects backup retention).
 - D13: legacy cutover reconciliation (affects the restore drill's control totals).
 

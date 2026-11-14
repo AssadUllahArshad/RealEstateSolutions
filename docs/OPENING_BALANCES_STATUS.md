@@ -10,7 +10,9 @@ Implemented on 2026-11-14.
 - Opening balances are gated on `finance.accounts.manage` and the super_admin/admin role.
 - Opening balances are effective on the cutover date only; any other date is rejected.
 - Activation records an `opening_balance_activations` row with the actor and a command key. Activation is idempotent (same command key returns the prior activation).
-- Activation does not post to the live ledger in this slice. The exact posting rules (rounding, rate source, whether they count toward payouts) need user sign-off before wiring into payout/commission calculations.
+- **Opening balances are tracked separately from live ledgers and do not count toward payout/commission calculations.** They are surfaced as a separate line item in the operational report ("Opening balances (as of cutover, tracked separately)").
+- **Opening balances are not posted as cash movements.** They are receivables/payables from before cutover, not cash that moved. Posting them as `account_movements` would fabricate cash that never moved.
+- **Commission clawback policy: admin review per case.** When a booking is cancelled/refunded after commission is paid, a negative `commission_events` row is created automatically, reducing the agent's payable balance. The admin reviews the reduced payable before approving the next payment and decides whether to recover from future commission or write off, with a reason recorded. No automatic clawback is applied.
 
 ## Delivered
 
@@ -31,6 +33,8 @@ Implemented on 2026-11-14.
 ## Boundaries
 
 - No real financial source values have been entered.
-- Activation does not post to the live ledger in this slice. The exact posting rules (rounding, rate source, whether they count toward payouts) need user sign-off before wiring into payout/commission calculations.
+- Opening balances are tracked separately from live ledgers and do not count toward payout/commission calculations. They are surfaced as a separate line item in the operational report.
+- Opening balances are not posted as cash movements. They are receivables/payables from before cutover, not cash that moved.
+- Commission clawback is admin review per case: a negative `commission_events` row is created automatically on refund, reducing the agent's payable balance. The admin reviews the reduced payable before approving the next payment. No automatic clawback is applied.
 - Opening balances are not a backup/restore mechanism and do not import uploaded files (customer documents).
 - Opening balances are immutable once recorded; corrections are not supported in this slice.

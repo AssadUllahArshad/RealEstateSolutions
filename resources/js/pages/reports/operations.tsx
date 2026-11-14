@@ -60,6 +60,11 @@ type Report = {
         approved_total: string;
         outstanding: OutstandingRow[];
     };
+    openingBalances: {
+        customer: string;
+        owner: string;
+        commission: string;
+    };
 };
 
 export default function OperationalReports({
@@ -282,6 +287,27 @@ export default function OperationalReports({
                         detail={t('Within the selected period')}
                         icon={WalletCards}
                         tone="green"
+                    />
+                    <StatCard
+                        title={t('Opening customer balances')}
+                        value={formatPkr(report.openingBalances.customer)}
+                        detail={t('As of cutover, tracked separately')}
+                        icon={CircleDollarSign}
+                        tone="blue"
+                    />
+                    <StatCard
+                        title={t('Opening owner balances')}
+                        value={formatPkr(report.openingBalances.owner)}
+                        detail={t('As of cutover, tracked separately')}
+                        icon={HandCoins}
+                        tone="blue"
+                    />
+                    <StatCard
+                        title={t('Opening commission balances')}
+                        value={formatPkr(report.openingBalances.commission)}
+                        detail={t('As of cutover, tracked separately')}
+                        icon={WalletCards}
+                        tone="blue"
                     />
                 </div>
 

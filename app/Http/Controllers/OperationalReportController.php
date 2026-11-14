@@ -7,6 +7,9 @@ use App\Domain\Finance\Receivables;
 use App\Models\AccountMovement;
 use App\Models\Booking;
 use App\Models\CommissionPayment;
+use App\Models\OpeningCommissionBalance;
+use App\Models\OpeningCustomerBalance;
+use App\Models\OpeningOwnerBalance;
 use App\Models\OwnerPayout;
 use App\Models\PaymentReceipt;
 use App\Models\Plot;
@@ -106,6 +109,11 @@ class OperationalReportController extends Controller
         foreach ($report['commissions']['outstanding'] as $row) {
             $rows[] = [$row['agent_name'], $row['outstanding']];
         }
+        $rows[] = [];
+        $rows[] = ['Opening balances (as of cutover, tracked separately)'];
+        $rows[] = ['Customer opening balances (PKR)', $report['openingBalances']['customer']];
+        $rows[] = ['Owner opening balances (PKR)', $report['openingBalances']['owner']];
+        $rows[] = ['Commission opening balances (PKR)', $report['openingBalances']['commission']];
         $headers = ['EstateFlow operational report'];
 
         return $format === 'xlsx'
@@ -218,6 +226,10 @@ class OperationalReportController extends Controller
             ];
         }
 
+        $openingCustomer = $this->decimal(OpeningCustomerBalance::query()->sum('amount'));
+        $openingOwner = $this->decimal(OpeningOwnerBalance::query()->sum('amount'));
+        $openingCommission = $this->decimal(OpeningCommissionBalance::query()->sum('amount'));
+
         return [
             'inventory' => [
                 'total' => $totalPlots,
@@ -249,6 +261,11 @@ class OperationalReportController extends Controller
             'commissions' => [
                 'approved_total' => $commissionPaymentsApproved,
                 'outstanding' => $agentOutstanding,
+            ],
+            'openingBalances' => [
+                'customer' => $openingCustomer,
+                'owner' => $openingOwner,
+                'commission' => $openingCommission,
             ],
         ];
     }
