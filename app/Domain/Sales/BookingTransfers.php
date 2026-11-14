@@ -2,12 +2,12 @@
 
 namespace App\Domain\Sales;
 
+use App\Domain\CRM\Customers;
 use App\Domain\Finance\InstallmentLedger;
 use App\Models\Booking;
 use App\Models\BookingEvent;
 use App\Models\BookingTransfer;
 use App\Models\BookingTransferParty;
-use App\Models\Customer;
 use App\Models\CustomerDocument;
 use App\Models\User;
 use App\Support\BusinessClock;
@@ -71,7 +71,7 @@ class BookingTransfers
             $private = [];
             $identities = [];
             foreach ($rows as $row) {
-                $customer = app(\App\Domain\CRM\Customers::class)->query($fresh)->whereKey($row['customer_id'])->lockForUpdate()->firstOrFail();
+                $customer = app(Customers::class)->query($fresh)->whereKey($row['customer_id'])->lockForUpdate()->firstOrFail();
                 if (! filled($customer->cnic) || ! filled($customer->address) || in_array($customer->cnic, $identities, true)) {
                     throw ValidationException::withMessages(['purchasers' => 'Every incoming purchaser needs a complete, distinct CNIC and address.']);
                 }

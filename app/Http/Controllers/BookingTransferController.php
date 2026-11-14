@@ -10,7 +10,6 @@ use App\Models\BookingTransfer;
 use App\Models\CustomerDocument;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;

@@ -4,8 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
-use LogicException;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use LogicException;
 
 /**
  * @property array<string,mixed> $snapshot
@@ -29,7 +29,10 @@ class Booking extends Model
     }
 
     /** @return HasMany<BookingChangeRequest, $this> */
-    public function changes(): HasMany { return $this->hasMany(BookingChangeRequest::class); }
+    public function changes(): HasMany
+    {
+        return $this->hasMany(BookingChangeRequest::class);
+    }
 
     protected static function booted(): void
     {

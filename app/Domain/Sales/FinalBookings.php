@@ -3,6 +3,7 @@
 namespace App\Domain\Sales;
 
 use App\Domain\CRM\Customers;
+use App\Domain\Finance\AgentCommissions;
 use App\Domain\Finance\OwnerEntitlements;
 use App\Domain\Finance\ReceiptCredit;
 use App\Models\AccountMovement;
@@ -172,7 +173,7 @@ class FinalBookings
                 if ($plot->plot_owner_id !== null) {
                     app(OwnerEntitlements::class)->record($booking, 'booking_allocation', $allocationId, $row['amount'], $today);
                 }
-                app(\App\Domain\Finance\AgentCommissions::class)->record($booking, 'booking_allocation', $allocationId, $row['amount'], $today);
+                app(AgentCommissions::class)->record($booking, 'booking_allocation', $allocationId, $row['amount'], $today);
             }
             if ($hold) {
                 $hold->fill(['state' => 'released', 'released_by' => $fresh->id, 'released_at' => now(), 'release_reason' => 'Consumed by confirmed booking #'.$booking->id])->save();

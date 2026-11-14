@@ -4,9 +4,9 @@ namespace Tests\Feature;
 
 use App\Domain\Finance\AgentCommissions;
 use App\Domain\Finance\ChargePayments;
-use App\Domain\Finance\ManualCharges;
 use App\Domain\Finance\CustomerRefunds;
 use App\Domain\Finance\InstallmentLedger;
+use App\Domain\Finance\ManualCharges;
 use App\Domain\Finance\ReceiptCredit;
 use App\Domain\Finance\ReceiptDrafts;
 use App\Domain\Finance\ReceiptPosting;

@@ -6,6 +6,7 @@ use App\Domain\CRM\Customers;
 use App\Domain\Sales\BookingTransfers;
 use App\Domain\Sales\FinalBookings;
 use App\Models\BookingTransfer;
+use App\Models\Customer;
 use App\Models\CustomerDocument;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
@@ -59,7 +60,7 @@ class BookingTransferTest extends TestCase
         $this->assertDatabaseCount('booking_transfers', 0);
     }
 
-    private function incoming(array $fixture, string $name, string $cnic): \App\Models\Customer
+    private function incoming(array $fixture, string $name, string $cnic): Customer
     {
         $customer = app(Customers::class)->save($fixture['agent'], ['name' => $name, 'cnic' => $cnic, 'address' => $name.' private address', 'creation_key' => (string) Str::uuid()]);
         foreach (['cnic_copy', 'customer_photo'] as $kind) {

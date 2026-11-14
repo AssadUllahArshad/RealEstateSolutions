@@ -112,7 +112,7 @@ class CalculatorController extends Controller
     }
 
     /** @param array<string,mixed> $commissions
-     * @param numeric-string $net
+     * @param  numeric-string  $net
      * @return array{amount:?string,formula:string,note:string}
      */
     private function commissionPreview(array $commissions, string $net, BusinessPolicies $setup): array

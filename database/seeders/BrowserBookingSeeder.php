@@ -102,7 +102,7 @@ class BrowserBookingSeeder extends Seeder
         foreach ($values as $key => $overrides) {
             $record = BusinessPolicy::find($key);
             $policies->save($admin, $key, [
-                'version' => $record?->version ?? 0,
+                'version' => $record->version ?? 0,
                 'values' => array_replace($policies->defaults($key), $overrides),
             ]);
         }

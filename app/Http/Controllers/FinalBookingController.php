@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Domain\Sales\BookingTransfers;
 use App\Domain\Sales\FinalBookings;
 use App\Models\Booking;
 use App\Models\BookingChangeRequest;
-use App\Domain\Sales\BookingTransfers;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
