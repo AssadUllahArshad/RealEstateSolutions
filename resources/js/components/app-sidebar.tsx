@@ -18,6 +18,7 @@ import {
     CalendarClock,
     BadgeDollarSign,
     Calculator,
+    Upload,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavMain } from '@/components/nav-main';
@@ -122,6 +123,13 @@ export function AppSidebar() {
             title: 'Manual charges',
             href: '/finance/charges',
             icon: BadgeDollarSign,
+        });
+    }
+    if (auth.abilities.includes('import.run')) {
+        administration.push({
+            title: 'Import data',
+            href: '/imports',
+            icon: Upload,
         });
     }
     if (auth.abilities.includes('business-settings.manage')) {

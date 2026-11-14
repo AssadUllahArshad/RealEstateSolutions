@@ -24,6 +24,8 @@ Current operational reporting implementation: [operational reports](OPERATIONAL_
 
 Current export implementation: [CSV/Excel exports and full data export](EXPORT_STATUS.md).
 
+Current import implementation: [dry-run CSV import for customers, owners, inventory and bookings](IMPORT_STATUS.md).
+
 Current owner-settlement foundation: [owner defaults, plot rate snapshots and booking gate](OWNER_SETTLEMENT_STATUS.md).
 
 Current document implementation: [branded receipts and booking printouts](PRINT_DOCUMENTS_STATUS.md).

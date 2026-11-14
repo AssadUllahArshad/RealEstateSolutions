@@ -140,6 +140,10 @@ class RolePermissionSeeder extends Seeder
             Role::findByName($role, 'web')->givePermissionTo('reports.owners.view');
             Role::findByName($role, 'web')->givePermissionTo('reports.operations.view');
         }
+        Permission::findOrCreate('import.run', 'web');
+        foreach (['super_admin', 'admin', 'accountant'] as $role) {
+            Role::findByName($role, 'web')->givePermissionTo('import.run');
+        }
         foreach (['super_admin', 'admin', 'sales_agent', 'accountant'] as $role) {
             Role::findByName($role, 'web')->givePermissionTo('sales.drafts');
         }
