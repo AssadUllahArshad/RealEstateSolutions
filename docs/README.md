@@ -28,6 +28,8 @@ Current import implementation: [dry-run CSV import for customers, owners, invent
 
 Current opening balances implementation: [cutover date and opening customer/owner/commission balances](OPENING_BALANCES_STATUS.md).
 
+Current M7 readiness draft: [restore drill and deployment checklist](RESTORE_DRILL_AND_DEPLOYMENT.md).
+
 Current owner-settlement foundation: [owner defaults, plot rate snapshots and booking gate](OWNER_SETTLEMENT_STATUS.md).
 
 Current document implementation: [branded receipts and booking printouts](PRINT_DOCUMENTS_STATUS.md).
