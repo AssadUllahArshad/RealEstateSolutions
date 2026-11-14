@@ -38,7 +38,7 @@ class BusinessSettingsTest extends TestCase
 
     public function test_new_settings_have_no_monetary_defaults_and_sections_are_bounded(): void
     {
-        $this->actingAs($this->main)->get('/business-settings')->assertInertia(fn (Assert $page) => $page->component('business-settings/index')->has('sections', 7)->where('version', 0)->where('values.down_payment_value', null)->where('values.required_documents', [])->has('history.data', 0));
+        $this->actingAs($this->main)->get('/business-settings')->assertInertia(fn (Assert $page) => $page->component('business-settings/index')->has('sections', 8)->where('version', 0)->where('values.down_payment_value', null)->where('values.required_documents', [])->has('history.data', 0));
         $this->get('/business-settings/owners')->assertInertia(fn (Assert $page) => $page->where('values.default_percentage', null));
         $this->assertDatabaseCount('business_policies', 0);
     }
