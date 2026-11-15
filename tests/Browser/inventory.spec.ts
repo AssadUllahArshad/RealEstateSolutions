@@ -108,7 +108,8 @@ test('administrator configures a society and maintains its custom plot catalogue
         ),
     ).toBeVisible();
     const downloading = page.waitForEvent('download');
-    await page.getByRole('link', { name: 'Export filtered CSV' }).click();
+    await page.getByRole('button', { name: 'Export filtered CSV' }).click();
+    await page.getByRole('menuitem', { name: 'Export CSV' }).click();
     const download = await downloading;
     expect(download.suggestedFilename()).toBe('estateflow-inventory.csv');
     expect(await download.failure()).toBeNull();
