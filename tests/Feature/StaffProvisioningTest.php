@@ -52,4 +52,24 @@ class StaffProvisioningTest extends TestCase
         $this->assertTrue($user->hasRole('super_admin'));
         $this->assertDatabaseHas('audit_events', ['subject_user_id' => $user->id, 'event' => 'access.staff_profile_updated']);
     }
+
+    public function test_console_can_read_a_new_password_from_a_private_file(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'estateflow-password-');
+        $this->assertNotFalse($path);
+        file_put_contents($path, "synthetic-file-password-123\n");
+
+        try {
+            $this->artisan('estateflow:staff', [
+                'email' => 'file.staff@example.test',
+                '--name' => 'File Staff',
+                '--phone' => '03001234567',
+                '--password-file' => $path,
+            ])->assertSuccessful();
+        } finally {
+            @unlink($path);
+        }
+
+        $this->assertTrue(password_verify('synthetic-file-password-123', User::query()->where('email', 'file.staff@example.test')->firstOrFail()->password));
+    }
 }

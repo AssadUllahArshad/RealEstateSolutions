@@ -12,7 +12,7 @@ use Illuminate\Validation\Rule;
 
 class CreateStaff extends Command
 {
-    protected $signature = 'estateflow:staff {email} {--name=} {--phone=} {--role=sales_agent} {--match-email=}';
+    protected $signature = 'estateflow:staff {email} {--name=} {--phone=} {--role=sales_agent} {--match-email=} {--password-file=}';
 
     protected $description = 'Provision a staff account from a trusted operator console (password is prompted securely)';
 
@@ -20,12 +20,32 @@ class CreateStaff extends Command
     {
         $matchEmail = strtolower((string) ($this->option('match-email') ?: $this->argument('email')));
         $existing = User::query()->where('email', $matchEmail)->first();
+        $password = null;
+        if (! $existing) {
+            $passwordFile = (string) $this->option('password-file');
+            if ($passwordFile !== '') {
+                if (! is_file($passwordFile) || ! is_readable($passwordFile)) {
+                    $this->error('The password file is not readable.');
+
+                    return self::FAILURE;
+                }
+                $contents = file_get_contents($passwordFile);
+                if ($contents === false) {
+                    $this->error('The password file could not be read.');
+
+                    return self::FAILURE;
+                }
+                $password = rtrim($contents, "\r\n");
+            } else {
+                $password = $this->secret('Password (at least 12 characters)');
+            }
+        }
         $values = [
             'email' => strtolower((string) $this->argument('email')),
             'name' => $this->option('name'),
             'phone' => $this->option('phone'),
             'role' => $this->option('role'),
-            'password' => $existing ? null : $this->secret('Password (at least 12 characters)'),
+            'password' => $password,
         ];
         $validator = Validator::make($values, [
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($existing?->id)],
