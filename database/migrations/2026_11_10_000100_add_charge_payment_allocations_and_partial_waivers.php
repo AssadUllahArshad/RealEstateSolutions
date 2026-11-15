@@ -1,5 +1,6 @@
 <?php
 
+use App\Support\DatabaseConstraints;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -68,7 +69,7 @@ return new class extends Migration
         Schema::dropIfExists('booking_charge_payment_reversals');
         Schema::dropIfExists('booking_charge_payment_allocations');
         Schema::dropIfExists('booking_charge_payment_batches');
-        DB::statement('ALTER TABLE booking_charge_waivers DROP CHECK bcw_amount_positive');
+        DatabaseConstraints::dropCheck('booking_charge_waivers', 'bcw_amount_positive');
         Schema::table('booking_charge_waivers', function (Blueprint $table) {
             $table->unique('booking_charge_id');
         });

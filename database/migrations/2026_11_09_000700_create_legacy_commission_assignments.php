@@ -1,5 +1,6 @@
 <?php
 
+use App\Support\DatabaseConstraints;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -9,7 +10,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        DB::statement('ALTER TABLE commission_events DROP CHECK commission_events_valid');
+        DatabaseConstraints::dropCheck('commission_events', 'commission_events_valid');
         DB::statement("ALTER TABLE commission_events ADD CONSTRAINT commission_events_valid CHECK (percentage >= 0 AND percentage <= 100 AND ((source_kind IN ('booking_allocation','installment_batch') AND eligible_amount > 0 AND commission_amount >= 0) OR (source_kind = 'customer_refund' AND eligible_amount < 0 AND commission_amount <= 0) OR (source_kind = 'legacy_correction' AND eligible_amount = 0)))");
         Schema::create('legacy_commission_assignments', function (Blueprint $t) {
             $t->id();
@@ -33,7 +34,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('legacy_commission_assignments');
-        DB::statement('ALTER TABLE commission_events DROP CHECK commission_events_valid');
+        DatabaseConstraints::dropCheck('commission_events', 'commission_events_valid');
         DB::statement("ALTER TABLE commission_events ADD CONSTRAINT commission_events_valid CHECK (percentage >= 0 AND percentage <= 100 AND ((source_kind IN ('booking_allocation','installment_batch') AND eligible_amount > 0 AND commission_amount >= 0) OR (source_kind = 'customer_refund' AND eligible_amount < 0 AND commission_amount <= 0)))");
     }
 };

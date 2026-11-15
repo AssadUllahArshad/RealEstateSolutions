@@ -1,5 +1,6 @@
 <?php
 
+use App\Support\DatabaseConstraints;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -9,7 +10,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        DB::statement('ALTER TABLE owner_entitlement_events DROP CHECK owner_entitlement_values');
+        DatabaseConstraints::dropCheck('owner_entitlement_events', 'owner_entitlement_values');
         DB::statement("ALTER TABLE owner_entitlement_events ADD CONSTRAINT owner_entitlement_values CHECK (percentage >= 0 AND percentage <= 100 AND ((source_kind IN ('booking_allocation','installment_batch') AND eligible_amount > 0 AND entitlement_amount >= 0) OR (source_kind = 'customer_refund' AND eligible_amount < 0 AND entitlement_amount <= 0)))");
         Schema::create('customer_refunds', function (Blueprint $table) {
             $table->id();
@@ -44,7 +45,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('customer_refunds');
-        DB::statement('ALTER TABLE owner_entitlement_events DROP CHECK owner_entitlement_values');
+        DatabaseConstraints::dropCheck('owner_entitlement_events', 'owner_entitlement_values');
         DB::statement("ALTER TABLE owner_entitlement_events ADD CONSTRAINT owner_entitlement_values CHECK (eligible_amount > 0 AND percentage >= 0 AND percentage <= 100 AND entitlement_amount >= 0 AND source_kind IN ('booking_allocation', 'installment_batch', 'refund_reversal'))");
     }
 };
