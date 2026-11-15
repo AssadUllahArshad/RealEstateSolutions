@@ -85,5 +85,6 @@ jobs:
           cp .env .env.e2e
           php artisan migrate --force
           php artisan db:seed --class=BrowserTestSeeder --force
+          php artisan db:seed --class=BrowserBookingSeeder --force
           npx playwright install --with-deps chromium
           npm run test:browser
