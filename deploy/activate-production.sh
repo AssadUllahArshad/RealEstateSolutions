@@ -20,7 +20,7 @@ mkdir -p "${shared_dir}/storage/app/customer-documents" "${shared_dir}/storage/f
   "${shared_dir}/storage/framework/sessions" "${shared_dir}/storage/framework/views" \
   "${shared_dir}/storage/logs" "${deploy_root}/backups"
 
-ln -s "${shared_dir}/.env" "${release_dir}/.env"
+ln -sfn "${shared_dir}/.env" "${release_dir}/.env"
 rm -rf "${release_dir}/storage"
 ln -s "${shared_dir}/storage" "${release_dir}/storage"
 
