@@ -1,22 +1,25 @@
 # EstateFlow production setup
 
-Status: repository automation is prepared but deliberately disabled until the EstateFlow site, document root, database and GitHub production secrets exist. There is no staging environment. Every successful `main` CI run becomes eligible for direct production deployment after `PRODUCTION_DEPLOY_ENABLED` is set to `true`.
+Status: the first production release is installed, but public launch and automated deployment remain disabled until the StackCP site runs PHP 8.4, its SSL certificate is issued, and the final HTTPS smoke test passes. There is no staging environment. Every successful `main` CI run becomes eligible for direct production deployment after `PRODUCTION_DEPLOY_ENABLED` is set to `true`.
 
 [Planning index](README.md) · [Deployment and restore runbook](RESTORE_DRILL_AND_DEPLOYMENT.md) · [Architecture](ARCHITECTURE.md) · [Staff provisioning](STAFF_PROVISIONING.md)
 
-## Verified on 2026-11-15
+## Verified on 2026-11-16
 
 - SSH alias: `o3hosting` (the earlier `o2hosting` spelling is not configured).
 - Host: StackCP shared hosting account reached through o3host.
 - PHP: `/usr/bin/php84` is PHP 8.4.27 and includes BCMath, cURL, DOM, Fileinfo, Intl, Mbstring, OpenSSL, PDO MySQL, XML and ZIP. The default `/usr/bin/php` is PHP 8.0.30 and must not run EstateFlow.
 - Composer 2.10.3, Git 2.52.0 and `mysqldump` are available.
-- The database client identifies as MariaDB 10.11.19. The actual EstateFlow database engine and SQL modes remain unverified until its database is created. CI continues to certify MySQL 8.4.
+- Production uses MariaDB 10.11.19. Migrations, receipt posting, idempotency and six locking/concurrency scenarios passed against a disposable database on the same server. CI continues to certify MySQL 8.4 as the preferred baseline.
+- The CLI release runtime is PHP 8.4.27. The subdomain's web runtime still reports PHP 8.1.34 and must be changed to PHP 8.4 in StackCP before launch.
+- Release `f5db719` is active. The clean production schema, three confirmed staff identities, two plot-owner profiles and pre-deploy backups are installed.
+- Production mail remains on the log driver until all mailbox passwords are rotated and the final SMTP settings are confirmed.
 - `public_html` currently contains a different `blog-site` repository with uncommitted changes. It is not an EstateFlow target and must be preserved.
 - No cron entries were returned for the SSH account.
 
 ## Required hosting layout
 
-Create a separate site or subdomain for EstateFlow in StackCP. Point its document root to `<estateflow-deploy-root>/current/public`. The deployment root must not be the existing `public_html`.
+The EstateFlow subdomain uses a real public directory at `/home/sites/23b/7/7bfd37bd3c/datarealestate/erp`. Immutable private releases live at `/home/sites/23b/7/7bfd37bd3c/datarealestate/estateflow`; activation synchronizes only Laravel's public files into the public directory. The existing `public_html` is not an EstateFlow target.
 
 ```text
 estateflow/
@@ -73,24 +76,22 @@ Run `composer check-platform-reqs` and `php artisan estateflow:check-services` w
 
 ## Scheduler and queues
 
-Add these StackCP cron entries after the deploy root is known:
+Install these StackCP cron entries:
 
 ```cron
 * * * * * /usr/bin/php84 <deploy-root>/current/artisan schedule:run >> /dev/null 2>&1
 * * * * * /usr/bin/php84 <deploy-root>/current/artisan queue:work database --stop-when-empty --max-time=50 --tries=3 >> /dev/null 2>&1
+15 2 * * * <deploy-root>/current/deploy/daily-backup.sh <deploy-root> /usr/bin/php84 30 >> <deploy-root>/shared/storage/logs/backup.log 2>&1
 ```
 
 Shared hosting does not guarantee a supervised long-running worker, so the queue command is deliberately bounded.
 
 ## Information still needed from the owner
 
-1. The production EstateFlow hostname, for example `erp.datarealestate.online`, and confirmation that it is a separate StackCP site with SSL.
-2. The absolute document-root/deployment path created for that site, separate from the current blog `public_html`.
-3. A new EstateFlow database name, username and password. Enter secrets through the hosting/GitHub secret interfaces, not chat.
-4. Confirmation whether StackCP labels the new database MySQL or MariaDB, plus its server version.
-5. Creation of the planned mailboxes and SMTP settings: `amir.ali@datarealestate.online`, `raja.irshad@datarealestate.online`, and `tabish.hafeez@datarealestate.online`.
-6. A dedicated GitHub Actions deploy key, or permission to generate one and add only its public half to StackCP.
-7. GitHub repository/environment access to create the secrets and variables, or the owner can enter their values directly.
+1. Change the `erp.datarealestate.online` site's web PHP version from 8.1 to 8.4 in StackCP.
+2. Issue/install the SSL certificate after DNS propagation, then enforce HTTPS.
+3. Rotate all mailbox passwords that were previously stored in plaintext, then provide/confirm the StackCP SMTP hostname, port and encryption setting through a secret channel.
+4. Add the documented GitHub `production` environment secrets and variables. Keep `PRODUCTION_DEPLOY_ENABLED=false` until the HTTPS smoke test and first off-host backup copy pass.
 
 ## First-launch gate
 
