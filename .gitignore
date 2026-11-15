@@ -45,6 +45,7 @@ yarn-error.log
 /opencode.jsonc
 
 /.runtime/
+/Important.txt
 /.env.*
 !/.env.example
 !/.env.testing.example
