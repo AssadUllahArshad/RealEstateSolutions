@@ -24,6 +24,7 @@ jobs:
     environment: production
     env:
       DEPLOY_ROOT: ${{ secrets.PRODUCTION_DEPLOY_ROOT }}
+      WEB_ROOT: ${{ secrets.PRODUCTION_WEB_ROOT }}
       PHP_BIN: ${{ vars.PRODUCTION_PHP_BIN || '/usr/bin/php84' }}
       SSH_HOST: ${{ secrets.PRODUCTION_SSH_HOST }}
       SSH_PORT: ${{ secrets.PRODUCTION_SSH_PORT }}
@@ -83,7 +84,7 @@ jobs:
           RELEASE_ID: ${{ steps.metadata.outputs.id }}
         run: |
           ssh -i ~/.ssh/estateflow-production -p "${SSH_PORT:-22}" "${SSH_USER}@${SSH_HOST}" \
-            "bash '${DEPLOY_ROOT}/releases/${RELEASE_ID}/deploy/activate-production.sh' '${DEPLOY_ROOT}' '${RELEASE_ID}' '${PHP_BIN}'"
+            "bash '${DEPLOY_ROOT}/releases/${RELEASE_ID}/deploy/activate-production.sh' '${DEPLOY_ROOT}' '${RELEASE_ID}' '${PHP_BIN}' '${WEB_ROOT}'"
 
       - name: Verify public health endpoint
         env:

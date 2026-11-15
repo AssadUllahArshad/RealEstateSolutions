@@ -42,7 +42,8 @@ Create a GitHub Environment named `production`. Add these environment secrets:
 | `PRODUCTION_SSH_USER` | Hosting SSH user shown in StackCP |
 | `PRODUCTION_SSH_PRIVATE_KEY` | A dedicated deploy private key; add only its public key to the host |
 | `PRODUCTION_SSH_KNOWN_HOSTS` | Output from a separately verified host-key check |
-| `PRODUCTION_DEPLOY_ROOT` | Absolute EstateFlow path, separate from the existing blog site |
+| `PRODUCTION_DEPLOY_ROOT` | Private application path, currently `/home/sites/23b/7/7bfd37bd3c/datarealestate/estateflow` |
+| `PRODUCTION_WEB_ROOT` | StackCP public path, currently `/home/sites/23b/7/7bfd37bd3c/datarealestate/erp` |
 
 Add these environment variables:
 

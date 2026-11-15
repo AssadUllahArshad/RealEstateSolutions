@@ -4,6 +4,7 @@ set -Eeuo pipefail
 deploy_root="${1:?deployment root is required}"
 release_id="${2:?release id is required}"
 php_bin="${3:-/usr/bin/php84}"
+web_root="${4:-}"
 release_dir="${deploy_root}/releases/${release_id}"
 shared_dir="${deploy_root}/shared"
 current_link="${deploy_root}/current"
@@ -54,6 +55,18 @@ cd "${release_dir}"
 "${php_bin}" artisan storage:link || true
 
 ln -sfn "${release_dir}" "${current_link}"
+
+if [[ -n "${web_root}" ]]; then
+  [[ "${web_root}" =~ ^[a-zA-Z0-9_./-]+$ ]] || { echo "Unsafe public web-root path." >&2; exit 2; }
+  [[ -f "${web_root}/.estateflow-public" ]] || { echo "Missing EstateFlow public-root marker." >&2; exit 2; }
+  rsync -a --delete --exclude='.estateflow-public' "${release_dir}/public/" "${web_root}/"
+  sed \
+    -e "s#__DIR__.'/../storage#'${deploy_root}/current/storage#g" \
+    -e "s#__DIR__.'/../vendor#'${deploy_root}/current/vendor#g" \
+    -e "s#__DIR__.'/../bootstrap#'${deploy_root}/current/bootstrap#g" \
+    "${release_dir}/public/index.php" > "${web_root}/index.php"
+fi
+
 "${php_bin}" "${current_link}/artisan" up
 trap - ERR
 
