@@ -177,7 +177,7 @@ function PlotEditor({
                         onChange={(event) =>
                             form.setData('plot_owner_id', event.target.value)
                         }
-                        required={owners.length > 0}
+                        required
                     >
                         <option value="">
                             {owners.length
@@ -193,7 +193,9 @@ function PlotEditor({
                     <InputError message={form.errors.plot_owner_id} />
                     {owners.length === 0 && (
                         <p className="mt-1 text-xs text-muted-foreground">
-                            {t('Owner assignment can be completed later.')}
+                            {t(
+                                'Configure a plot owner before adding inventory.',
+                            )}
                         </p>
                     )}
                     <Label htmlFor="plot-owner-percentage" className="mt-4">

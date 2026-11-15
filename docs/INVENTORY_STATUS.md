@@ -1,5 +1,7 @@
 # Inventory catalogue slice
 
+2026-11-15 ownership rule: every new plot requires an explicit configured owner, including CSV imports. Amir Ali and Raja Irshad each have a 50% default, copied into the plot snapshot unless an authorized administrator enters a plot-specific override.
+
 Date: 2026-10-31. [Index](README.md) · [Accepted scope](ADRS/0002-single-society.md) · [Remaining decisions](FINANCIAL_DECISIONS.md)
 
 ## Implemented boundary

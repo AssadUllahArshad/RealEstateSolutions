@@ -32,4 +32,4 @@ Implemented on 2026-11-10.
 - No real financial source values have been entered.
 - Exact-match v1 intentionally cannot represent uncleared timing differences, unmatched bank-only activity or adjustments.
 - This is an operational cashbook/reconciliation workflow, not a double-entry general ledger, trial balance, profit-and-loss statement or statutory balance sheet.
-- Full reporting, legacy imports/cutover, production recovery rehearsal, the second admin, outbound email and Owner 2 setup remain outstanding or deferred.
+- Legacy cutover, outbound mailbox/SMTP setup and production recovery rehearsal remain outstanding. The second admin, Owner 2, operational reports and direct-production automation are now implemented or prepared; see [production setup](PRODUCTION_SETUP.md).

@@ -25,6 +25,7 @@ class TeamController extends Controller
                     'id' => $user->id,
                     'name' => $user->name,
                     'email' => $user->email,
+                    'phone' => $user->phone,
                     'roles' => $user->getRoleNames(),
                 ]),
             'recentChanges' => AuditEvent::query()->where('event', 'access.role_changed')
@@ -39,10 +40,11 @@ class TeamController extends Controller
             $user->id,
             $user->name,
             $user->email,
+            $user->phone,
             $user->getRoleNames()->implode(', '),
             $user->email_verified_at?->toDateString(),
         ]);
-        $headers = ['ID', 'Name', 'Email', 'Roles', 'Verified on'];
+        $headers = ['ID', 'Name', 'Email', 'Phone', 'Roles', 'Verified on'];
 
         return $export->stream('estateflow-team.csv', $headers, $rows);
     }
@@ -56,6 +58,7 @@ class TeamController extends Controller
                 'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
+                'phone' => $user->phone,
                 'roles' => $user->getRoleNames(),
             ],
         ]);

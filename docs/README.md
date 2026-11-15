@@ -30,6 +30,10 @@ Current opening balances implementation: [cutover date and opening customer/owne
 
 Current M7 readiness draft: [restore drill and deployment checklist](RESTORE_DRILL_AND_DEPLOYMENT.md).
 
+Current direct-production infrastructure plan: [o3host production setup and CI/CD inputs](PRODUCTION_SETUP.md).
+
+Confirmed staff names, phone numbers, proposed business mailboxes and safe account commands: [staff identity and mailbox plan](STAFF_PROVISIONING.md).
+
 Current owner-settlement foundation: [owner defaults, plot rate snapshots and booking gate](OWNER_SETTLEMENT_STATUS.md).
 
 Current document implementation: [branded receipts and booking printouts](PRINT_DOCUMENTS_STATUS.md).
@@ -38,7 +42,7 @@ Current sales implementation: [final booking and down payment allocation](FINAL_
 
 Latest company/society identity: [Data Real Estate / Green Vista branding pack](branding/README.md), including recreated SVGs and preserved brochure references. Current finance implementation: [receipt recognition status](RECEIPT_RECOGNITION_STATUS.md).
 
-Latest finance workflows: [installment ledger and approved corrections](INSTALLMENT_LEDGER_STATUS.md), [customer refunds](CUSTOMER_REFUND_STATUS.md), [purchaser transfers](PURCHASER_TRANSFER_STATUS.md), [owner settlement](OWNER_SETTLEMENT_STATUS.md), [agent commissions](AGENT_COMMISSION_STATUS.md), and [office expenses](OFFICE_EXPENSE_STATUS.md). Second-admin provisioning, outbound email setup, and Owner 2 profile configuration are intentionally deferred until the end of the remaining work.
+Latest finance workflows: [installment ledger and approved corrections](INSTALLMENT_LEDGER_STATUS.md), [customer refunds](CUSTOMER_REFUND_STATUS.md), [purchaser transfers](PURCHASER_TRANSFER_STATUS.md), [owner settlement](OWNER_SETTLEMENT_STATUS.md), [agent commissions](AGENT_COMMISSION_STATUS.md), and [office expenses](OFFICE_EXPENSE_STATUS.md). Second-admin and Owner 2 setup are complete locally. Outbound mailbox/SMTP setup and production verification remain release inputs.
 
 Planning baseline: 2026-10-30. Foundation implementation has started following the user's instruction to proceed. See [actual foundation status](FOUNDATION_STATUS.md); business-policy decisions remain open.
 
@@ -59,6 +63,7 @@ Planning baseline: 2026-10-30. Foundation implementation has started following t
 13. [Role, ownership and localization status](ROLE_OWNERSHIP_LOCALIZATION_STATUS.md): expanded admin/accountant operations, two-owner plot attribution, local accountant access, English/Urdu infrastructure and theme verification.
 14. [Manual charge implementation](MANUAL_CHARGE_STATUS.md): approved admin-only entry, immutable records, full waiver, scoped read access and accounting boundaries.
 15. [Owner settlement foundation](OWNER_SETTLEMENT_STATUS.md): approved calculation and payout rules, exact plot-rate snapshots, booking gate and next entitlement slice.
+16. [Production setup](PRODUCTION_SETUP.md): verified o3host capabilities, isolated deployment layout, GitHub secrets, cron commands and first-launch gates.
 
 ## Status vocabulary and authority
 

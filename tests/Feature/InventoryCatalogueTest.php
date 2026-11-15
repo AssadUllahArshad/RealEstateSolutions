@@ -125,6 +125,7 @@ class InventoryCatalogueTest extends TestCase
         $thirdAdmin = User::factory()->create()->assignRole('admin');
         $this->post('/inventory/owners', ['name' => 'DEMO Owner Three', 'admin_user_id' => $thirdAdmin->id])->assertSessionHasErrors('name');
         $owner = PlotOwner::where('name', 'DEMO Owner One')->firstOrFail();
+        $this->post('/inventory/plots', ['number' => 'OWNER-MISSING', 'block_id' => $block->id, 'plot_size_id' => $size->id])->assertSessionHasErrors('plot_owner_id');
         $this->post('/inventory/plots', ['number' => 'OWNER-1', 'block_id' => $block->id, 'plot_size_id' => $size->id, 'plot_owner_id' => $owner->id])->assertSessionHasNoErrors();
         $this->get('/inventory?owner_id='.$owner->id)->assertInertia(fn (Assert $page) => $page->has('plots.data', 1)->where('plots.data.0.owner.name', 'DEMO Owner One'));
         $this->assertDatabaseHas('inventory_events', ['event' => 'plot_owner.created', 'subject_id' => $owner->id]);

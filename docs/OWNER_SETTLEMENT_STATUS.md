@@ -35,8 +35,8 @@ Implementation baseline: 2026-11-09.
 - Pending payout requests appear separately and do not reduce the official closing balance; non-cash references are masked to their final four characters.
 - Negative owner balances are labeled recoverable in the payout portal and printable statements. Payout preparation stays unavailable until future entitlements offset the recovery balance.
 
-Amir Qureshi's owner profile is configured at a 50% default and linked to Local Test Admin. Owner 2's second-admin account and 50% profile are intentionally deferred until the end of the remaining work, as requested. The current local mailer is log-only, so it cannot deliver a verification/reset link; no second account or owner profile has been created. Do not link Owner 2 to the accountant or create credentials as a substitute. Plot-specific rates remain immutable snapshots and are not changed when a profile default changes.
+Amir Ali and Raja Irshad each have a 50% owner default and are linked to their separate main-administrator accounts. Existing plots remain with their explicitly assigned owner; creating Raja's profile did not reassign inventory. The current local mailer remains log-only, so production verification/reset links still depend on creating the approved business mailboxes and configuring SMTP. Plot-specific rates remain immutable snapshots and are not changed when a profile default changes.
 
 ## Remaining setup
 
-At the final setup phase, configure a verifiable account-delivery channel, provision the distinct authorized admin, then create Owner 2 at the already approved 50% default. Plots requiring that owner remain incomplete until the profile exists and is assigned.
+Setup update 2026-11-15: Raja Irshad is the distinct second main administrator and Owner 2 with the approved 50% default. Amir Ali is Owner 1 with a 50% default. Every new plot requires an explicit owner assignment; the defaults do not divide an individual plot automatically. Production mailbox delivery remains to be configured and verified.

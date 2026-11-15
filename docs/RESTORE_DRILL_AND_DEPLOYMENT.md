@@ -1,22 +1,26 @@
 # Restore drill and deployment checklist
 
-Status: draft runbook for M7 readiness. Not executed against production. D14 (hosting) is partially resolved: o3host.pk Economy plan, domain `datarealestate.online`, staging subdomain on the same plan, o3host.pk email hosting. D15 (provisioning) is resolved: internal company system, mostly non-technical users, no extra protection required, keep things simple. RPO/RTO, retention and restore owner remain open.
+Status: direct-production M7 runbook; not yet executed against production. D14 uses the o3host.pk Economy plan and `datarealestate.online`; the user explicitly approved skipping staging. Daily backups with 30-day retention target a 24-hour RPO and four-hour RTO. Amir Ali is restore owner and Tabish Hafeez is finance verifier. See the [verified production setup](PRODUCTION_SETUP.md).
 
 [Index](README.md) · [Architecture](ARCHITECTURE.md) · [Roadmap](ROADMAP.md) · [MySQL setup](../MYSQL_SETUP.md)
 
-## Hosting (D14 — partially resolved)
+## Hosting (D14 — resolved, compatibility evidence pending)
 
 - **Provider:** o3host.pk (Pakistani shared hosting).
 - **Plan:** Economy — Rs 450/month, host 3 domains, 35 GB NVMe storage, 9 MySQL databases (each limited to 1 GB), UK-based server, free SSL/CDN/DDoS, SSH/Git/cron, 7 email accounts (each 3 GB), control panel, DNS management, free malware scanner, free DDoS protection, free SSL, quick data backup, 80+ ready-to-install scripts.
 - **Domain:** `datarealestate.online`.
-- **Staging:** staging subdomain on the same plan (e.g., `staging.datarealestate.online`).
+- **Release path:** direct production after CI, backup and migration gates. No staging environment.
 - **Email:** o3host.pk email hosting (7 mailboxes included).
+  - Planned staff mailboxes: `amir.ali@datarealestate.online`, `raja.irshad@datarealestate.online`, and `tabish.hafeez@datarealestate.online`.
+  - Mailboxes and SMTP delivery still require control-panel setup and verification; see the [staff provisioning plan](STAFF_PROVISIONING.md).
 - **Redis:** availability TBD at deploy stage; the app currently uses database queues, so Redis is optional.
 - **Constraints:**
   - MySQL database size limit: 1 GB per database. Monitor growth; for a single-society office this is likely fine for years.
   - Shared hosting, not a VPS. SSH/Git/cron available, but no root access, no custom PHP-FPM pools, no guaranteed queue worker supervision.
   - UK-based server. Latency from Pakistan ~100-150ms. Acceptable for an internal office system.
-  - No separate staging environment; use a subdomain on the same plan.
+  - Existing `public_html` contains an unrelated blog repository and is excluded from EstateFlow deployment.
+  - `/usr/bin/php84` is verified; the default `php` command is PHP 8.0 and must not be used.
+  - The host exposes a MariaDB 10.11 client. The new database engine and finance/concurrency compatibility still require evidence.
 
 ## Provisioning (D15 — resolved)
 
@@ -31,11 +35,7 @@ This runbook covers:
 1. A restore drill: restoring the database, private document storage and encryption keys into an isolated environment, then verifying financial control totals and private access.
 2. A deployment checklist: the ordered steps to deploy a new release to a live environment.
 
-It does not cover:
-
-- RPO/RTO, retention or restore owner (D14 — still open).
-- Staging UAT sign-off (requires named business/finance approvers).
-- Production recovery validation (requires a live environment and real data).
+It does not claim that production recovery has been validated. That requires the live EstateFlow environment, a real backup and recorded business/finance verification.
 
 ## Restore drill
 
@@ -52,7 +52,7 @@ It does not cover:
 
 ### Procedure
 
-1. **Provision the isolated environment.** Install PHP 8.4, MySQL 8.4, Nginx/PHP-FPM (or the agreed stack) and the application code at the release tag. Do not copy production secrets into the drill log.
+1. **Provision an isolated restore target.** Use a local or temporary environment with PHP 8.4 and the same database family/version as production. Do not copy production secrets into the drill log.
 2. **Restore the database.** Create an empty `estateflow_restore` schema. Restore the backup with `mysql` or `mysqldump --restore`. Verify the schema version matches the release tag (`php artisan migrate:status`).
 3. **Restore the private document storage.** Copy the backup of `CUSTOMER_DOCUMENTS_PATH` into the isolated environment. Verify file count and total bytes match the backup manifest.
 4. **Restore the encryption keys.** Place `APP_KEY` and `APP_PREVIOUS_KEYS` in the isolated environment's `.env`. Verify a known encrypted field (e.g., a customer CNIC) decrypts correctly.
@@ -93,7 +93,10 @@ It does not cover:
 
 ### Pre-deployment
 
-- [ ] D14 and D15 are agreed and recorded (hosting, RPO/RTO, retention, restore owner, provisioning, MFA).
+- [x] D14 and D15 are agreed and recorded (hosting, RPO/RTO, retention, restore owner, provisioning, MFA).
+- [ ] The separate EstateFlow hostname, SSL certificate and document root are active; the unrelated blog site is untouched.
+- [ ] `/usr/bin/php84` passes Composer platform checks and the production database passes the MySQL/MariaDB finance and concurrency suite.
+- [ ] GitHub production secrets/variables from the [production setup](PRODUCTION_SETUP.md) are configured; deployment remains disabled until this checklist passes.
 - [ ] A current encrypted backup exists and its restore has been rehearsed (see restore drill above).
 - [ ] The release tag is built and its assets are immutable (`npm run build` output is committed or built in CI).
 - [ ] `php artisan migrate:status` shows no pending migrations on the target, or the migration plan is reviewed and backward-compatible.
@@ -105,9 +108,9 @@ It does not cover:
 
 1. **Verify backups.** Confirm the latest backup is restorable (spot-check the restore drill report).
 2. **Review SQL/locking impact.** For each pending migration, review the SQL for locking impact on large tables. Prefer additive expand/contract changes. Destructive changes require a separate review and a restored-copy rehearsal.
-3. **Deploy assets/code.** Pull the release tag. Run `composer install --no-dev --optimize-autoloader`. Run `npm ci && npm run build` (or use the CI-built assets). Run `php artisan config:cache`, `php artisan route:cache`, `php artisan view:cache`.
+3. **Deploy immutable assets/code.** The GitHub production workflow builds Composer dependencies and frontend assets, uploads a commit-addressed release, and invokes the activation script with `/usr/bin/php84`.
 4. **Apply migrations.** Run `php artisan migrate --force`. Verify `php artisan migrate:status` shows all migrations applied.
-5. **Restart workers.** Restart queue workers and the scheduler. Verify the scheduler heartbeat is fresh.
+5. **Verify scheduled processes.** Shared hosting uses the bounded cron commands in the [production setup](PRODUCTION_SETUP.md). Verify scheduler and database queue execution with `/usr/bin/php84`.
 6. **Run readiness/smoke checks.**
    - `GET /login` returns 200.
    - Sign in as a synthetic smoke-test user (not a production account).
@@ -133,14 +136,15 @@ It does not cover:
 
 ## Open decisions
 
-- D14: RPO/RTO, retention, restore owner, capacity. (Hosting provider, plan, domain, staging and email are resolved.)
+- D14: daily backup, 30-day retention, 24-hour RPO, four-hour RTO and Amir Ali as restore owner are approved. Capacity and compatibility must be measured during direct-production readiness checks and controlled launch UAT.
+- Restore separation: Amir Ali runs or coordinates the restore; Tabish Hafeez independently verifies the financial control totals.
 - D15: resolved — internal company system, mostly non-technical users, no extra protection required, keep things simple.
 - D12: identity retention and erasure/legal hold (affects backup retention).
 - D13: legacy cutover reconciliation (affects the restore drill's control totals).
 
 ## Boundaries
 
-- This runbook is a draft. It has not been executed against production.
+- This runbook is implementation-ready but has not been executed against production.
 - No production deployment has been attempted.
 - No restore drill has been executed against a production backup.
 - The control totals listed are the minimum set; the finance approver may add more.

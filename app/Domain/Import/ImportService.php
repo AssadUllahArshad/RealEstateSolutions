@@ -229,7 +229,9 @@ class ImportService
         }
         $ownerName = trim($row['owner_name'] ?? '');
         $owner = $ownerName !== '' ? PlotOwner::where('name', $ownerName)->first() : null;
-        if ($ownerName !== '' && ! $owner) {
+        if ($ownerName === '') {
+            $errors[] = 'Owner name is required.';
+        } elseif (! $owner) {
             $errors[] = 'Owner name does not match an existing plot owner.';
         }
         $ownerPercentage = trim($row['owner_percentage'] ?? '');

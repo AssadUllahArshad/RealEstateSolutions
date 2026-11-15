@@ -1,0 +1,93 @@
+name: deploy-production
+
+on:
+  workflow_run:
+    workflows:
+      - tests
+    types:
+      - completed
+
+permissions:
+  contents: read
+
+concurrency:
+  group: estateflow-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: >-
+      vars.PRODUCTION_DEPLOY_ENABLED == 'true' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_branch == 'main'
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      DEPLOY_ROOT: ${{ secrets.PRODUCTION_DEPLOY_ROOT }}
+      PHP_BIN: ${{ vars.PRODUCTION_PHP_BIN || '/usr/bin/php84' }}
+      SSH_HOST: ${{ secrets.PRODUCTION_SSH_HOST }}
+      SSH_PORT: ${{ secrets.PRODUCTION_SSH_PORT }}
+      SSH_USER: ${{ secrets.PRODUCTION_SSH_USER }}
+    steps:
+      - name: Checkout tested source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          persist-credentials: false
+
+      - name: Record immutable release id
+        id: metadata
+        run: echo "id=$(git rev-parse HEAD)" >> "${GITHUB_OUTPUT}"
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2
+        with:
+          php-version: '8.4'
+          extensions: pdo_mysql, bcmath, mbstring, fileinfo, intl, zip
+          tools: composer:v2
+          coverage: none
+
+      - name: Setup Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22.19.0'
+
+      - name: Build immutable release
+        run: |
+          composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
+          npm ci
+          npm run build
+          rm -rf node_modules tests .git .github .runtime test-results playwright-report
+
+      - name: Configure production SSH
+        env:
+          SSH_KEY: ${{ secrets.PRODUCTION_SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.PRODUCTION_SSH_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "${SSH_KEY}" > ~/.ssh/estateflow-production
+          chmod 600 ~/.ssh/estateflow-production
+          printf '%s\n' "${SSH_KNOWN_HOSTS}" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Upload release
+        env:
+          RELEASE_ID: ${{ steps.metadata.outputs.id }}
+        run: |
+          test -n "${DEPLOY_ROOT}" && test -n "${SSH_HOST}" && test -n "${SSH_USER}"
+          rsync -az --delete -e "ssh -i ~/.ssh/estateflow-production -p ${SSH_PORT:-22}" \
+            ./ "${SSH_USER}@${SSH_HOST}:${DEPLOY_ROOT}/releases/${RELEASE_ID}/"
+
+      - name: Backup, migrate, and activate
+        env:
+          RELEASE_ID: ${{ steps.metadata.outputs.id }}
+        run: |
+          ssh -i ~/.ssh/estateflow-production -p "${SSH_PORT:-22}" "${SSH_USER}@${SSH_HOST}" \
+            "bash '${DEPLOY_ROOT}/releases/${RELEASE_ID}/deploy/activate-production.sh' '${DEPLOY_ROOT}' '${RELEASE_ID}' '${PHP_BIN}'"
+
+      - name: Verify public health endpoint
+        env:
+          HEALTH_URL: ${{ vars.PRODUCTION_HEALTH_URL }}
+        run: |
+          test -n "${HEALTH_URL}"
+          curl --fail --silent --show-error --retry 3 --retry-delay 5 "${HEALTH_URL}"

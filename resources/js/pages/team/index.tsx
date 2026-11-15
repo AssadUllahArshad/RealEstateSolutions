@@ -3,7 +3,13 @@ import InputError from '@/components/input-error';
 import ExportMenu from '@/components/export-menu';
 import { Button } from '@/components/ui/button';
 
-type Staff = { id: number; name: string; email: string; roles: string[] };
+type Staff = {
+    id: number;
+    name: string;
+    email: string;
+    phone: string | null;
+    roles: string[];
+};
 type Props = {
     users: {
         data: Staff[];
@@ -78,6 +84,14 @@ export default function Team({ users, recentChanges }: Props) {
                                         <p className="mt-1 text-muted-foreground">
                                             {staff.email}
                                         </p>
+                                        {staff.phone && (
+                                            <p
+                                                className="mt-1 text-muted-foreground"
+                                                dir="ltr"
+                                            >
+                                                {staff.phone}
+                                            </p>
+                                        )}
                                     </td>
                                     <td className="p-4">
                                         {staff.roles

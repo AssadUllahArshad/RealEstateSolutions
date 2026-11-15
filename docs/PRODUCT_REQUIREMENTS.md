@@ -77,4 +77,4 @@ No measured performance SLO or capacity is approved: D14 must supply expected us
 
 ## Assumptions requiring validation
 
-Internal staff browser access and manual payment entry are planning assumptions; no bank gateway integration is promised. Legacy migration, mandatory print formats, tax/fee requirements, operational opening balances and document retention require decisions. Acceptance scenarios must use synthetic DEMO identities only.
+Internal staff browser access and manual payment entry are planning assumptions; no bank gateway integration is promised. Initial launch records new work first; older records enter later through controlled batches with signed reconciliation. Customer identity and signed documents use an active-plus-seven-year working retention policy subject to legal review, with legal holds overriding disposal. Mandatory print formats, tax/fee requirements and any opening balances still require signed source totals. Acceptance scenarios must use synthetic DEMO identities only.

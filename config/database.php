@@ -5,6 +5,8 @@ use Pdo\Mysql;
 
 return [
 
+    'mysqldump_binary' => env('MYSQLDUMP_BINARY', '/usr/bin/mysqldump'),
+
     /*
     |--------------------------------------------------------------------------
     | Default Database Connection Name

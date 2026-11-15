@@ -31,4 +31,4 @@ Implemented on 2026-11-12.
 - No real financial source values have been entered.
 - The report is not a contract, receipt, booking or financial transaction and creates no audit trail.
 - Owner entitlement, settlement, commission, profit and a formal balance sheet remain separate, separately gated work.
-- Full reporting, legacy imports/cutover, production recovery rehearsal, the second admin, outbound email and Owner 2 setup remain outstanding or deferred.
+- Legacy cutover, outbound mailbox/SMTP setup and production recovery rehearsal remain outstanding. The second admin, Owner 2 and direct-production automation are now implemented or prepared; see [production setup](PRODUCTION_SETUP.md).

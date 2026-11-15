@@ -6,6 +6,7 @@ use App\Models\Booking;
 use App\Models\Customer;
 use App\Models\ImportBatch;
 use App\Models\Plot;
+use App\Models\PlotOwner;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Tests\Support\FinalBookingFixtures;
@@ -113,9 +114,10 @@ class ImportTest extends TestCase
     public function test_inventory_import_creates_plots(): void
     {
         $fixture = $this->fixture();
+        $owner = PlotOwner::create(['name' => 'DEMO Import Owner', 'admin_user_id' => $fixture['admin']->id, 'default_percentage' => '50.0000', 'created_by' => $fixture['admin']->id]);
 
         $csv = "block_code,size_label,number,list_price,owner_name,owner_percentage\n"
-            ."BOOK,DEMO 5 Marla,BOOK-IMPORT-1,5000000.00,,\n";
+            ."BOOK,DEMO 5 Marla,BOOK-IMPORT-1,5000000.00,{$owner->name},50.0000\n";
 
         $file = UploadedFile::fake()->createWithContent('inventory.csv', $csv);
 
@@ -130,6 +132,22 @@ class ImportTest extends TestCase
         $this->actingAs($fixture['admin'])->post("/imports/{$batch->id}/commit")->assertRedirect();
 
         $this->assertTrue(Plot::where('number', 'BOOK-IMPORT-1')->exists());
+    }
+
+    public function test_inventory_import_rejects_a_missing_owner(): void
+    {
+        $fixture = $this->fixture();
+        $csv = "block_code,size_label,number,list_price,owner_name,owner_percentage\n"
+            ."BOOK,DEMO 5 Marla,BOOK-IMPORT-NO-OWNER,5000000.00,,\n";
+
+        $this->actingAs($fixture['admin'])->post('/imports/dry-run', [
+            'template' => 'inventory',
+            'file' => UploadedFile::fake()->createWithContent('inventory.csv', $csv),
+        ]);
+
+        $batch = ImportBatch::latest('id')->firstOrFail();
+        $this->assertSame(1, $batch->error_count);
+        $this->assertContains('Owner name is required.', $batch->rows()->firstOrFail()->errors);
     }
 
     public function test_bookings_import_creates_confirmed_booking(): void

@@ -29,4 +29,4 @@ Implemented on 2026-11-10.
 - No real financial source values have been entered.
 - The preview is not a contract, receipt, booking or financial transaction and creates no audit trail.
 - Commission preview does not accrue, pay or reverse anything; it only illustrates the configured rule.
-- Full reporting, legacy imports/cutover, production recovery rehearsal, the second admin, outbound email and Owner 2 setup remain outstanding or deferred.
+- Legacy cutover, outbound mailbox/SMTP setup and production recovery rehearsal remain outstanding. The second admin, Owner 2, operational reports and direct-production automation are now implemented or prepared; see [production setup](PRODUCTION_SETUP.md).

@@ -3,7 +3,12 @@ import { Head } from '@inertiajs/react';
 export default function StaffProfile({
     staff,
 }: {
-    staff: { name: string; email: string; roles: string[] };
+    staff: {
+        name: string;
+        email: string;
+        phone: string | null;
+        roles: string[];
+    };
 }) {
     return (
         <>
@@ -11,6 +16,12 @@ export default function StaffProfile({
             <div className="mx-auto w-full max-w-3xl p-6 md:p-8">
                 <h1 className="text-2xl font-semibold">{staff.name}</h1>
                 <dl className="mt-6 space-y-5 rounded-xl border bg-card p-6">
+                    <div>
+                        <dt className="text-sm text-muted-foreground">Phone</dt>
+                        <dd className="mt-1" dir="ltr">
+                            {staff.phone || 'Not provided'}
+                        </dd>
+                    </div>
                     <div>
                         <dt className="text-sm text-muted-foreground">Email</dt>
                         <dd className="mt-1">{staff.email}</dd>
