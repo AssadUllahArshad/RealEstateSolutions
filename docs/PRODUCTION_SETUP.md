@@ -76,23 +76,27 @@ Create `shared/.env` directly on the server. Never copy it into Git or CI output
 
 Run `composer check-platform-reqs` and `php artisan estateflow:check-services` with `/usr/bin/php84`. Confirm the connection reports the expected database server and strict SQL behavior. MariaDB production use requires the finance, idempotency, locking and concurrency suites to pass against a temporary database on the same server before enabling deployment.
 
-## Scheduler and queues
+## Scheduler, queues and backups
 
-Install these StackCP cron entries:
+The current application defines no Laravel scheduled tasks and does not dispatch routine production queue jobs. Do not add idle `schedule:run` or `queue:work` tasks yet. Add them when an approved feature actually requires scheduled or queued work.
 
-```cron
-* * * * * /usr/bin/php84 <deploy-root>/current/artisan schedule:run >> /dev/null 2>&1
-* * * * * /usr/bin/php84 <deploy-root>/current/artisan queue:work database --stop-when-empty --max-time=50 --tries=3 >> /dev/null 2>&1
-15 2 * * * <deploy-root>/current/deploy/daily-backup.sh <deploy-root> /usr/bin/php84 30 >> <deploy-root>/shared/storage/logs/backup.log 2>&1
+Install this one task through StackCP's **Scheduled Tasks** screen. The hosting account is explicitly denied access to the `crontab` program over SSH.
+
+- Name: `EstateFlow Daily Backup`
+- Frequency: daily at 02:15 Asia/Karachi. If the panel uses UTC, select 21:15 UTC on the previous calendar day.
+- Command only (do not include five cron timing columns):
+
+```text
+/bin/bash /home/sites/23b/7/7bfd37bd3c/datarealestate/estateflow/current/deploy/daily-backup.sh /home/sites/23b/7/7bfd37bd3c/datarealestate/estateflow /usr/bin/php84 30
 ```
 
-Shared hosting does not guarantee a supervised long-running worker, so the queue command is deliberately bounded.
+The command was executed successfully over production SSH on 2026-11-16. It created a private database dump and customer-document archive, and both SHA-256 checks passed. Leave output redirection disabled until the first panel-triggered execution succeeds and exposes any panel-specific error.
 
 ## Information still needed from the owner
 
 1. Rotate all mailbox passwords that were previously shared or stored in plaintext, then update the protected production environment with the new system-sender password.
 2. Add the documented GitHub `production` environment secrets and variables. Keep `PRODUCTION_DEPLOY_ENABLED=false` until the first off-host backup copy passes.
-3. Add the documented scheduled tasks through StackCP; this hosting account is denied access to `crontab` over SSH.
+3. Add the documented daily backup task through StackCP; this hosting account is denied access to `crontab` over SSH.
 
 ## First-launch gate
 
