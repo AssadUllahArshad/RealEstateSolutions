@@ -53,7 +53,7 @@ Add these environment variables:
 | Name | Value |
 |---|---|
 | `PRODUCTION_PHP_BIN` | `/usr/bin/php84` |
-| `PRODUCTION_HEALTH_URL` | `https://<estateflow-domain>/up` |
+| `PRODUCTION_HEALTH_URL` | `https://erp.datarealestate.online/up?deployment-health=1` |
 | `PRODUCTION_DEPLOY_ENABLED` | Keep `false` until the first manual setup and smoke check pass; then set `true` |
 
 The [production workflow](../.github/workflows/deploy-production.yml) builds assets and production Composer dependencies in GitHub Actions, uploads an immutable commit release, creates a database/document/key backup, enters maintenance mode, runs migrations, caches Laravel configuration, atomically changes `current`, and checks `/up`. It retains five code releases. Backup retention is handled separately by the daily backup job and must retain 30 days.
