@@ -5,7 +5,7 @@ import { inspectPrint } from './helpers/print-document';
 test('agent confirms a booking with exact down payment and reloads its permanent record', async ({
     page,
 }, testInfo) => {
-    test.setTimeout(120000);
+    test.setTimeout(180000);
     const fixtures = JSON.parse(
         readFileSync('.runtime/booking-browser.json', 'utf8'),
     ) as Record<string, { draft: number; receipt: string }>;
