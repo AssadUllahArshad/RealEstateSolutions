@@ -1,6 +1,8 @@
 # EstateFlow production setup
 
-Status: the first production release is installed, but public launch and automated deployment remain disabled until the StackCP site runs PHP 8.4, its SSL certificate is issued, and the final HTTPS smoke test passes. There is no staging environment. Every successful `main` CI run becomes eligible for direct production deployment after `PRODUCTION_DEPLOY_ENABLED` is set to `true`.
+Status: production runs on PHP 8.4 with valid HTTPS, authenticated SMTP, initialized staff and baseline configuration. Automated direct-to-production deployment remains gated by `PRODUCTION_DEPLOY_ENABLED`; scheduled tasks still require StackCP setup.
+
+[Production validation](PRODUCTION_VALIDATION.md)
 
 [Planning index](README.md) · [Deployment and restore runbook](RESTORE_DRILL_AND_DEPLOYMENT.md) · [Architecture](ARCHITECTURE.md) · [Staff provisioning](STAFF_PROVISIONING.md)
 
