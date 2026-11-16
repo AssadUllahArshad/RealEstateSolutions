@@ -101,7 +101,8 @@ class DraftTerms
             $effective = [];
             foreach (['booking', 'installments'] as $key) {
                 $policy = $records->get($key);
-                if (($policy?->version ?? 0) !== (int) $data['policy_versions'][$key]) {
+                $currentVersion = $records->has($key) ? $policy->version : 0;
+                if ($currentVersion !== (int) $data['policy_versions'][$key]) {
                     throw new ConflictHttpException('Business settings changed. Reload and review the current rules.');
                 }
                 $effective[$key] = app(BusinessPolicies::class)->effective($key, $policy?->values);
@@ -121,7 +122,10 @@ class DraftTerms
             }
             $calculated = app(InstallmentCalculator::class)->calculate($draft->quoted_price, $data, $effective['booking'], $effective['installments']);
             $snapshot = [...$calculated, 'source_version' => $draft->version,
-                'policy_versions' => ['booking' => $records->get('booking')?->version ?? 0, 'installments' => $records->get('installments')?->version ?? 0],
+                'policy_versions' => [
+                    'booking' => $records->has('booking') ? $records->get('booking')->version : 0,
+                    'installments' => $records->has('installments') ? $records->get('installments')->version : 0,
+                ],
                 'policy_snapshot' => $effective,
                 'discount_authorized_by' => ($discountChanged || $discountRebased) ? $fresh->id : ($old['discount_authorized_by'] ?? null),
                 'input' => array_intersect_key($data, array_flip(['discount', 'discount_reason', 'down_payment', 'frequency', 'count', 'first_due_date', 'custom'])),
