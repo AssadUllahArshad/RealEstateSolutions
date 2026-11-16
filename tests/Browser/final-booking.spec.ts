@@ -54,6 +54,9 @@ test('agent confirms a booking with exact down payment and reloads its permanent
         testInfo,
         'booking-confirmation',
         'Booking confirmed',
+        'Print / Save PDF',
+        undefined,
+        testInfo.project.name === 'desktop',
     );
     await page.reload();
     await expect(page.getByText('Plot booked', { exact: true })).toBeVisible();
@@ -111,6 +114,7 @@ test('agent confirms a booking with exact down payment and reloads its permanent
         'Live principal balances',
         'Print statement / Save PDF',
         'PKR 875.00',
+        testInfo.project.name === 'desktop',
     );
     await page.screenshot({
         path: testInfo.outputPath('live-installment-ledger.png'),

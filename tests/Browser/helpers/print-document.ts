@@ -8,6 +8,7 @@ export async function inspectPrint(
     expectedStatus: string,
     linkName = 'Print / Save PDF',
     expectedAmount?: string,
+    generatePdf = true,
 ) {
     const popupPromise = page.waitForEvent('popup');
     await page.getByRole('link', { name: linkName, exact: true }).click();
@@ -63,15 +64,17 @@ export async function inspectPrint(
     await expect(
         preview.getByRole('navigation', { name: 'Document controls' }),
     ).toBeHidden();
-    const file = testInfo.outputPath(`${label}.pdf`);
-    await preview.pdf({
-        path: file,
-        format: 'A4',
-        printBackground: true,
-        preferCSSPageSize: true,
-    });
-    const pdf = readFileSync(file);
-    expect(pdf.subarray(0, 5).toString()).toBe('%PDF-');
-    expect(pdf.length).toBeGreaterThan(5000);
+    if (generatePdf) {
+        const file = testInfo.outputPath(`${label}.pdf`);
+        await preview.pdf({
+            path: file,
+            format: 'A4',
+            printBackground: true,
+            preferCSSPageSize: true,
+        });
+        const pdf = readFileSync(file);
+        expect(pdf.subarray(0, 5).toString()).toBe('%PDF-');
+        expect(pdf.length).toBeGreaterThan(5000);
+    }
     await preview.close();
 }
