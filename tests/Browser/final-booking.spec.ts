@@ -5,6 +5,10 @@ import { inspectPrint } from './helpers/print-document';
 test('agent confirms a booking with exact down payment and reloads its permanent record', async ({
     page,
 }, testInfo) => {
+    test.skip(
+        testInfo.project.name === 'mobile',
+        'The complete finance and PDF workflow runs in desktop Chromium; mobile layout is covered by the responsive browser suites.',
+    );
     test.setTimeout(180000);
     const fixtures = JSON.parse(
         readFileSync('.runtime/booking-browser.json', 'utf8'),
@@ -49,14 +53,12 @@ test('agent confirms a booking with exact down payment and reloads its permanent
     ).toBeVisible();
     await expect(page.getByText('100.0000%', { exact: true })).toBeVisible();
     await expect(page.getByText('PKR 100.01', { exact: true })).toHaveCount(2);
-    if (testInfo.project.name === 'desktop') {
-        await inspectPrint(
-            page,
-            testInfo,
-            'booking-confirmation',
-            'Booking confirmed',
-        );
-    }
+    await inspectPrint(
+        page,
+        testInfo,
+        'booking-confirmation',
+        'Booking confirmed',
+    );
     await page.reload();
     await expect(page.getByText('Plot booked', { exact: true })).toBeVisible();
     await page.screenshot({
@@ -73,11 +75,6 @@ test('agent confirms a booking with exact down payment and reloads its permanent
     await page.goto(`/sales/${draft}/terms`);
     await expect(page).toHaveURL(/\/bookings\/\d+$/);
     const bookingUrl = page.url();
-    if (testInfo.project.name === 'mobile') {
-        expect(errors).toEqual([]);
-
-        return;
-    }
     await page
         .getByRole('link', { name: 'Payments & ledger', exact: true })
         .click();
