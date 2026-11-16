@@ -12,8 +12,8 @@ Status: the first production release is installed, but public launch and automat
 - Composer 2.10.3, Git 2.52.0 and `mysqldump` are available.
 - Production uses MariaDB 10.11.19. Migrations, receipt posting, idempotency and six locking/concurrency scenarios passed against a disposable database on the same server. CI continues to certify MySQL 8.4 as the preferred baseline.
 - The CLI release runtime is PHP 8.4.27. The EstateFlow public `.htaccess` selects the host's `x-httpd-php84` handler using o3host's documented per-directory syntax; verify the web response after every public-file deployment.
-- Release `f5db719` is active. The clean production schema, three confirmed staff identities, two plot-owner profiles and pre-deploy backups are installed.
-- Production mail remains on the log driver until all mailbox passwords are rotated and the final SMTP settings are confirmed.
+- Release `811a64b` is active. The clean production schema, three confirmed staff identities, two plot-owner profiles and pre-deploy backups are installed.
+- Production mail uses authenticated SMTPS through `smtp.stackmail.com:465` with Amir Ali's business mailbox as the system sender. The SMTP verification message was accepted on 2026-11-16; rotate the initially supplied mailbox passwords after launch.
 - `public_html` currently contains a different `blog-site` repository with uncommitted changes. It is not an EstateFlow target and must be preserved.
 - No cron entries were returned for the SSH account.
 
@@ -88,10 +88,9 @@ Shared hosting does not guarantee a supervised long-running worker, so the queue
 
 ## Information still needed from the owner
 
-1. Confirm the `erp.datarealestate.online` certificate covers the exact subdomain and HTTPS health check passes.
-2. Rotate all mailbox passwords that were previously shared or stored in plaintext after initial SMTP verification.
-3. Add the documented GitHub `production` environment secrets and variables. Keep `PRODUCTION_DEPLOY_ENABLED=false` until the HTTPS smoke test and first off-host backup copy pass.
-4. Add the documented scheduled tasks through StackCP; this hosting account is denied access to `crontab` over SSH.
+1. Rotate all mailbox passwords that were previously shared or stored in plaintext, then update the protected production environment with the new system-sender password.
+2. Add the documented GitHub `production` environment secrets and variables. Keep `PRODUCTION_DEPLOY_ENABLED=false` until the first off-host backup copy passes.
+3. Add the documented scheduled tasks through StackCP; this hosting account is denied access to `crontab` over SSH.
 
 ## First-launch gate
 

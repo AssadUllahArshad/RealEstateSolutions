@@ -10,6 +10,10 @@ AddHandler x-httpd-php84 .php
 
     RewriteEngine On
 
+    # Production traffic must use the verified TLS endpoint.
+    RewriteCond %{HTTPS} !=on
+    RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
