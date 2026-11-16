@@ -59,6 +59,9 @@ class CalculatorTest extends TestCase
             ->component('calculator')
             ->where('result.net', '1000.00')
             ->where('result.minimum_down_payment', '100.00')
+            ->where('result.planned_down_payment', '100.00')
+            ->where('result.discount_applied_to_down_payment', '0.00')
+            ->where('result.down_payment', '100.00')
             ->where('result.balance', '900.00')
             ->where('result.schedule.0.amount', '128.57')
             ->where('result.schedule.0.due_date', '2028-01-31')
@@ -73,10 +76,14 @@ class CalculatorTest extends TestCase
     public function test_percentage_discount_and_fixed_commission_preview(): void
     {
         BusinessPolicy::whereKey('commissions')->update(['values' => ['type' => 'fixed', 'value' => '250.00', 'basis' => 'net_contract', 'trigger' => 'booking_confirmed', 'cancellation' => 'admin_review']]);
-        $this->actingAs($this->agent)->post('/calculator', [...$this->payload(), 'discount_type' => 'percentage', 'discount_value' => '10'])->assertSessionHasNoErrors()->assertInertia(fn (Assert $page) => $page
-            ->where('result.discount', '100.00')
-            ->where('result.net', '900.00')
-            ->where('result.minimum_down_payment', '90.00')
+        $this->actingAs($this->agent)->post('/calculator', [...$this->payload(), 'discount_type' => 'percentage', 'discount_value' => '5'])->assertSessionHasNoErrors()->assertInertia(fn (Assert $page) => $page
+            ->where('result.discount', '50.00')
+            ->where('result.net', '950.00')
+            ->where('result.minimum_down_payment', '100.00')
+            ->where('result.planned_down_payment', '100.00')
+            ->where('result.discount_applied_to_down_payment', '50.00')
+            ->where('result.down_payment', '50.00')
+            ->where('result.balance', '900.00')
             ->where('result.commission.amount', '250.00'));
     }
 
@@ -93,16 +100,18 @@ class CalculatorTest extends TestCase
         $this->post('/calculator', $this->payload())->assertForbidden();
     }
 
-    public function test_missing_setup_blocks_calculation(): void
+    public function test_incomplete_saved_setup_falls_back_to_fixed_operational_defaults(): void
     {
         BusinessPolicy::whereKey('installments')->update(['values' => [...$this->policy(), 'rounding' => null]]);
-        $this->actingAs($this->agent)->post('/calculator', $this->payload())->assertSessionHasErrors('plan');
-        $this->get('/calculator')->assertInertia(fn (Assert $page) => $page->has('missingSetup', 1));
+        $this->actingAs($this->agent)->post('/calculator', $this->payload())->assertSessionHasNoErrors()
+            ->assertInertia(fn (Assert $page) => $page->where('result.schedule.0.amount', '128.57'));
+        $this->get('/calculator')->assertInertia(fn (Assert $page) => $page->where('missingSetup', []));
     }
 
     public function test_business_rule_violations_return_errors_without_persisting(): void
     {
         $this->actingAs($this->agent)->post('/calculator', [...$this->payload(), 'discount_type' => 'fixed', 'discount_value' => '1000.00'])->assertSessionHasErrors('discount');
+        $this->post('/calculator', [...$this->payload(), 'discount_type' => 'fixed', 'discount_value' => '100.00'])->assertSessionHasErrors('discount');
         $this->post('/calculator', [...$this->payload(), 'down_payment' => '99.99'])->assertSessionHasErrors('down_payment');
         $this->post('/calculator', [...$this->payload(), 'frequency' => 'full', 'down_payment' => '1000.00'])->assertSessionHasNoErrors();
         $this->post('/calculator', [...$this->payload(), 'frequency' => 'full', 'down_payment' => '999.99'])->assertSessionHasErrors('down_payment');

@@ -2,6 +2,7 @@
 
 namespace App\Domain\Sales;
 
+use App\Domain\Configuration\BusinessPolicies;
 use App\Domain\CRM\Customers;
 use App\Domain\Finance\AgentCommissions;
 use App\Domain\Finance\OwnerEntitlements;
@@ -101,6 +102,7 @@ class FinalBookings
             $term = DraftTerm::where('booking_draft_id', $id)->lockForUpdate()->firstOrFail();
             $policies = BusinessPolicy::whereIn('key', ['booking', 'installments', 'commissions'])->orderBy('key')->lockForUpdate()->get()->keyBy('key');
             $versions = ['booking' => $policies->get('booking')->version ?? 0, 'installments' => $policies->get('installments')->version ?? 0];
+            $bookingRules = app(BusinessPolicies::class)->effective('booking', $policies->get('booking')?->values);
             if ($term->version !== (int) $data['terms_version'] || $term->snapshot['source_version'] !== $draft->version || $term->snapshot['policy_versions'] !== $versions) {
                 throw new ConflictHttpException('Pricing or business rules changed. Recalculate the terms and review again.');
             }
@@ -129,11 +131,11 @@ class FinalBookings
                 throw ValidationException::withMessages(['confirmation' => 'Legal purchaser shares must total exactly 100%.']);
             }
             $documents = CustomerDocument::where('customer_id', $customer->id)->orderBy('id')->lockForUpdate()->get(['id', 'kind']);
-            if (array_diff($policies['booking']->values['required_documents'], $documents->pluck('kind')->all()) !== []) {
+            if (array_diff($bookingRules['required_documents'], $documents->pluck('kind')->all()) !== []) {
                 throw ValidationException::withMessages(['confirmation' => 'Required booking documents are missing.']);
             }
             $hold = PlotHold::where('active_plot_id', $plot->id)->lockForUpdate()->first();
-            $access = $policies['booking']->values['held_plot_access'];
+            $access = $bookingRules['held_plot_access'];
             if ($hold && ($hold->kind === 'block' || ($access === 'holder_or_admin' && $hold->created_by !== $fresh->id && ! $fresh->hasAnyRole(['admin', 'super_admin'])))) {
                 throw new ConflictHttpException('The plot hold prevents confirmation. Review current availability.');
             }
@@ -156,7 +158,7 @@ class FinalBookings
                 $total = bcadd($total, $row['amount'], 2);
             }
             if (bccomp($total, $term->snapshot['down_payment'], 2) !== 0) {
-                throw ValidationException::withMessages(['allocations' => 'Selected amounts must equal the saved planned down payment exactly. Remaining credit stays unallocated.']);
+                throw ValidationException::withMessages(['allocations' => 'Selected amounts must equal the payable down payment after discount exactly. Remaining credit stays unallocated.']);
             }
             $commission = $policies->get('commissions');
             $agent = User::whereKey($customer->assigned_to)->first();

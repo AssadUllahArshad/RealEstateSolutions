@@ -22,7 +22,13 @@ type Props = {
     terms: {
         term: null | {
             version: number;
-            snapshot: { net: string; down_payment: string; balance: string };
+            snapshot: {
+                net: string;
+                down_payment: string;
+                planned_down_payment?: string;
+                discount_applied_to_down_payment?: string;
+                balance: string;
+            };
         };
         stale: boolean;
     };
@@ -79,7 +85,7 @@ export default function ConfirmBooking(props: Props) {
                         {[
                             ['Agreed price', term.snapshot.net],
                             [
-                                'Down payment to allocate',
+                                'Payable down payment after discount',
                                 term.snapshot.down_payment,
                             ],
                             ['Scheduled balance', term.snapshot.balance],
@@ -108,7 +114,7 @@ export default function ConfirmBooking(props: Props) {
                         </h2>
                         <p className="mt-2 text-sm leading-6 text-muted-foreground">
                             {t(
-                                'Choose recognized receipts for this sales contact and enter the exact amount from each. The total must equal the saved planned down payment. Unused funds remain customer credit. This confirms the booking and freezes its proposal, purchasers and terms.',
+                                'Choose recognized receipts for this sales contact and enter the exact payable down payment after discount. Unused funds remain customer credit.',
                             )}
                         </p>
                     </div>

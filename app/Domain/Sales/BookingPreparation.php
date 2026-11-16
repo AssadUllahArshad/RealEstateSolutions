@@ -22,7 +22,7 @@ class BookingPreparation
         $customer = app(Customers::class)->query($actor)->findOrFail($draft->customer_id);
         $policies = app(BusinessPolicies::class);
         $booking = BusinessPolicy::query()->whereKey('booking')->first();
-        $values = array_replace($policies->defaults('booking'), $booking->values ?? []);
+        $values = $policies->effective('booking', $booking?->values);
         $checks = [];
         $add = function (string $key, string $title, string $state, string $detail, ?string $href = null) use (&$checks): void {
             $checks[] = compact('key', 'title', 'state', 'detail', 'href');
@@ -34,7 +34,7 @@ class BookingPreparation
         $required = $values['required_documents'];
         $labels = PolicyDefinitions::all()['booking']['fields']['required_documents']['options'];
         $missing = array_values(array_diff($required, $kinds));
-        $configured = $booking && in_array('signed_booking_form', $required, true);
+        $configured = in_array('signed_booking_form', $required, true);
         $add('documents', 'Booking documents', ! $configured ? 'configuration' : ($missing === [] ? 'recorded' : 'action'), ! $configured ? 'Main admin must save a document checklist including the signed booking form.' : ($missing === [] ? 'Required document types uploaded. Staff must verify their contents and signatures.' : 'Upload: '.implode(', ', array_map(fn ($kind) => $labels[$kind], $missing)).'.'), '/customers/'.$customer->id);
 
         $hold = $draft->plot->activeHold;
@@ -60,11 +60,11 @@ class BookingPreparation
         $add('plot', 'Plot availability', $state, $detail, '/inventory/plots/'.$draft->plot_id.'/hold');
 
         $missingSettings = $policies->missing('booking', $values);
-        $add('policy', 'Booking rules', $booking && $missingSettings === [] ? 'recorded' : 'configuration', $booking && $missingSettings === [] ? 'Booking settings have all required fields. Final contracts must retain the applied policy version.' : 'Main admin must finish the booking requirements in Business settings.');
+        $add('policy', 'Booking rules', $missingSettings === [] ? 'recorded' : 'configuration', $missingSettings === [] ? 'Booking rules are ready. Final contracts retain the effective rule snapshot.' : 'Main admin must finish the booking requirements in Business settings.');
         $purchasers = app(DraftPurchasers::class)->listing($actor, $id);
         $complete = $purchasers !== [] && collect($purchasers)->every(fn ($row) => $row['identity_complete']);
         $add('purchasers', 'Legal purchasers', $complete ? 'recorded' : 'action', $complete ? 'Proposed purchasers and shares recorded. Verify identity, consent and supporting documents before final booking.' : 'Record single or joint purchasers below. Each purchaser needs a complete private identity profile.');
-        $add('payment', 'Verified down payment', 'action', 'Select recognized customer credit on the final confirmation screen. The allocation must equal the saved planned down payment; preparation and uploaded evidence alone do not allocate funds.', '/sales/'.$id.'/confirm');
+        $add('payment', 'Verified down payment', 'action', 'On final confirmation, allocate recognized customer credit equal to the positive payable down payment after discount.', '/sales/'.$id.'/confirm');
         $terms = app(DraftTerms::class)->context($actor, $id);
         $prepared = $terms['term'] && ! $terms['stale'];
         $add('contract', 'Pricing and payment plan', $prepared ? 'recorded' : 'action', $prepared ? 'Proposed pricing and schedule saved for the current proposal and policy versions. Final contract and booking confirmation remain separate.' : 'Prepare pricing and a payment plan, or recalculate when the proposal or settings change.', '/sales/'.$id.'/terms');

@@ -30,8 +30,8 @@ class DraftTerms
         $draft = app(BookingDrafts::class)->query($actor)->findOrFail($id);
         $policies = BusinessPolicy::whereIn('key', ['booking', 'installments'])->get()->keyBy('key');
         $setup = app(BusinessPolicies::class);
-        $booking = array_replace($setup->defaults('booking'), $policies->get('booking')->values ?? []);
-        $installments = array_replace($setup->defaults('installments'), $policies->get('installments')->values ?? []);
+        $booking = $setup->effective('booking', $policies->get('booking')?->values);
+        $installments = $setup->effective('installments', $policies->get('installments')?->values);
         $term = DraftTerm::where('booking_draft_id', $id)->first();
         $versions = ['booking' => $policies->get('booking')->version ?? 0, 'installments' => $policies->get('installments')->version ?? 0];
 
@@ -55,7 +55,7 @@ class DraftTerms
         }
         $data = Validator::make($input, [
             'version' => ['required', 'integer', 'min:0'], 'source_version' => ['required', 'integer', 'min:1'],
-            'policy_versions' => ['required', 'array:booking,installments'], 'policy_versions.booking' => ['required', 'integer', 'min:1'], 'policy_versions.installments' => ['required', 'integer', 'min:1'],
+            'policy_versions' => ['required', 'array:booking,installments'], 'policy_versions.booking' => ['required', 'integer', 'min:0'], 'policy_versions.installments' => ['required', 'integer', 'min:0'],
             'discount' => ['required', 'string', 'regex:/^\d{1,16}(?:\.\d{1,2})?$/D'], 'discount_reason' => ['nullable', 'string', 'max:500'],
             'down_payment' => ['required', new PositiveDecimal],
             'frequency' => ['required', Rule::in(['full', 'monthly', 'quarterly', 'half_yearly', 'yearly', 'custom'])],
@@ -98,13 +98,15 @@ class DraftTerms
                 throw new ConflictHttpException('The proposal changed. Reload before preparing its terms.');
             }
             $records = BusinessPolicy::whereIn('key', ['booking', 'installments'])->orderBy('key')->lockForUpdate()->get()->keyBy('key');
+            $effective = [];
             foreach (['booking', 'installments'] as $key) {
                 $policy = $records->get($key);
-                if (! $policy || $policy->version !== (int) $data['policy_versions'][$key]) {
-                    throw new ConflictHttpException('Business settings changed or are missing. Reload and review the current rules.');
+                if (($policy?->version ?? 0) !== (int) $data['policy_versions'][$key]) {
+                    throw new ConflictHttpException('Business settings changed. Reload and review the current rules.');
                 }
-                if (app(BusinessPolicies::class)->missing($key, $policy->values) !== []) {
-                    throw ValidationException::withMessages(['plan' => 'Main admin must complete booking and installment settings first.']);
+                $effective[$key] = app(BusinessPolicies::class)->effective($key, $policy?->values);
+                if (app(BusinessPolicies::class)->missing($key, $effective[$key]) !== []) {
+                    throw ValidationException::withMessages(['plan' => 'Booking rules are unavailable. Ask the main admin to review Business settings.']);
                 }
             }
             $term = DraftTerm::where('booking_draft_id', $id)->lockForUpdate()->first();
@@ -117,10 +119,10 @@ class DraftTerms
             if (bccomp($data['discount'], '0', 2) > 0 && $data['discount_reason'] === '') {
                 throw ValidationException::withMessages(['discount_reason' => 'Record the reason for this admin discount.']);
             }
-            $calculated = app(InstallmentCalculator::class)->calculate($draft->quoted_price, $data, $records['booking']->values, $records['installments']->values);
+            $calculated = app(InstallmentCalculator::class)->calculate($draft->quoted_price, $data, $effective['booking'], $effective['installments']);
             $snapshot = [...$calculated, 'source_version' => $draft->version,
-                'policy_versions' => ['booking' => $records['booking']->version, 'installments' => $records['installments']->version],
-                'policy_snapshot' => ['booking' => $records['booking']->values, 'installments' => $records['installments']->values],
+                'policy_versions' => ['booking' => $records->get('booking')?->version ?? 0, 'installments' => $records->get('installments')?->version ?? 0],
+                'policy_snapshot' => $effective,
                 'discount_authorized_by' => ($discountChanged || $discountRebased) ? $fresh->id : ($old['discount_authorized_by'] ?? null),
                 'input' => array_intersect_key($data, array_flip(['discount', 'discount_reason', 'down_payment', 'frequency', 'count', 'first_due_date', 'custom'])),
             ];

@@ -22,6 +22,8 @@ type Result = {
     discount: string;
     net: string;
     minimum_down_payment: string;
+    planned_down_payment: string;
+    discount_applied_to_down_payment: string;
     down_payment: string;
     balance: string;
     schedule: (Row & { sequence: number })[];
@@ -210,7 +212,9 @@ export default function CalculatorPage({
                             </div>
                             <div>
                                 <Label htmlFor="calc-down">
-                                    {t('Planned down payment (PKR) *')}
+                                    {t(
+                                        'Agreed down payment before discount (PKR) *',
+                                    )}
                                 </Label>
                                 <Input
                                     className="mt-2"
@@ -451,7 +455,15 @@ export default function CalculatorPage({
                             {[
                                 ['Net price', result.net],
                                 ['Discount', result.discount],
-                                ['Planned down payment', result.down_payment],
+                                [
+                                    'Agreed down payment',
+                                    result.planned_down_payment,
+                                ],
+                                [
+                                    'Discount applied to down payment',
+                                    result.discount_applied_to_down_payment,
+                                ],
+                                ['Payable down payment', result.down_payment],
                                 [
                                     'Required minimum',
                                     result.minimum_down_payment,
@@ -528,7 +540,7 @@ export default function CalculatorPage({
                         </div>
                         <p className="border-t p-5 text-xs text-muted-foreground">
                             {t(
-                                'Formula: net = price − discount; balance = net − down payment; installments split the balance with the configured rounding and residual rule.',
+                                'The discount reduces both the total contract price and the amount payable at booking. The agreed installment balance remains unchanged.',
                             )}
                         </p>
                     </section>

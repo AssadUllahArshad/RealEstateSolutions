@@ -37,11 +37,18 @@ class InstallmentCalculator
         if (bccomp($net, '0', 2) <= 0) {
             throw ValidationException::withMessages(['discount' => 'Discount must be less than the proposed gross price.']);
         }
-        $minimum = $booking['down_payment_type'] === 'fixed' ? $booking['down_payment_value'] : $this->round(bcdiv(bcmul($net, $booking['down_payment_value'], 6), '100', 8), $policy['rounding']);
-        if (bccomp($input['down_payment'], $minimum, 2) < 0 || bccomp($input['down_payment'], $net, 2) > 0) {
-            throw ValidationException::withMessages(['down_payment' => 'Planned down payment must meet the configured minimum and cannot exceed the net price.']);
+        $minimum = $booking['down_payment_type'] === 'fixed' ? $booking['down_payment_value'] : $this->round(bcdiv(bcmul($gross, $booking['down_payment_value'], 6), '100', 8), $policy['rounding']);
+        if (bccomp($input['down_payment'], $minimum, 2) < 0 || bccomp($input['down_payment'], $gross, 2) > 0) {
+            throw ValidationException::withMessages(['down_payment' => 'Agreed down payment must meet the configured minimum and cannot exceed the gross price.']);
         }
-        $balance = bcsub($net, $input['down_payment'], 2);
+        $discountAppliedToDownPayment = bccomp($input['discount'], $input['down_payment'], 2) > 0
+            ? $input['down_payment']
+            : $input['discount'];
+        $payableDownPayment = bcsub($input['down_payment'], $discountAppliedToDownPayment, 2);
+        if (bccomp($payableDownPayment, '0', 2) <= 0) {
+            throw ValidationException::withMessages(['discount' => 'Discount must leave a positive payable down payment.']);
+        }
+        $balance = bcsub($net, $payableDownPayment, 2);
         $schedule = [];
         if ($input['frequency'] === 'full') {
             if (bccomp($balance, '0', 2) !== 0) {
@@ -92,6 +99,16 @@ class InstallmentCalculator
             }
         }
 
-        return ['gross' => $gross, 'discount' => $input['discount'], 'net' => $net, 'minimum_down_payment' => bcadd($minimum, '0', 2), 'down_payment' => $input['down_payment'], 'balance' => $balance, 'schedule' => $schedule];
+        return [
+            'gross' => $gross,
+            'discount' => $input['discount'],
+            'net' => $net,
+            'minimum_down_payment' => bcadd($minimum, '0', 2),
+            'planned_down_payment' => $input['down_payment'],
+            'discount_applied_to_down_payment' => $discountAppliedToDownPayment,
+            'down_payment' => $payableDownPayment,
+            'balance' => $balance,
+            'schedule' => $schedule,
+        ];
     }
 }

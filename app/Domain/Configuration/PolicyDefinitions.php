@@ -20,7 +20,7 @@ class PolicyDefinitions
             ]],
             'booking' => ['title' => 'Booking requirements', 'description' => 'Agents may finalize once both the required down payment and documents are satisfied. The checklist must include a signed booking form. Set the threshold and held-plot access rule here.', 'fields' => [
                 'down_payment_type' => self::select('Minimum down payment basis', ['fixed' => 'Fixed PKR amount', 'percentage' => 'Percentage of agreed contract price']),
-                'down_payment_value' => self::field('Minimum down payment value', 'decimal', 'PKR for a fixed amount, or 0–100 for a percentage. A positive value is required.'),
+                'down_payment_value' => self::field('Minimum down payment value', 'decimal', 'PKR for a fixed amount, or 0–100 for a percentage. Zero percent lets staff enter the agreed down payment per booking.'),
                 'required_documents' => self::multi('Required booking documents', ['signed_booking_form' => 'Signed booking form', 'cnic_copy' => 'CNIC copy', 'customer_photo' => 'Customer photograph', 'payment_evidence' => 'Down payment evidence']),
                 'held_plot_access' => self::select('Who may book a plot already on hold', ['holder_or_admin' => 'The holder or an authorized admin', 'any_agent' => 'Any authorized agent with access to the customer']),
             ]],

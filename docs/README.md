@@ -1,5 +1,7 @@
 # EstateFlow planning pack
 
+Client presentation: [short complete system guide](CLIENT_PRESENTATION_GUIDE.md).
+
 Current legacy compensation and print implementation: [admin-reviewed legacy commission assignment and agent statements](LEGACY_COMMISSION_STATUS.md).
 
 Current agent-compensation implementation: [collection-based commission accrual, reversal and controlled payments](AGENT_COMMISSION_STATUS.md).

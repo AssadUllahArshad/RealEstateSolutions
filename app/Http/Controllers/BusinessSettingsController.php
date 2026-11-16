@@ -23,11 +23,11 @@ class BusinessSettingsController extends Controller
         $sections = [];
         foreach ($definitions as $key => $definition) {
             $record = $records->get($key);
-            $values = $record->values ?? $policies->defaults($key);
+            $values = $policies->effective($key, $record?->values);
             $sections[] = ['key' => $key, 'title' => $definition['title'], 'saved' => $record !== null, 'missing' => $policies->missing($key, $values)];
         }
         $record = $records->get($section);
-        $values = $record->values ?? $policies->defaults($section);
+        $values = $policies->effective($section, $record?->values);
 
         return Inertia::render('business-settings/index', ['section' => $section, 'definition' => $definitions[$section], 'sections' => $sections,
             'values' => $values, 'version' => $record->version ?? 0, 'missing' => $policies->missing($section, $values),

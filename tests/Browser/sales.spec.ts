@@ -246,7 +246,9 @@ test('staff creates and revises a booking draft without changing plot holds', as
         .getByLabel('Discount reason', { exact: true })
         .fill('DEMO admin agreed reduction');
     await page
-        .getByLabel('Planned down payment (PKR) *', { exact: true })
+        .getByLabel('Agreed down payment before discount (PKR) *', {
+            exact: true,
+        })
         .fill('500000.00');
     await page
         .getByLabel('Payment plan *', { exact: true })
@@ -275,7 +277,7 @@ test('staff creates and revises a booking draft without changing plot holds', as
         schedule.getByRole('cell', { name: '2028-02-29', exact: true }),
     ).toBeVisible();
     await expect(
-        schedule.getByText('PKR 4,700,000.00', { exact: true }),
+        schedule.getByText('PKR 4,800,000.00', { exact: true }),
     ).toBeVisible();
     expect(
         await page.evaluate(

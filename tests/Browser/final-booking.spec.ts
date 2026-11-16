@@ -40,7 +40,7 @@ test('agent confirms a booking with exact down payment and reloads its permanent
         .getByRole('button', { name: 'Confirm booking & allocate payment' })
         .click();
     await expect(page.getByRole('alert')).toContainText(
-        'planned down payment exactly',
+        'payable down payment after discount exactly',
     );
     await page.getByLabel(`Amount from ${receipt} (PKR)`).fill('100.01');
     await page

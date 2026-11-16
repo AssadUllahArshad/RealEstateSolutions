@@ -42,6 +42,8 @@ type Props = {
             discount: string;
             net: string;
             down_payment: string;
+            planned_down_payment?: string;
+            discount_applied_to_down_payment?: string;
             minimum_down_payment: string;
             balance: string;
             input: TermsInput;
@@ -90,10 +92,7 @@ function TermsEditor(props: Props) {
     const available = ['full', ...props.policies.installments.frequencies];
     if (form.data.frequency && !available.includes(form.data.frequency))
         available.push(form.data.frequency);
-    const setupMissing =
-        props.missingSetup.length > 0 ||
-        !props.policyVersions.booking ||
-        !props.policyVersions.installments;
+    const setupMissing = props.missingSetup.length > 0;
     return (
         <form
             className="ef-panel overflow-hidden"
@@ -163,7 +162,7 @@ function TermsEditor(props: Props) {
                     </div>
                     <div>
                         <Label htmlFor="terms-down">
-                            {t('Planned down payment (PKR) *')}
+                            {t('Agreed down payment before discount (PKR) *')}
                         </Label>
                         <Input
                             className="mt-2"
@@ -177,7 +176,7 @@ function TermsEditor(props: Props) {
                         />
                         <p className="mt-2 text-xs text-muted-foreground">
                             {t(
-                                'A proposal amount, not proof of received or cleared money.',
+                                'The discount is applied to this amount first. The saved result shows the actual down payment payable by the customer.',
                             )}
                         </p>
                     </div>
@@ -465,7 +464,17 @@ export default function Terms(props: Props) {
                         <dl className="grid gap-px bg-border sm:grid-cols-2 xl:grid-cols-4">
                             {[
                                 ['Net proposed price', snapshot.net],
-                                ['Planned down payment', snapshot.down_payment],
+                                [
+                                    'Agreed down payment',
+                                    snapshot.planned_down_payment ??
+                                        snapshot.down_payment,
+                                ],
+                                [
+                                    'Discount applied to down payment',
+                                    snapshot.discount_applied_to_down_payment ??
+                                        '0.00',
+                                ],
+                                ['Payable down payment', snapshot.down_payment],
                                 [
                                     'Required minimum',
                                     snapshot.minimum_down_payment,

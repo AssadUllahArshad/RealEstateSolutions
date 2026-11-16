@@ -59,8 +59,8 @@ class CalculatorController extends Controller
 
         $setup = app(BusinessPolicies::class);
         $policies = BusinessPolicy::whereIn('key', ['booking', 'installments', 'commissions'])->get()->keyBy('key');
-        $booking = array_replace($setup->defaults('booking'), $policies->get('booking')->values ?? []);
-        $installments = array_replace($setup->defaults('installments'), $policies->get('installments')->values ?? []);
+        $booking = $setup->effective('booking', $policies->get('booking')?->values);
+        $installments = $setup->effective('installments', $policies->get('installments')?->values);
         $commissions = array_replace($setup->defaults('commissions'), $policies->get('commissions')->values ?? []);
         $missing = array_merge(
             array_map(fn ($key) => PolicyDefinitions::all()['booking']['fields'][$key]['label'], $setup->missing('booking', $booking)),
@@ -95,8 +95,8 @@ class CalculatorController extends Controller
     {
         $setup = app(BusinessPolicies::class);
         $policies = BusinessPolicy::whereIn('key', ['booking', 'installments', 'commissions'])->get()->keyBy('key');
-        $booking = array_replace($setup->defaults('booking'), $policies->get('booking')->values ?? []);
-        $installments = array_replace($setup->defaults('installments'), $policies->get('installments')->values ?? []);
+        $booking = $setup->effective('booking', $policies->get('booking')?->values);
+        $installments = $setup->effective('installments', $policies->get('installments')?->values);
         $commissions = array_replace($setup->defaults('commissions'), $policies->get('commissions')->values ?? []);
 
         return [

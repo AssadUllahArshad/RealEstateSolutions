@@ -30,12 +30,42 @@ class BusinessPolicies
         foreach ($fields as $name => $field) {
             $values[$name] = $field['type'] === 'multi' ? [] : null;
         }
-        // Explicitly requested plan/method choices; never monetary/date/earning defaults.
+        // Practical booking defaults keep routine agent work available without an
+        // initial settings ceremony. Main admins can still replace every value.
+        if ($key === 'booking') {
+            $values = [
+                'down_payment_type' => 'percentage',
+                'down_payment_value' => '0.0000',
+                'required_documents' => ['signed_booking_form', 'cnic_copy', 'customer_photo', 'payment_evidence'],
+                'held_plot_access' => 'any_agent',
+            ];
+        }
         if ($key === 'installments') {
-            $values['frequencies'] = array_keys($fields['frequencies']['options']);
+            $values = [
+                'frequencies' => array_keys($fields['frequencies']['options']),
+                'first_due_date' => 'entered_per_booking',
+                'month_end' => 'clamp',
+                'rounding' => 'half_up',
+                'residual' => 'last',
+            ];
         }
         if ($key === 'collections') {
             $values['methods'] = array_keys($fields['methods']['options']);
+        }
+
+        return $values;
+    }
+
+    /** @param array<string,mixed>|null $saved
+     * @return array<string,mixed>
+     */
+    public function effective(string $key, ?array $saved): array
+    {
+        $values = $this->defaults($key);
+        foreach ($saved ?? [] as $name => $value) {
+            if ($value !== null && $value !== '' && $value !== []) {
+                $values[$name] = $value;
+            }
         }
 
         return $values;
@@ -146,7 +176,8 @@ class BusinessPolicies
             throw ValidationException::withMessages(['values.'.$field => 'Choose a fixed amount or percentage basis before entering a value.']);
         }
         Validator::make(['values' => [$field => $values[$field]]], ['values.'.$field => [$mode === 'percentage' ? new Percentage : new PositiveDecimal]])->validate();
-        if ($key !== 'commissions' && bccomp($values[$field], '0', 4) <= 0) {
+        $zeroBookingPercentage = $key === 'booking' && $mode === 'percentage' && bccomp($values[$field], '0', 4) === 0;
+        if ($key !== 'commissions' && ! $zeroBookingPercentage && bccomp($values[$field], '0', 4) <= 0) {
             throw ValidationException::withMessages(['values.'.$field => 'Enter a value greater than zero.']);
         }
         $values[$field] = bcadd($values[$field], '0', $mode === 'percentage' ? 4 : 2);

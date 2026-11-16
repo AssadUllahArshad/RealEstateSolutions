@@ -101,11 +101,27 @@ class DraftTermsTest extends TestCase
         $this->actingAs($ordinary)->patch($url, $payload)->assertSessionHasNoErrors();
         $term = DraftTerm::firstOrFail();
         $this->assertSame('990.00', $term->snapshot['net']);
+        $this->assertSame('100.00', $term->snapshot['planned_down_payment']);
+        $this->assertSame('10.00', $term->snapshot['discount_applied_to_down_payment']);
+        $this->assertSame('90.00', $term->snapshot['down_payment']);
+        $this->assertSame('900.00', $term->snapshot['balance']);
         $this->assertSame($ordinary->id, $term->snapshot['discount_authorized_by']);
         $this->actingAs($this->agent)->patch($url, [...$payload, 'version' => 1, 'count' => 8])->assertSessionHasNoErrors();
         $this->patch($url, [...$payload, 'version' => 2, 'discount' => '0'])->assertForbidden();
         $this->draft->update(['version' => 2, 'quoted_price' => '1200.00']);
         $this->patch($url, [...$payload, 'version' => 2, 'source_version' => 2])->assertForbidden();
+    }
+
+    public function test_fixed_defaults_allow_terms_without_admin_setup(): void
+    {
+        BusinessPolicy::query()->delete();
+        $payload = [...$this->payload(), 'policy_versions' => ['booking' => 0, 'installments' => 0]];
+
+        $this->actingAs($this->agent)->patch('/sales/'.$this->draft->id.'/terms', $payload)->assertSessionHasNoErrors();
+
+        $term = DraftTerm::firstOrFail();
+        $this->assertSame('half_up', $term->snapshot['policy_snapshot']['installments']['rounding']);
+        $this->assertSame('any_agent', $term->snapshot['policy_snapshot']['booking']['held_plot_access']);
     }
 
     public function test_rounding_modes_remainders_and_calendar_anchors_are_explicit(): void
@@ -147,7 +163,8 @@ class DraftTermsTest extends TestCase
         BusinessPolicy::whereKey('installments')->update(['version' => 2]);
         $this->patch($url, [...$payload, 'version' => 2])->assertSessionHasErrors('conflict');
         BusinessPolicy::whereKey('installments')->update(['values' => [...$this->policy(), 'rounding' => null]]);
-        $this->patch($url, [...$payload, 'version' => 2, 'policy_versions' => ['booking' => 1, 'installments' => 2]])->assertSessionHasErrors('plan');
+        $this->patch($url, [...$payload, 'version' => 2, 'policy_versions' => ['booking' => 1, 'installments' => 2]])->assertSessionHasNoErrors();
+        $this->assertSame('half_up', DraftTerm::firstOrFail()->snapshot['policy_snapshot']['installments']['rounding']);
     }
 
     public function test_scope_and_audit_failure_do_not_write_terms(): void

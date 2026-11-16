@@ -36,9 +36,9 @@ class BusinessSettingsTest extends TestCase
         $this->actingAs($this->main)->get('/business-settings/unknown')->assertNotFound();
     }
 
-    public function test_new_settings_have_no_monetary_defaults_and_sections_are_bounded(): void
+    public function test_new_settings_use_simple_booking_defaults_and_sections_are_bounded(): void
     {
-        $this->actingAs($this->main)->get('/business-settings')->assertInertia(fn (Assert $page) => $page->component('business-settings/index')->has('sections', 8)->where('version', 0)->where('values.down_payment_value', null)->where('values.required_documents', [])->has('history.data', 0));
+        $this->actingAs($this->main)->get('/business-settings')->assertInertia(fn (Assert $page) => $page->component('business-settings/index')->has('sections', 8)->where('version', 0)->where('values.down_payment_value', '0.0000')->where('values.required_documents', ['signed_booking_form', 'cnic_copy', 'customer_photo', 'payment_evidence'])->where('values.held_plot_access', 'any_agent')->has('history.data', 0));
         $this->get('/business-settings/owners')->assertInertia(fn (Assert $page) => $page->where('values.default_percentage', null));
         $this->assertDatabaseCount('business_policies', 0);
     }
@@ -89,14 +89,19 @@ class BusinessSettingsTest extends TestCase
         $this->assertDatabaseCount('business_policies', 0);
     }
 
-    public function test_booking_requires_positive_configured_threshold_and_document_choices_are_whitelisted(): void
+    public function test_booking_allows_staff_entered_threshold_and_document_choices_are_whitelisted(): void
     {
-        $this->actingAs($this->main)->patch('/business-settings/booking', ['version' => 0, 'values' => ['down_payment_type' => 'percentage', 'down_payment_value' => '0', 'required_documents' => ['cnic_copy']]])->assertSessionHasErrors('values.down_payment_value');
-        $this->patch('/business-settings/booking', ['version' => 0, 'values' => ['down_payment_type' => 'percentage', 'down_payment_value' => '20.125', 'required_documents' => ['cnic_copy', 'signed_booking_form'], 'held_plot_access' => 'holder_or_admin']])->assertSessionHasNoErrors();
+        $this->actingAs($this->main)->patch('/business-settings/booking', ['version' => 0, 'values' => [
+            'down_payment_type' => 'percentage',
+            'down_payment_value' => '0',
+            'required_documents' => ['signed_booking_form', 'cnic_copy', 'customer_photo', 'payment_evidence'],
+            'held_plot_access' => 'any_agent',
+        ]])->assertSessionHasNoErrors();
+        $this->patch('/business-settings/booking', ['version' => 1, 'values' => ['down_payment_type' => 'percentage', 'down_payment_value' => '20.125', 'required_documents' => ['cnic_copy', 'signed_booking_form'], 'held_plot_access' => 'holder_or_admin']])->assertSessionHasNoErrors();
         $record = BusinessPolicy::findOrFail('booking');
         $this->assertSame('20.1250', $record->values['down_payment_value']);
         $this->assertSame([], app(BusinessPolicies::class)->missing('booking', $record->values));
-        $this->patch('/business-settings/booking', ['version' => 1, 'values' => ['required_documents' => ['executable']]])->assertSessionHasErrors('values.required_documents.0');
+        $this->patch('/business-settings/booking', ['version' => 2, 'values' => ['required_documents' => ['executable']]])->assertSessionHasErrors('values.required_documents.0');
     }
 
     public function test_audit_failure_rolls_back_and_unchosen_collection_rules_stay_unconfigured(): void
