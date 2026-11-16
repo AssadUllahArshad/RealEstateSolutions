@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Domain\Finance\InstallmentLedger;
+use App\Domain\Finance\Receivables;
 use App\Domain\Sales\FinalBookings;
 use App\Models\User;
 use Carbon\CarbonImmutable;
@@ -23,6 +24,9 @@ class ReceivablesTest extends TestCase
         CarbonImmutable::setTestNow('2028-03-01T07:00:00Z');
 
         try {
+            $strictSql = app(Receivables::class)->query($fixture['agent'], ['state' => '', 'search' => ''], '2028-03-01')->toSql();
+            $this->assertStringContainsString('`bookings`.`snapshot`', substr($strictSql, (int) strripos($strictSql, 'group by')));
+
             $this->actingAs($fixture['agent'])->get('/finance/receivables')->assertInertia(fn (Assert $page) => $page
                 ->component('finance/receivables')
                 ->where('summary.bookings', 1)

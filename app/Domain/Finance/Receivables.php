@@ -53,7 +53,9 @@ class Receivables
                 $like = '%'.str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], trim($search)).'%';
                 $query->where(fn ($nested) => $nested->where('customers.name', 'like', $like)->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(bookings.snapshot, '$.plot.number')) LIKE ?", [$like]));
             })
-            ->groupBy('bookings.id', 'bookings.customer_id', 'customers.name', 'bookings.confirmed_on')
+            // MariaDB does not infer that the booking primary key functionally
+            // determines JSON snapshot columns under ONLY_FULL_GROUP_BY.
+            ->groupBy('bookings.id', 'bookings.customer_id', 'customers.name', 'bookings.confirmed_on', 'bookings.snapshot')
             ->selectRaw('bookings.id, bookings.customer_id, customers.name AS customer_name, bookings.confirmed_on')
             ->selectRaw("JSON_UNQUOTE(JSON_EXTRACT(bookings.snapshot, '$.plot.number')) AS plot_number")
             ->selectRaw("CAST(SUM($remaining) AS DECIMAL(18,2)) AS outstanding")
