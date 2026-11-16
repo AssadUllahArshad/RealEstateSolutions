@@ -11,7 +11,7 @@ Status: the first production release is installed, but public launch and automat
 - PHP: `/usr/bin/php84` is PHP 8.4.27 and includes BCMath, cURL, DOM, Fileinfo, Intl, Mbstring, OpenSSL, PDO MySQL, XML and ZIP. The default `/usr/bin/php` is PHP 8.0.30 and must not run EstateFlow.
 - Composer 2.10.3, Git 2.52.0 and `mysqldump` are available.
 - Production uses MariaDB 10.11.19. Migrations, receipt posting, idempotency and six locking/concurrency scenarios passed against a disposable database on the same server. CI continues to certify MySQL 8.4 as the preferred baseline.
-- The CLI release runtime is PHP 8.4.27. The subdomain's web runtime still reports PHP 8.1.34 and must be changed to PHP 8.4 in StackCP before launch.
+- The CLI release runtime is PHP 8.4.27. The EstateFlow public `.htaccess` selects the host's `x-httpd-php84` handler using o3host's documented per-directory syntax; verify the web response after every public-file deployment.
 - Release `f5db719` is active. The clean production schema, three confirmed staff identities, two plot-owner profiles and pre-deploy backups are installed.
 - Production mail remains on the log driver until all mailbox passwords are rotated and the final SMTP settings are confirmed.
 - `public_html` currently contains a different `blog-site` repository with uncommitted changes. It is not an EstateFlow target and must be preserved.
@@ -88,10 +88,10 @@ Shared hosting does not guarantee a supervised long-running worker, so the queue
 
 ## Information still needed from the owner
 
-1. Change the `erp.datarealestate.online` site's web PHP version from 8.1 to 8.4 in StackCP.
-2. Issue/install the SSL certificate after DNS propagation, then enforce HTTPS.
-3. Rotate all mailbox passwords that were previously stored in plaintext, then provide/confirm the StackCP SMTP hostname, port and encryption setting through a secret channel.
-4. Add the documented GitHub `production` environment secrets and variables. Keep `PRODUCTION_DEPLOY_ENABLED=false` until the HTTPS smoke test and first off-host backup copy pass.
+1. Confirm the `erp.datarealestate.online` certificate covers the exact subdomain and HTTPS health check passes.
+2. Rotate all mailbox passwords that were previously shared or stored in plaintext after initial SMTP verification.
+3. Add the documented GitHub `production` environment secrets and variables. Keep `PRODUCTION_DEPLOY_ENABLED=false` until the HTTPS smoke test and first off-host backup copy pass.
+4. Add the documented scheduled tasks through StackCP; this hosting account is denied access to `crontab` over SSH.
 
 ## First-launch gate
 
