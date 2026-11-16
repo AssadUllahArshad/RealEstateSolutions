@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\PlotOwner;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
@@ -33,6 +34,20 @@ class BrowserTestSeeder extends Seeder
             $user->email_verified_at = Carbon::now();
             $user->save();
             $user->syncRoles([$role]);
+        }
+        foreach ([
+            ['DEMO Owner A', 'demo.admin@estateflow.test'],
+            ['DEMO Owner B', 'demo.office-admin@estateflow.test'],
+        ] as [$ownerName, $adminEmail]) {
+            $admin = User::where('email', $adminEmail)->firstOrFail();
+            PlotOwner::updateOrCreate(
+                ['admin_user_id' => $admin->id],
+                [
+                    'name' => $ownerName,
+                    'default_percentage' => null,
+                    'created_by' => $admin->id,
+                ],
+            );
         }
     }
 }

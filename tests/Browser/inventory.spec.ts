@@ -11,6 +11,8 @@ test('administrator configures a society and maintains its custom plot catalogue
     const blockName = `Browser ${suffix} gardens`;
     const sizeLabel = `Browser ${suffix} custom size`;
     const number = `BROWSER-${suffix}-001`;
+    const ownerName =
+        testInfo.project.name === 'mobile' ? 'DEMO Owner B' : 'DEMO Owner A';
     await page.goto('/login');
     await page.getByLabel('Email address').fill('demo.admin@estateflow.test');
     await page
@@ -59,7 +61,7 @@ test('administrator configures a society and maintains its custom plot catalogue
         await page
             .getByLabel('Plot owner / admin', { exact: true })
             .evaluate((element) => element.matches(':required')),
-    ).toBe(false);
+    ).toBe(true);
     await expect(
         page.getByRole('button', { name: 'Save plot', exact: true }),
     ).toBeInViewport();
@@ -71,6 +73,9 @@ test('administrator configures a society and maintains its custom plot catalogue
         .getByLabel('Plot size *', { exact: true })
         .selectOption({ label: `${sizeLabel} · 6.75 marla` });
     await page.getByLabel('List price', { exact: false }).fill('3200000.25');
+    await page
+        .getByLabel('Plot owner / admin', { exact: true })
+        .selectOption({ label: ownerName });
     await page.getByRole('button', { name: 'Save plot' }).click();
     await expect(page.getByRole('heading', { name: 'Add a plot' })).toHaveCount(
         0,

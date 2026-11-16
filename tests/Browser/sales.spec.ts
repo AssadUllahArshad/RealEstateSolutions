@@ -63,6 +63,12 @@ test('staff creates and revises a booking draft without changing plot holds', as
         .getByLabel('Plot size *', { exact: true })
         .selectOption({ label: `${code} · 5.00 marla` });
     await page.getByLabel('List price', { exact: false }).fill('5000000.25');
+    await page.getByLabel('Plot owner / admin', { exact: true }).selectOption({
+        label:
+            testInfo.project.name === 'mobile'
+                ? 'DEMO Owner B'
+                : 'DEMO Owner A',
+    });
     await page.getByRole('button', { name: 'Save plot' }).click();
     await expect(page.getByRole('heading', { name: 'Add a plot' })).toHaveCount(
         0,

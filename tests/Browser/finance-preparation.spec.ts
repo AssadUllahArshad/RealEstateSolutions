@@ -7,6 +7,8 @@ test('staff configures an account and prepares an unposted cheque report', async
     test.setTimeout(180000);
     const suffix =
         `${testInfo.project.name}-${Date.now().toString(36)}`.toUpperCase();
+    const receiptPrefix =
+        `T-${Date.now().toString(36).slice(-8)}`.toUpperCase();
     const customer = `DEMO Receipt ${suffix}`;
     const code = `FIN-${suffix}`;
     const businessDate = new Intl.DateTimeFormat('en-CA', {
@@ -199,7 +201,7 @@ test('staff configures an account and prepares an unposted cheque report', async
     await page.goto('/business-settings/receipt_posting');
     await page
         .getByLabel('Official receipt prefix', { exact: true })
-        .fill(`TEST-${suffix}`);
+        .fill(receiptPrefix);
     await page
         .getByLabel('First number for a new prefix', { exact: true })
         .fill('100');
@@ -281,7 +283,7 @@ test('staff configures an account and prepares an unposted cheque report', async
     await expect(page).toHaveURL(/\/finance\/posted\/\d+$/);
     await expect(
         page.getByRole('heading', {
-            name: `TEST-${suffix}-000100`,
+            name: `${receiptPrefix}-000100`,
             exact: true,
         }),
     ).toBeVisible();
