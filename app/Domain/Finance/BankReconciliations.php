@@ -42,8 +42,8 @@ class BankReconciliations
         $today = app(BusinessClock::class)->today();
         $data = Validator::make($filters, [
             'account' => ['nullable', 'integer', 'exists:financial_accounts,id'],
-            'from' => ['nullable', 'date_format:Y-m-d', 'before_or_equal:today'],
-            'to' => ['nullable', 'date_format:Y-m-d', 'before_or_equal:today', 'after_or_equal:from'],
+            'from' => ['nullable', 'date_format:Y-m-d', 'before_or_equal:'.$today],
+            'to' => ['nullable', 'date_format:Y-m-d', 'before_or_equal:'.$today, 'after_or_equal:from'],
         ])->validate();
         if (filled($data['from'] ?? null) !== filled($data['to'] ?? null)) {
             throw ValidationException::withMessages(['from' => 'Choose both statement dates.']);

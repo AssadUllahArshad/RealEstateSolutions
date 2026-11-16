@@ -102,6 +102,15 @@ class BankReconciliationTest extends TestCase
         ];
     }
 
+    public function test_statement_filters_use_karachi_business_date_at_the_utc_day_boundary(): void
+    {
+        CarbonImmutable::setTestNow('2026-11-16T20:00:00Z');
+
+        $this->actingAs($this->accountant)
+            ->get('/finance/reconciliation?account='.$this->bank->id.'&from=2026-11-17&to=2026-11-17')
+            ->assertOk();
+    }
+
     public function test_opening_balance_is_immutable_and_corrections_are_linked_idempotent_entries(): void
     {
         $opening = app(FinancialAccountOpenings::class)->create(

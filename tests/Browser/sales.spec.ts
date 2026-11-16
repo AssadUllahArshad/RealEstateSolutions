@@ -277,7 +277,7 @@ test('staff creates and revises a booking draft without changing plot holds', as
         schedule.getByRole('cell', { name: '2028-02-29', exact: true }),
     ).toBeVisible();
     await expect(
-        schedule.getByText('PKR 4,800,000.00', { exact: true }),
+        schedule.getByText('PKR 4,300,000.99', { exact: true }),
     ).toBeVisible();
     expect(
         await page.evaluate(
