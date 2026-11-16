@@ -63,8 +63,8 @@ class BookingDraftTest extends TestCase
         $prepare = app(BookingPreparation::class);
         $checks = collect($prepare->forDraft($this->agent, $draft->id)['checks'])->keyBy('key');
         $this->assertSame('action', $checks['identity']['state']);
-        $this->assertSame('configuration', $checks['documents']['state']);
-        $this->assertSame('configuration', $checks['policy']['state']);
+        $this->assertSame('action', $checks['documents']['state']);
+        $this->assertSame('recorded', $checks['policy']['state']);
         $this->assertSame('recorded', $checks['plot']['state']);
         $this->assertSame('action', $checks['payment']['state']);
         $this->customer->update(['cnic' => '1234512345671', 'address' => 'DEMO private address']);
