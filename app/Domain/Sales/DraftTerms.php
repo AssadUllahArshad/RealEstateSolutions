@@ -56,14 +56,21 @@ class DraftTerms
         $data = Validator::make($input, [
             'version' => ['required', 'integer', 'min:0'], 'source_version' => ['required', 'integer', 'min:1'],
             'policy_versions' => ['required', 'array:booking,installments'], 'policy_versions.booking' => ['required', 'integer', 'min:0'], 'policy_versions.installments' => ['required', 'integer', 'min:0'],
-            'discount' => ['required', 'string', 'regex:/^\d{1,16}(?:\.\d{1,2})?$/D'], 'discount_reason' => ['nullable', 'string', 'max:500'],
+            'discount' => ['nullable', 'string', 'regex:/^\d{1,16}(?:\.\d{1,2})?$/D'],
+            'discount_type' => ['nullable', Rule::in(['fixed', 'percentage'])],
+            'discount_value' => ['nullable', 'string', 'regex:/^\d{1,16}(?:\.\d{1,4})?$/D'],
+            'discount_reason' => ['nullable', 'string', 'max:500'],
             'down_payment' => ['required', new PositiveDecimal],
             'frequency' => ['required', Rule::in(['full', 'monthly', 'quarterly', 'half_yearly', 'yearly', 'custom'])],
             'count' => ['nullable', 'integer', 'min:1', 'max:360'], 'first_due_date' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:1000-01-01', 'before_or_equal:9999-12-31'],
             'custom' => ['present', 'array', 'max:360'], 'custom.*' => ['array:due_date,amount'], 'custom.*.due_date' => ['required', 'date_format:Y-m-d', 'after_or_equal:1000-01-01', 'before_or_equal:9999-12-31'], 'custom.*.amount' => ['required', new PositiveDecimal],
             'gross' => ['prohibited'], 'net' => ['prohibited'], 'schedule' => ['prohibited'], 'updated_by' => ['prohibited'],
         ])->validate();
-        $data['discount'] = bcadd($data['discount'], '0', 2);
+        $data['discount_type'] = $data['discount_type'] ?? 'fixed';
+        $data['discount_value'] = $data['discount_value'] ?? $data['discount'] ?? '0';
+        if ($data['discount_type'] === 'percentage' && bccomp($data['discount_value'], '100', 4) > 0) {
+            throw ValidationException::withMessages(['discount_value' => 'Discount percentage cannot exceed 100.']);
+        }
         $data['down_payment'] = bcadd($data['down_payment'], '0', 2);
         $data['discount_reason'] = trim($data['discount_reason'] ?? '');
         $data['count'] = isset($data['count']) ? (int) $data['count'] : null;
@@ -118,7 +125,12 @@ class DraftTerms
             );
             $term = DraftTerm::where('booking_draft_id', $id)->lockForUpdate()->first();
             $old = $term->snapshot ?? [];
-            $discountChanged = ($old['input']['discount'] ?? '0.00') !== $data['discount'] || ($old['input']['discount_reason'] ?? '') !== $data['discount_reason'];
+            $discountChanged = $term === null
+                ? bccomp($data['discount'], '0', 2) > 0
+                : ($old['input']['discount'] ?? '0.00') !== $data['discount']
+                    || ($old['input']['discount_type'] ?? 'fixed') !== $data['discount_type']
+                    || ($old['input']['discount_value'] ?? $old['input']['discount'] ?? '0.00') !== $data['discount_value']
+                    || ($old['input']['discount_reason'] ?? '') !== $data['discount_reason'];
             $discountRebased = bccomp($data['discount'], '0', 2) > 0 && ($old['gross'] ?? null) !== $draft->quoted_price;
             if (($discountChanged || $discountRebased) && ! $this->canDiscount($fresh)) {
                 abort(403, 'Only an authorized admin may set, remove or rebase a discount.');
@@ -134,7 +146,7 @@ class DraftTerms
                 ],
                 'policy_snapshot' => $effective,
                 'discount_authorized_by' => ($discountChanged || $discountRebased) ? $fresh->id : ($old['discount_authorized_by'] ?? null),
-                'input' => array_intersect_key($data, array_flip(['discount', 'discount_reason', 'down_payment', 'frequency', 'count', 'first_due_date', 'custom'])),
+                'input' => array_intersect_key($data, array_flip(['discount', 'discount_type', 'discount_value', 'discount_reason', 'down_payment', 'frequency', 'count', 'first_due_date', 'custom'])),
             ];
             // MySQL JSON object key order is not insertion order; compare structures recursively.
             if ($term && $this->canonical($term->snapshot) === $this->canonical($snapshot)) {

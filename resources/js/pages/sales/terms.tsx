@@ -20,6 +20,8 @@ const frequencies: Record<string, string> = {
 type Row = { due_date: string; amount: string };
 type TermsInput = {
     discount: string;
+    discount_type?: 'fixed' | 'percentage';
+    discount_value?: string;
     discount_reason: string;
     down_payment: string;
     frequency: string;
@@ -80,6 +82,8 @@ function TermsEditor(props: Props) {
         source_version: props.draft.version,
         policy_versions: props.policyVersions,
         discount: saved?.discount ?? '0.00',
+        discount_type: saved?.discount_type ?? ('fixed' as const),
+        discount_value: saved?.discount_value ?? saved?.discount ?? '0.00',
         discount_reason: saved?.discount_reason ?? '',
         down_payment: saved?.down_payment ?? '',
         frequency: saved?.frequency ?? '',
