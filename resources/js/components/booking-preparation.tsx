@@ -101,7 +101,9 @@ export default function BookingPreparation({
                                 >
                                     Review{' '}
                                     {check.key === 'payment'
-                                        ? 'receipts'
+                                        ? check.state === 'recorded'
+                                            ? 'payment allocation'
+                                            : 'receipts'
                                         : check.key === 'plot'
                                           ? 'plot'
                                           : check.key === 'contract'

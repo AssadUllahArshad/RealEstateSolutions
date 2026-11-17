@@ -84,9 +84,19 @@ export default function ConfirmBooking(props: Props) {
                 </PageHeading>
                 <BookingPreparation preparation={props.preparation} />
                 {term && (
-                    <section className="ef-panel grid gap-5 p-6 sm:grid-cols-3">
+                    <section className="ef-panel grid gap-5 p-6 sm:grid-cols-2 xl:grid-cols-5">
                         {[
                             ['Agreed price', term.snapshot.net],
+                            [
+                                'Agreed down payment before discount',
+                                term.snapshot.planned_down_payment ??
+                                    term.snapshot.down_payment,
+                            ],
+                            [
+                                'Discount applied to down payment',
+                                term.snapshot
+                                    .discount_applied_to_down_payment ?? '0.00',
+                            ],
                             [
                                 'Payable down payment after discount',
                                 term.snapshot.down_payment,

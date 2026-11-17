@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Domain\CRM\Customers;
 use App\Domain\Inventory\Holds;
+use App\Domain\Sales\BookingPreparation;
 use App\Domain\Sales\DraftPurchasers;
 use App\Domain\Sales\FinalBookings;
 use App\Models\BookingEvent;
@@ -23,6 +24,19 @@ use Tests\TestCase;
 class FinalBookingTest extends TestCase
 {
     use FinalBookingFixtures, RefreshDatabase;
+
+    public function test_recognized_credit_marks_down_payment_ready_and_explains_surplus(): void
+    {
+        $fixture = $this->fixture();
+        $payment = collect(app(BookingPreparation::class)->forDraft($fixture['agent'], $fixture['draft']->id)['checks'])
+            ->firstWhere('key', 'payment');
+
+        $this->assertSame('recorded', $payment['state']);
+        $this->assertSame('/sales/'.$fixture['draft']->id.'/confirm', $payment['href']);
+        $this->assertStringContainsString('PKR 150.02', $payment['detail']);
+        $this->assertStringContainsString('PKR 100.01', $payment['detail']);
+        $this->assertStringContainsString('PKR 50.01 remains customer credit', $payment['detail']);
+    }
 
     public function test_agent_can_confirm_exact_credit_snapshot_replay_and_freeze(): void
     {
