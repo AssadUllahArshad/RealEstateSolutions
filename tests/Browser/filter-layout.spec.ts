@@ -16,7 +16,6 @@ test('filter controls stay aligned and within the page at desktop and mobile wid
         ['/customers', 'form[aria-label="Customer filters"]'],
         ['/sales', 'form[action="/sales"]'],
         ['/finance/receipts', 'form[action="/finance/receipts"]'],
-        ['/finance/receivables', 'form[aria-label="Receivables filters"]'],
         ['/finance/movements', 'form[aria-label="Cashbook filters"]'],
         ['/finance', 'form[aria-label="Finance period filters"]'],
         ['/finance/expenses', 'form[aria-label="Expense date filters"]'],
@@ -85,6 +84,12 @@ test('filter controls stay aligned and within the page at desktop and mobile wid
             ).toBeLessThanOrEqual(layout.right + 1);
         }
     }
+
+    const receivablesResponse = await page.goto('/finance/receivables');
+    expect(receivablesResponse?.status()).toBe(404);
+    await expect(
+        page.getByRole('heading', { name: 'Page not found', exact: true }),
+    ).toBeVisible();
 });
 
 test('refund form labels remain associated and its controls stay within the page', async ({

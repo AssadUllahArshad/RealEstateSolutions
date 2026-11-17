@@ -75,49 +75,22 @@ test('agent confirms a booking with exact down payment and reloads its permanent
     await page.goto(`/sales/${draft}/terms`);
     await expect(page).toHaveURL(/\/bookings\/\d+$/);
     const bookingUrl = page.url();
-    await page
-        .getByRole('link', { name: 'Payments & ledger', exact: true })
-        .click();
     await expect(
-        page.getByRole('button', { name: 'Allocate receipt credit' }),
+        page.getByRole('heading', {
+            name: 'Agreed installment schedule',
+            exact: true,
+        }),
+    ).toBeVisible();
+    await expect(
+        page.getByRole('link', { name: 'Payments & ledger', exact: true }),
     ).toHaveCount(0);
-    await page.context().clearCookies();
-    await page.goto('/login');
-    await page.getByLabel('Email address').fill('demo.admin@estateflow.test');
-    await page
-        .getByLabel('Password', { exact: true })
-        .fill(process.env.E2E_PASSWORD ?? '');
-    await page.getByRole('button', { name: 'Sign in to EstateFlow' }).click();
-    await expect(page).toHaveURL(/\/dashboard$/);
-    await page.goto(`${bookingUrl}/ledger`);
-    const credit = page.getByLabel('Receipt credit', { exact: true });
-    const receiptId = await credit
-        .locator('option')
-        .filter({ hasText: String(receipt) })
-        .getAttribute('value');
-    await credit.selectOption(receiptId!);
-    await page
-        .getByLabel('Amount to allocate (PKR)', { exact: true })
-        .fill('25.00');
-    await page
-        .getByLabel(/I verified the customer, recognized receipt credit/)
-        .check();
-    await page
-        .getByRole('button', { name: 'Allocate receipt credit', exact: true })
-        .click();
-    await expect(page.getByText('PKR 875.00', { exact: true })).toBeVisible();
-    await page.reload();
-    await expect(page.getByText('PKR 875.00', { exact: true })).toBeVisible();
-    await inspectPrint(
-        page,
-        testInfo,
-        'current-principal-statement',
-        'Live principal balances',
-        'Print statement / Save PDF',
-        'PKR 875.00',
-    );
+    const ledgerResponse = await page.goto(`${bookingUrl}/ledger`);
+    expect(ledgerResponse?.status()).toBe(404);
+    await expect(
+        page.getByRole('heading', { name: 'Page not found', exact: true }),
+    ).toBeVisible();
     await page.screenshot({
-        path: testInfo.outputPath('live-installment-ledger.png'),
+        path: testInfo.outputPath('post-booking-ledger-disabled.png'),
         fullPage: true,
     });
     expect(
@@ -125,5 +98,18 @@ test('agent confirms a booking with exact down payment and reloads its permanent
             () => document.documentElement.scrollWidth <= window.innerWidth + 1,
         ),
     ).toBe(true);
+    await page.goto(bookingUrl);
+    await expect(
+        page.getByRole('heading', {
+            name: 'Agreed installment schedule',
+            exact: true,
+        }),
+    ).toBeVisible();
+    await expect(
+        page.getByText(
+            'Subsequent society installments are handled outside EstateFlow.',
+            { exact: false },
+        ),
+    ).toBeVisible();
     expect(errors).toEqual([]);
 });
