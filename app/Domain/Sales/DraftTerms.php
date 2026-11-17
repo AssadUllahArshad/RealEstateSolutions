@@ -117,9 +117,12 @@ class DraftTerms
                     throw ValidationException::withMessages(['plan' => 'Booking rules are unavailable. Ask the main admin to review Business settings.']);
                 }
             }
-            $data['discount'] = $data['discount_type'] === 'percentage'
-                ? app(InstallmentCalculator::class)->round(bcdiv(bcmul($data['down_payment'], $data['discount_value'], 6), '100', 8), $effective['installments']['rounding'])
-                : bcadd($data['discount_value'], '0', 2);
+            $data['discount'] = app(InstallmentCalculator::class)->discountAmount(
+                $draft->quoted_price,
+                $data['discount_type'],
+                $data['discount_value'],
+                $effective['installments']['rounding'],
+            );
             $term = DraftTerm::where('booking_draft_id', $id)->lockForUpdate()->first();
             $old = $term->snapshot ?? [];
             $discountChanged = $term === null

@@ -105,6 +105,7 @@ const ur = {
     'Discount type': 'رعایت کی قسم',
     'Fixed PKR': 'مقررہ PKR',
     'Percentage of down payment': 'ڈاؤن پیمنٹ کا فیصد',
+    'Percentage of plot price': 'پلاٹ کی قیمت کا فیصد',
     'Discount (%)': 'رعایت (%)',
     'Discount (PKR)': 'رعایت (PKR)',
     'Enter 0 explicitly for no discount. A preview cannot approve a discount.':
@@ -779,6 +780,8 @@ const ur = {
     'Admin discount (PKR)': 'ایڈمن رعایت (PKR)',
     'Enter 0 for no discount. This discount reduces only the down payment collected by the company.':
         'رعایت نہ ہو تو 0 درج کریں۔ یہ رعایت صرف کمپنی کی وصول شدہ ڈاؤن پیمنٹ کم کرتی ہے۔',
+    'Enter 0 for no discount. A percentage is calculated from the plot price, then the resulting PKR discount reduces the down payment.':
+        'رعایت نہ ہو تو 0 درج کریں۔ فیصد کا حساب پلاٹ کی قیمت سے ہوگا، پھر حاصل شدہ PKR رعایت ڈاؤن پیمنٹ سے کم کی جائے گی۔',
     'Only an authorized admin may set, remove or rebase a discount.':
         'صرف مجاز ایڈمن رعایت مقرر، ختم یا دوبارہ بنیاد بنا سکتا ہے۔',
     'Discount reason': 'رعایت کی وجہ',
@@ -792,10 +795,14 @@ const ur = {
         'رعایت کے بعد قابل ادائیگی ڈاؤن پیمنٹ',
     'The discount is applied to this amount first. The saved result shows the actual down payment payable by the customer.':
         'رعایت پہلے اس رقم پر لاگو ہوتی ہے۔ محفوظ نتیجہ کسٹمر کی اصل قابل ادائیگی ڈاؤن پیمنٹ دکھاتا ہے۔',
+    'The calculated discount is deducted from this amount. The saved result shows the actual down payment payable by the customer.':
+        'حساب شدہ رعایت اس رقم سے کم کی جاتی ہے۔ محفوظ نتیجہ کسٹمر کی اصل قابل ادائیگی ڈاؤن پیمنٹ دکھاتا ہے۔',
     'Choose recognized receipts for this sales contact and enter the exact payable down payment after discount. Unused funds remain customer credit.':
         'اس سیلز رابطے کی تصدیق شدہ رسیدیں منتخب کریں اور رعایت کے بعد درست قابل ادائیگی ڈاؤن پیمنٹ درج کریں۔ غیر استعمال شدہ رقم کسٹمر کریڈٹ رہے گی۔',
     'The discount reduces only the down payment collected by the company. The plot price and society installment balance remain unchanged.':
         'رعایت صرف کمپنی کی وصول شدہ ڈاؤن پیمنٹ کم کرتی ہے۔ پلاٹ کی قیمت اور سوسائٹی اقساط کا بقیہ تبدیل نہیں ہوتا۔',
+    'A percentage discount is calculated from the plot price, then deducted from the down payment. The plot price and society installment balance remain unchanged.':
+        'فیصدی رعایت پلاٹ کی قیمت سے حساب کی جاتی ہے، پھر ڈاؤن پیمنٹ سے کم ہوتی ہے۔ پلاٹ کی قیمت اور سوسائٹی اقساط کا بقیہ تبدیل نہیں ہوتا۔',
     'A proposal amount, not proof of received or cleared money.':
         'یہ مجوزہ رقم ہے، وصول یا کلیئر شدہ رقم کا ثبوت نہیں۔',
     'Payment plan *': 'ادائیگی منصوبہ *',

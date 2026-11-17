@@ -77,12 +77,12 @@ class CalculatorTest extends TestCase
     {
         BusinessPolicy::whereKey('commissions')->update(['values' => ['type' => 'fixed', 'value' => '250.00', 'basis' => 'net_contract', 'trigger' => 'booking_confirmed', 'cancellation' => 'admin_review']]);
         $this->actingAs($this->agent)->post('/calculator', [...$this->payload(), 'discount_type' => 'percentage', 'discount_value' => '5'])->assertSessionHasNoErrors()->assertInertia(fn (Assert $page) => $page
-            ->where('result.discount', '5.00')
+            ->where('result.discount', '50.00')
             ->where('result.net', '1000.00')
             ->where('result.minimum_down_payment', '100.00')
             ->where('result.planned_down_payment', '100.00')
-            ->where('result.discount_applied_to_down_payment', '5.00')
-            ->where('result.down_payment', '95.00')
+            ->where('result.discount_applied_to_down_payment', '50.00')
+            ->where('result.down_payment', '50.00')
             ->where('result.balance', '900.00')
             ->where('result.commission.amount', '250.00'));
     }

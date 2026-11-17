@@ -72,9 +72,12 @@ class CalculatorController extends Controller
 
         $gross = bcadd($data['gross'], '0', 2);
         $plannedDownPayment = bcadd($data['down_payment'], '0', 2);
-        $discount = $data['discount_type'] === 'percentage'
-            ? $calculator->round(bcdiv(bcmul($plannedDownPayment, $data['discount_value'], 6), '100', 8), $installments['rounding'])
-            : bcadd($data['discount_value'], '0', 2);
+        $discount = $calculator->discountAmount(
+            $data['gross'],
+            $data['discount_type'],
+            $data['discount_value'],
+            $installments['rounding'],
+        );
         $input = [
             'discount' => $discount,
             'down_payment' => $plannedDownPayment,
