@@ -65,14 +65,14 @@ try {
     }
     $services = @($services | Where-Object { $entry = $_; $p = Get-Process -Id $entry.Id -ErrorAction SilentlyContinue; $p -and $p.StartTime.ToUniversalTime().Ticks.ToString() -eq $entry.Started })
     $env:Path = (Split-Path -Parent $phpPath) + ';' + $env:Path
-    $env:TEMP = Join-Path $runtimeRoot 'browser-temp'
+    $env:TEMP = Join-Path $runtimeRoot 'tmp'
     $env:TMP = $env:TEMP
     New-Item -ItemType Directory -Path $env:TEMP -Force | Out-Null
     Set-Location -LiteralPath $projectRoot
     & $phpPath scripts/local-runtime.php config
     if ($LASTEXITCODE -ne 0) { throw 'Local configuration check failed.' }
     if (!(Test-Port 33084)) {
-        $mysqlArguments = @('--no-defaults', "--basedir=`"$mysqlBase`"", "--datadir=`"$dataPath`"", "--tmpdir=`"$(Join-Path $runtimeRoot 'browser-temp')`"", '--bind-address=127.0.0.1', '--port=33084', '--mysqlx=OFF', '--skip-name-resolve', '--innodb-buffer-pool-size=64M', '--table-open-cache=256', '--max-connections=30', '--performance-schema=OFF', "--log-error=`"$(Join-Path $runtimeRoot 'local-mysql.log')`"")
+        $mysqlArguments = @('--no-defaults', "--basedir=`"$mysqlBase`"", "--datadir=`"$dataPath`"", "--tmpdir=`"$env:TEMP`"", '--bind-address=127.0.0.1', '--port=33084', '--mysqlx=OFF', '--skip-name-resolve', '--innodb-buffer-pool-size=64M', '--table-open-cache=256', '--max-connections=30', '--performance-schema=OFF', "--log-error=`"$(Join-Path $runtimeRoot 'local-mysql.log')`"")
         $mysqlProcess = Start-Process -FilePath $mysqlPath -ArgumentList $mysqlArguments -WorkingDirectory $projectRoot -WindowStyle Hidden -PassThru
         Save-Service 'mysql' $mysqlProcess
         Wait-Port 33084 $mysqlProcess
@@ -92,7 +92,7 @@ try {
     } else {
         $env:APP_URL = $url
         $routerPath = Join-Path $projectRoot 'vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php'
-        $webProcess = Start-Process -FilePath $phpPath -ArgumentList @('-d', 'upload_max_filesize=10M', '-d', 'post_max_size=12M', '-S', '127.0.0.1:18080', "`"$routerPath`"") -WorkingDirectory (Join-Path $projectRoot 'public') -RedirectStandardOutput (Join-Path $runtimeRoot 'local-web.log') -RedirectStandardError (Join-Path $runtimeRoot 'local-web-errors.log') -WindowStyle Hidden -PassThru
+        $webProcess = Start-Process -FilePath $phpPath -ArgumentList @('-d', "upload_tmp_dir=`"$env:TEMP`"", '-d', "sys_temp_dir=`"$env:TEMP`"", '-d', 'upload_max_filesize=10M', '-d', 'post_max_size=12M', '-S', '127.0.0.1:18080', "`"$routerPath`"") -WorkingDirectory (Join-Path $projectRoot 'public') -RedirectStandardOutput (Join-Path $runtimeRoot 'local-web.log') -RedirectStandardError (Join-Path $runtimeRoot 'local-web-errors.log') -WindowStyle Hidden -PassThru
         Save-Service 'web' $webProcess
         Wait-Port 18080 $webProcess
     }
