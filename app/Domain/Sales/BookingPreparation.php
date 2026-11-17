@@ -5,9 +5,12 @@ namespace App\Domain\Sales;
 use App\Domain\Configuration\BusinessPolicies;
 use App\Domain\Configuration\PolicyDefinitions;
 use App\Domain\CRM\Customers;
+use App\Domain\Finance\ReceiptCredit;
 use App\Models\BusinessPolicy;
 use App\Models\CustomerDocument;
+use App\Models\PaymentReceipt;
 use App\Models\User;
+use App\Support\BusinessClock;
 
 class BookingPreparation
 {
@@ -64,11 +67,48 @@ class BookingPreparation
         $purchasers = app(DraftPurchasers::class)->listing($actor, $id);
         $complete = $purchasers !== [] && collect($purchasers)->every(fn ($row) => $row['identity_complete']);
         $add('purchasers', 'Legal purchasers', $complete ? 'recorded' : 'action', $complete ? 'Proposed purchasers and shares recorded. Verify identity, consent and supporting documents before final booking.' : 'Record single or joint purchasers below. Each purchaser needs a complete private identity profile.');
-        $add('payment', 'Verified down payment', 'action', 'On final confirmation, allocate recognized customer credit equal to the positive payable down payment after discount.', '/sales/'.$id.'/confirm');
         $terms = app(DraftTerms::class)->context($actor, $id);
         $prepared = $terms['term'] && ! $terms['stale'];
+        $receiptQuery = http_build_query(array_filter([
+            'customer_id' => $customer->id,
+            'booking_draft_id' => $id,
+            'amount' => $prepared ? $terms['term']->snapshot['down_payment'] : null,
+        ], fn ($value) => $value !== null));
+        $availableCredit = '0.00';
+        foreach (PaymentReceipt::query()
+            ->where('customer_id', $customer->id)
+            ->where('state', 'recognized')
+            ->whereDate('recognized_on', '<=', app(BusinessClock::class)->today())
+            ->orderBy('id')->get() as $receipt) {
+            $available = bcsub($receipt->amount, app(ReceiptCredit::class)->used($receipt->id), 2);
+            if (bccomp($available, '0', 2) > 0) {
+                $availableCredit = bcadd($availableCredit, $available, 2);
+            }
+        }
+        $payableDownPayment = $prepared ? $terms['term']->snapshot['down_payment'] : null;
+        $paymentReady = $payableDownPayment !== null && bccomp($availableCredit, $payableDownPayment, 2) >= 0;
+        if ($paymentReady) {
+            $planned = $terms['term']->snapshot['planned_down_payment'] ?? $payableDownPayment;
+            $discount = $terms['term']->snapshot['discount_applied_to_down_payment'] ?? '0.00';
+            $surplus = bcsub($availableCredit, $payableDownPayment, 2);
+            $paymentDetail = 'Recognized credit '.$this->money($availableCredit).' is sufficient. Agreed down payment '.$this->money($planned).' less discount '.$this->money($discount).' gives payable '.$this->money($payableDownPayment).'. Allocate the payable amount during confirmation; '.$this->money($surplus).' remains customer credit.';
+        } elseif ($payableDownPayment !== null && bccomp($availableCredit, '0', 2) > 0) {
+            $shortfall = bcsub($payableDownPayment, $availableCredit, 2);
+            $paymentDetail = 'Recognized credit '.$this->money($availableCredit).' is short of the payable down payment '.$this->money($payableDownPayment).' by '.$this->money($shortfall).'.';
+        } else {
+            $paymentDetail = 'Prepare and issue the customer receipt so it becomes recognized credit, then allocate it during final confirmation.';
+        }
+        $add('payment', 'Verified down payment', $paymentReady ? 'recorded' : 'action', $paymentDetail, $paymentReady ? '/sales/'.$id.'/confirm' : '/finance/receipts/new?'.$receiptQuery);
         $add('contract', 'Pricing and payment plan', $prepared ? 'recorded' : 'action', $prepared ? 'Proposed pricing and schedule saved for the current proposal and policy versions. Final contract and booking confirmation remain separate.' : 'Prepare pricing and a payment plan, or recalculate when the proposal or settings change.', '/sales/'.$id.'/terms');
 
         return ['checks' => $checks, 'observed_at' => now()->toIso8601String()];
+    }
+
+    /** @param numeric-string $amount */
+    private function money(string $amount): string
+    {
+        [$whole, $decimal] = array_pad(explode('.', bcadd($amount, '0', 2), 2), 2, '00');
+
+        return 'PKR '.preg_replace('/\B(?=(\d{3})+(?!\d))/', ',', $whole).'.'.$decimal;
     }
 }
