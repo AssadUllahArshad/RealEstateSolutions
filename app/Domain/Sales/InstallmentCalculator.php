@@ -33,26 +33,23 @@ class InstallmentCalculator
         if (! is_numeric($gross)) {
             throw ValidationException::withMessages(['plan' => 'The proposed gross amount is invalid.']);
         }
-        $net = bcsub($gross, $input['discount'], 2);
-        if (bccomp($net, '0', 2) <= 0) {
-            throw ValidationException::withMessages(['discount' => 'Discount must be less than the proposed gross price.']);
-        }
+        // Company discounts apply only to the amount collected at booking.
+        // The society-facing plot price and installment balance stay unchanged.
+        $net = bcadd($gross, '0', 2);
         $minimum = $booking['down_payment_type'] === 'fixed' ? $booking['down_payment_value'] : $this->round(bcdiv(bcmul($gross, $booking['down_payment_value'], 6), '100', 8), $policy['rounding']);
         if (bccomp($input['down_payment'], $minimum, 2) < 0 || bccomp($input['down_payment'], $gross, 2) > 0) {
             throw ValidationException::withMessages(['down_payment' => 'Agreed down payment must meet the configured minimum and cannot exceed the gross price.']);
         }
-        $discountAppliedToDownPayment = bccomp($input['discount'], $input['down_payment'], 2) > 0
-            ? $input['down_payment']
-            : $input['discount'];
+        $discountAppliedToDownPayment = $input['discount'];
         $payableDownPayment = bcsub($input['down_payment'], $discountAppliedToDownPayment, 2);
         if (bccomp($payableDownPayment, '0', 2) <= 0) {
             throw ValidationException::withMessages(['discount' => 'Discount must leave a positive payable down payment.']);
         }
-        $balance = bcsub($net, $payableDownPayment, 2);
+        $balance = bcsub($gross, $input['down_payment'], 2);
         $schedule = [];
         if ($input['frequency'] === 'full') {
             if (bccomp($balance, '0', 2) !== 0) {
-                throw ValidationException::withMessages(['down_payment' => 'Full payment requires a planned payment equal to the net price.']);
+                throw ValidationException::withMessages(['down_payment' => 'Full payment requires an agreed down payment equal to the plot price.']);
             }
         } elseif (! in_array($input['frequency'], $policy['frequencies'], true)) {
             throw ValidationException::withMessages(['frequency' => 'This plan frequency is not enabled by main admin.']);

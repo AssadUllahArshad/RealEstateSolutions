@@ -17,7 +17,11 @@ export type Plot = {
     plot_owner_id: number | null;
     owner_percentage: string | null;
     owner: { id: number; name: string } | null;
-    active_booking?: { id: number; plot_id: number } | null;
+    active_booking?: {
+        id: number;
+        plot_id: number;
+        file_submission?: { submitted_on: string } | null;
+    } | null;
     id: number;
     number: string;
     block_id: number;

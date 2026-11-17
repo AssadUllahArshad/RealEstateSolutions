@@ -107,12 +107,36 @@ class BookingDraftController extends Controller
     private function save(Request $request, BookingDrafts $drafts, ?int $id = null): RedirectResponse
     {
         try {
-            $record = $drafts->save($request->user(), $request->all(), $id);
+            $input = $request->all();
+            if (! $id && blank($input['customer_id'] ?? null)) {
+                $customerData = $request->validate([
+                    'customer_name' => ['required', 'string', 'max:160'],
+                    'customer_phone' => ['nullable', 'string', 'max:40'],
+                    'customer_cnic' => ['nullable', 'string', 'regex:/^(?:[0-9]{13}|[0-9]{5}-[0-9]{7}-[0-9])$/D'],
+                    'customer_address' => ['nullable', 'string', 'max:1000'],
+                    'customer_creation_key' => ['required', 'uuid'],
+                ]);
+                $customer = app(Customers::class)->save($request->user(), [
+                    'name' => $customerData['customer_name'],
+                    'phone' => $customerData['customer_phone'] ?? null,
+                    'cnic' => $customerData['customer_cnic'] ?? null,
+                    'address' => $customerData['customer_address'] ?? null,
+                    'creation_key' => $customerData['customer_creation_key'],
+                ]);
+                $input['customer_id'] = $customer->id;
+            }
+            $record = $drafts->save($request->user(), $input, $id);
+            if (! $id && (int) $record->purchasers_version === 0) {
+                app(DraftPurchasers::class)->save($request->user(), $record->id, [
+                    'version' => 0,
+                    'purchasers' => [['customer_id' => $record->customer_id, 'share' => '100']],
+                ]);
+            }
         } catch (ConflictHttpException $exception) {
             return back()->withErrors(['conflict' => $exception->getMessage()]);
         }
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Booking draft saved.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => $id ? 'Booking details saved.' : 'Customer and booking started. Add the payment plan next.']);
 
-        return to_route('sales.edit', $record->id);
+        return $id ? to_route('sales.edit', $record->id) : to_route('sales.terms', $record->id);
     }
 }

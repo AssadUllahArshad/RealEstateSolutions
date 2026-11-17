@@ -135,7 +135,7 @@ function TermsEditor(props: Props) {
                         <p className="mt-2 text-xs text-muted-foreground">
                             {props.canDiscount
                                 ? t(
-                                      'Enter 0 explicitly for no discount. Applies to the saved proposed gross price.',
+                                      'Enter 0 for no discount. This discount reduces only the down payment collected by the company.',
                                   )
                                 : t(
                                       'Only an authorized admin may set, remove or rebase a discount.',

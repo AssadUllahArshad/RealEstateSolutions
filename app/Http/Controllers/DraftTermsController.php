@@ -34,6 +34,6 @@ class DraftTermsController extends Controller
         }
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Proposed terms calculated and saved.']);
 
-        return to_route('sales.terms', $draft);
+        return to_route('sales.confirm', $draft);
     }
 }

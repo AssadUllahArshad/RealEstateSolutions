@@ -3,6 +3,7 @@ import { useState } from 'react';
 import BrandHeader from '@/components/brand-header';
 import { PageHeading } from '@/components/office-ui';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { formatPkr } from '@/lib/format-pkr';
 import { useTranslate } from '@/lib/i18n';
@@ -26,6 +27,11 @@ type Props = {
                 }[];
             };
         };
+        file_submission: {
+            submitted_on: string;
+            note: string | null;
+            submitter: { name: string };
+        } | null;
     };
     allocations: { number: string; amount: string }[];
     activePurchasers: { customer_id: number; name: string; share: string }[];
@@ -43,6 +49,9 @@ type Props = {
     changeCommandKey: string;
     canRequestChange: boolean;
     canApproveChange: boolean;
+    canSubmitFile: boolean;
+    fileSubmissionCommandKey: string;
+    businessDate: string;
 };
 export default function Booked({
     booking,
@@ -52,6 +61,9 @@ export default function Booked({
     changeCommandKey,
     canRequestChange,
     canApproveChange,
+    canSubmitFile,
+    fileSubmissionCommandKey,
+    businessDate,
 }: Props) {
     const t = useTranslate();
     const change = useForm({
@@ -64,6 +76,11 @@ export default function Booked({
     const [decisionNotes, setDecisionNotes] = useState<Record<number, string>>(
         {},
     );
+    const fileSubmission = useForm({
+        submitted_on: businessDate,
+        note: '',
+        command_key: fileSubmissionCommandKey,
+    });
     const submitChange = (event: React.FormEvent) => {
         event.preventDefault();
         change.post(`/bookings/${booking.id}/changes`, {
@@ -153,6 +170,69 @@ export default function Booked({
                                 </div>
                             ))}
                         </div>
+                    </div>
+                </section>
+                <section className="ef-panel p-6">
+                    <div className="flex flex-wrap items-start justify-between gap-4">
+                        <div>
+                            <p className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+                                {t('Booking status')}
+                            </p>
+                            <h2 className="mt-1 text-xl font-semibold">
+                                {booking.file_submission
+                                    ? t('File Submitted')
+                                    : t('Booked')}
+                            </h2>
+                            <p className="mt-1 text-sm text-muted-foreground">
+                                {booking.file_submission
+                                    ? `${t('Submitted on')} ${booking.file_submission.submitted_on} · ${booking.file_submission.submitter.name}`
+                                    : t(
+                                          'After payment confirmation, mark the completed file as submitted to the society.',
+                                      )}
+                            </p>
+                        </div>
+                        {canSubmitFile && (
+                            <form
+                                onSubmit={(event) => {
+                                    event.preventDefault();
+                                    fileSubmission.post(
+                                        `/bookings/${booking.id}/file-submission`,
+                                        { preserveScroll: true },
+                                    );
+                                }}
+                                className="grid gap-3 sm:grid-cols-[auto_1fr_auto]"
+                            >
+                                <Input
+                                    aria-label={t('File submission date')}
+                                    type="date"
+                                    max={businessDate}
+                                    value={fileSubmission.data.submitted_on}
+                                    onChange={(event) =>
+                                        fileSubmission.setData(
+                                            'submitted_on',
+                                            event.target.value,
+                                        )
+                                    }
+                                    required
+                                />
+                                <Input
+                                    aria-label={t('File submission note')}
+                                    placeholder={t(
+                                        'Reference or note (optional)',
+                                    )}
+                                    value={fileSubmission.data.note}
+                                    onChange={(event) =>
+                                        fileSubmission.setData(
+                                            'note',
+                                            event.target.value,
+                                        )
+                                    }
+                                />
+                                <Button disabled={fileSubmission.processing}>
+                                    {t('Mark File Submitted')}
+                                </Button>
+                            </form>
+                        )}
                     </div>
                 </section>
                 <div className="grid gap-6 lg:grid-cols-2">

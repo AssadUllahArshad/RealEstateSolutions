@@ -77,7 +77,7 @@ class InventoryController extends Controller
             'q' => ['nullable', 'string', 'max:64'],
             'block_id' => ['nullable', 'integer', 'exists:blocks,id'],
             'size_id' => ['nullable', 'integer', 'exists:plot_sizes,id'],
-            'hold' => ['nullable', Rule::in(['none', 'reservation', 'block', 'booked'])],
+            'hold' => ['nullable', Rule::in(['none', 'reservation', 'block', 'booked', 'file_submitted'])],
             'sort' => ['nullable', Rule::in(['number', 'number_desc', 'newest', 'price', 'price_desc'])],
             'view' => ['nullable', Rule::in(['table', 'grid'])],
             'page' => ['nullable', 'integer', 'min:1'],
@@ -91,7 +91,7 @@ class InventoryController extends Controller
      */
     private function query(array $filters): Builder
     {
-        $query = Plot::query()->with(['owner:id,name', 'block:id,code,name', 'size:id,label,area_marla', 'activeHold:id,plot_id,kind,state', 'activeBooking:id,plot_id']);
+        $query = Plot::query()->with(['owner:id,name', 'block:id,code,name', 'size:id,label,area_marla', 'activeHold:id,plot_id,kind,state', 'activeBooking:id,plot_id', 'activeBooking.fileSubmission:id,booking_id,submitted_on,note']);
         if (isset($filters['owner_id']) && $filters['owner_id'] !== '') {
             (int) $filters['owner_id'] === 0 ? $query->whereNull('plot_owner_id') : $query->where('plot_owner_id', $filters['owner_id']);
         }
@@ -108,7 +108,9 @@ class InventoryController extends Controller
         if (($filters['hold'] ?? '') === 'none') {
             $query->whereDoesntHave('activeHold')->whereDoesntHave('activeBooking');
         } elseif (($filters['hold'] ?? '') === 'booked') {
-            $query->whereHas('activeBooking');
+            $query->whereHas('activeBooking')->whereDoesntHave('activeBooking.fileSubmission');
+        } elseif (($filters['hold'] ?? '') === 'file_submitted') {
+            $query->whereHas('activeBooking.fileSubmission');
         } elseif (in_array($filters['hold'] ?? '', ['reservation', 'block'], true)) {
             $query->whereHas('activeHold', fn (Builder $hold) => $hold->where('kind', $filters['hold']));
         }

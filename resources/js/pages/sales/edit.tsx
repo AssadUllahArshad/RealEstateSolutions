@@ -1,5 +1,6 @@
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { Save, ArrowLeft, ShieldCheck } from 'lucide-react';
+import { useState } from 'react';
 import { PageHeading, HoldBadge, Pager } from '@/components/office-ui';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
@@ -49,8 +50,16 @@ type Props = {
 
 function DraftEditor({ draft, creationKey, customers, plots }: Props) {
     const t = useTranslate();
+    const [newCustomer, setNewCustomer] = useState(
+        !draft && customers.length === 0,
+    );
     const form = useForm({
         customer_id: String(draft?.customer_id ?? ''),
+        customer_name: '',
+        customer_phone: '',
+        customer_cnic: '',
+        customer_address: '',
+        customer_creation_key: creationKey,
         plot_id: String(draft?.plot_id ?? ''),
         quoted_price: draft?.quoted_price ?? '',
         notes: draft?.notes ?? '',
@@ -95,32 +104,132 @@ function DraftEditor({ draft, creationKey, customers, plots }: Props) {
                         </p>
                     </div>
                     <div>
-                        <Label htmlFor="draft-customer">
-                            {t('Customer contact *')}
-                        </Label>
-                        <select
-                            id="draft-customer"
-                            required
-                            className="mt-2 h-11 w-full rounded-lg border bg-background px-3 text-sm"
-                            value={form.data.customer_id}
-                            onChange={(e) =>
-                                form.setData('customer_id', e.target.value)
-                            }
-                        >
-                            <option value="">{t('Select a customer')}</option>
-                            {customerOptions.map((c) => (
-                                <option value={c.id} key={c.id}>
-                                    {c.name} (#{c.id})
-                                </option>
-                            ))}
-                        </select>
-                        <InputError message={form.errors.customer_id} />
-                        <Link
-                            className="mt-2 inline-block text-xs text-blue-600"
-                            href="/customers"
-                        >
-                            {t('Manage customer contacts')}
-                        </Link>
+                        {!draft && (
+                            <div className="mb-4 flex rounded-lg bg-muted p-1">
+                                <button
+                                    type="button"
+                                    className={`flex-1 rounded-md px-3 py-2 text-sm font-medium ${!newCustomer ? 'bg-background shadow-sm' : ''}`}
+                                    onClick={() => setNewCustomer(false)}
+                                >
+                                    {t('Existing customer')}
+                                </button>
+                                <button
+                                    type="button"
+                                    className={`flex-1 rounded-md px-3 py-2 text-sm font-medium ${newCustomer ? 'bg-background shadow-sm' : ''}`}
+                                    onClick={() => {
+                                        setNewCustomer(true);
+                                        form.setData('customer_id', '');
+                                    }}
+                                >
+                                    {t('New customer')}
+                                </button>
+                            </div>
+                        )}
+                        {newCustomer && !draft ? (
+                            <div className="grid gap-4 sm:grid-cols-2">
+                                <div>
+                                    <Label htmlFor="customer-name">
+                                        {t('Customer name *')}
+                                    </Label>
+                                    <Input
+                                        id="customer-name"
+                                        className="mt-2"
+                                        required
+                                        value={form.data.customer_name}
+                                        onChange={(e) =>
+                                            form.setData(
+                                                'customer_name',
+                                                e.target.value,
+                                            )
+                                        }
+                                    />
+                                    <InputError
+                                        message={form.errors.customer_name}
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="customer-phone">
+                                        {t('Phone')}
+                                    </Label>
+                                    <Input
+                                        id="customer-phone"
+                                        className="mt-2"
+                                        value={form.data.customer_phone}
+                                        onChange={(e) =>
+                                            form.setData(
+                                                'customer_phone',
+                                                e.target.value,
+                                            )
+                                        }
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="customer-cnic">
+                                        {t('CNIC')}
+                                    </Label>
+                                    <Input
+                                        id="customer-cnic"
+                                        className="mt-2"
+                                        inputMode="numeric"
+                                        placeholder="3520212345671"
+                                        value={form.data.customer_cnic}
+                                        onChange={(e) =>
+                                            form.setData(
+                                                'customer_cnic',
+                                                e.target.value,
+                                            )
+                                        }
+                                    />
+                                    <InputError
+                                        message={form.errors.customer_cnic}
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="customer-address">
+                                        {t('Address')}
+                                    </Label>
+                                    <Input
+                                        id="customer-address"
+                                        className="mt-2"
+                                        value={form.data.customer_address}
+                                        onChange={(e) =>
+                                            form.setData(
+                                                'customer_address',
+                                                e.target.value,
+                                            )
+                                        }
+                                    />
+                                </div>
+                            </div>
+                        ) : (
+                            <>
+                                <Label htmlFor="draft-customer">
+                                    {t('Customer contact *')}
+                                </Label>
+                                <select
+                                    id="draft-customer"
+                                    required
+                                    className="mt-2 h-11 w-full rounded-lg border bg-background px-3 text-sm"
+                                    value={form.data.customer_id}
+                                    onChange={(e) =>
+                                        form.setData(
+                                            'customer_id',
+                                            e.target.value,
+                                        )
+                                    }
+                                >
+                                    <option value="">
+                                        {t('Select a customer')}
+                                    </option>
+                                    {customerOptions.map((c) => (
+                                        <option value={c.id} key={c.id}>
+                                            {c.name} (#{c.id})
+                                        </option>
+                                    ))}
+                                </select>
+                                <InputError message={form.errors.customer_id} />
+                            </>
+                        )}
                     </div>
                     <div>
                         <Label htmlFor="draft-plot">

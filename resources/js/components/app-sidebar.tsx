@@ -8,17 +8,10 @@ import {
     CalendarCheck2,
     ContactRound,
     FilePenLine,
-    SlidersHorizontal,
     ReceiptText,
-    Landmark,
-    WalletCards,
-    ChartNoAxesColumnIncreasing,
     HandCoins,
-    CircleDollarSign,
-    CalendarClock,
-    BadgeDollarSign,
-    Calculator,
     Upload,
+    Banknote,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavMain } from '@/components/nav-main';
@@ -62,40 +55,6 @@ export function AppSidebar() {
             href: '/finance/receipts',
             icon: ReceiptText,
         });
-        finance.push({
-            title: 'Receivables',
-            href: '/finance/receivables',
-            icon: CalendarClock,
-        });
-    }
-    if (auth.abilities.includes('finance.accounts.view')) {
-        finance.push({
-            title: 'Finance overview',
-            href: '/finance',
-            icon: CircleDollarSign,
-        });
-        finance.push({
-            title: 'Cashbook',
-            href: '/finance/movements',
-            icon: Landmark,
-        });
-        finance.push({
-            title: 'Financial accounts',
-            href: '/finance/accounts',
-            icon: WalletCards,
-        });
-        if (auth.abilities.includes('finance.accounts.manage')) {
-            finance.push({
-                title: 'Opening balances',
-                href: '/finance/opening-balances',
-                icon: WalletCards,
-            });
-        }
-        finance.push({
-            title: 'Bank reconciliation',
-            href: '/finance/reconciliation',
-            icon: Landmark,
-        });
     }
     if (auth.abilities.includes('finance.expenses.view')) {
         finance.push({
@@ -104,32 +63,11 @@ export function AppSidebar() {
             icon: HandCoins,
         });
     }
-    if (auth.abilities.includes('finance.owner-payouts.view')) {
+    if (auth.abilities.includes('finance.salaries.view')) {
         finance.push({
-            title: 'Owner payouts',
-            href: '/finance/owner-payouts',
-            icon: HandCoins,
-        });
-    }
-    if (auth.abilities.includes('finance.refunds.view')) {
-        finance.push({
-            title: 'Customer refunds',
-            href: '/finance/refunds',
-            icon: HandCoins,
-        });
-    }
-    if (auth.abilities.includes('finance.commissions.view')) {
-        finance.push({
-            title: 'Agent commissions',
-            href: '/finance/commissions',
-            icon: HandCoins,
-        });
-    }
-    if (auth.abilities.includes('finance.charges.view')) {
-        finance.push({
-            title: 'Manual charges',
-            href: '/finance/charges',
-            icon: BadgeDollarSign,
+            title: 'Salaries',
+            href: '/finance/salaries',
+            icon: Banknote,
         });
     }
     if (auth.abilities.includes('import.run')) {
@@ -139,34 +77,8 @@ export function AppSidebar() {
             icon: Upload,
         });
     }
-    if (auth.abilities.includes('business-settings.manage')) {
-        administration.push({
-            title: 'Business settings',
-            href: '/business-settings',
-            icon: SlidersHorizontal,
-        });
-    }
-    if (auth.abilities.includes('reports.owners.view')) {
-        items.push({
-            title: 'Owner reports',
-            href: '/reports/owners',
-            icon: ChartNoAxesColumnIncreasing,
-        });
-    }
-    if (auth.abilities.includes('reports.operations.view')) {
-        items.push({
-            title: 'Operational reports',
-            href: '/reports/operations',
-            icon: ChartNoAxesColumnIncreasing,
-        });
-    }
     if (auth.abilities.includes('sales.drafts')) {
-        items.push({ title: 'Sales desk', href: '/sales', icon: FilePenLine });
-        items.push({
-            title: 'Payment plan calculator',
-            href: '/calculator',
-            icon: Calculator,
-        });
+        items.push({ title: 'Bookings', href: '/sales', icon: FilePenLine });
     }
     if (auth.abilities.includes('customers.view')) {
         items.push(

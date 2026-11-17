@@ -100,7 +100,7 @@ class DraftTermsTest extends TestCase
         $ordinary = User::factory()->create()->assignRole('admin');
         $this->actingAs($ordinary)->patch($url, $payload)->assertSessionHasNoErrors();
         $term = DraftTerm::firstOrFail();
-        $this->assertSame('990.00', $term->snapshot['net']);
+        $this->assertSame('1000.00', $term->snapshot['net']);
         $this->assertSame('100.00', $term->snapshot['planned_down_payment']);
         $this->assertSame('10.00', $term->snapshot['discount_applied_to_down_payment']);
         $this->assertSame('90.00', $term->snapshot['down_payment']);

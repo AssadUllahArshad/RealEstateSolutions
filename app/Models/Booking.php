@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use LogicException;
 
 /**
@@ -32,6 +33,12 @@ class Booking extends Model
     public function changes(): HasMany
     {
         return $this->hasMany(BookingChangeRequest::class);
+    }
+
+    /** @return HasOne<BookingFileSubmission, $this> */
+    public function fileSubmission(): HasOne
+    {
+        return $this->hasOne(BookingFileSubmission::class);
     }
 
     protected static function booted(): void

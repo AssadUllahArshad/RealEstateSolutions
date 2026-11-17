@@ -179,7 +179,7 @@ export function Pager({
 export function HoldBadge({
     kind,
 }: {
-    kind?: 'reservation' | 'block' | 'booked' | null;
+    kind?: 'reservation' | 'block' | 'booked' | 'file_submitted' | null;
 }) {
     const t = useTranslate();
     return (
@@ -187,13 +187,15 @@ export function HoldBadge({
             className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ${kind === 'block' ? 'bg-amber-50 text-amber-700 dark:bg-amber-950' : kind === 'reservation' ? 'bg-blue-50 text-blue-700 dark:bg-blue-950' : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950'}`}
         >
             <span className="size-1.5 rounded-full bg-current" />
-            {kind === 'booked'
-                ? t('Booked')
-                : kind === 'block'
-                  ? t('Blocked')
-                  : kind === 'reservation'
-                    ? t('Held')
-                    : t('No active hold')}
+            {kind === 'file_submitted'
+                ? t('File Submitted')
+                : kind === 'booked'
+                  ? t('Booked')
+                  : kind === 'block'
+                    ? t('Blocked')
+                    : kind === 'reservation'
+                      ? t('Held')
+                      : t('No active hold')}
         </span>
     );
 }

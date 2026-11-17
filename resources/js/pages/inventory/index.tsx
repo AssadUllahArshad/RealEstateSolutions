@@ -537,6 +537,9 @@ export default function Inventory({
                                 <option value="reservation">{t('Held')}</option>
                                 <option value="block">{t('Blocked')}</option>
                                 <option value="booked">{t('Booked')}</option>
+                                <option value="file_submitted">
+                                    {t('File Submitted')}
+                                </option>
                             </select>
                             <select
                                 aria-label={t('Filter by plot owner')}
@@ -655,8 +658,12 @@ export default function Inventory({
                                             <HoldBadge
                                                 kind={
                                                     plot.active_booking
-                                                        ? 'booked'
-                                                        : plot.active_hold?.kind
+                                                        ?.file_submission
+                                                        ? 'file_submitted'
+                                                        : plot.active_booking
+                                                          ? 'booked'
+                                                          : plot.active_hold
+                                                                ?.kind
                                                 }
                                             />
                                             <span className="mt-2 block text-xs">
@@ -738,10 +745,13 @@ export default function Inventory({
                                                     <HoldBadge
                                                         kind={
                                                             plot.active_booking
-                                                                ? 'booked'
-                                                                : plot
-                                                                      .active_hold
-                                                                      ?.kind
+                                                                ?.file_submission
+                                                                ? 'file_submitted'
+                                                                : plot.active_booking
+                                                                  ? 'booked'
+                                                                  : plot
+                                                                        .active_hold
+                                                                        ?.kind
                                                         }
                                                     />
                                                 </Link>

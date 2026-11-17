@@ -104,7 +104,7 @@ const ur = {
     'Plot price (PKR) *': 'پلاٹ کی قیمت (PKR) *',
     'Discount type': 'رعایت کی قسم',
     'Fixed PKR': 'مقررہ PKR',
-    'Percentage of price': 'قیمت کا فیصد',
+    'Percentage of down payment': 'ڈاؤن پیمنٹ کا فیصد',
     'Discount (%)': 'رعایت (%)',
     'Discount (PKR)': 'رعایت (PKR)',
     'Enter 0 explicitly for no discount. A preview cannot approve a discount.':
@@ -120,8 +120,8 @@ const ur = {
         'ایجنٹ کمیشن کی ترتیبات نامکمل ہیں؛ پیش نظارہ دستیاب نہیں۔',
     'Full-payment preview. No future installments.':
         'مکمل ادائیگی کا پیش نظارہ۔ کوئی آئندہ قسط نہیں۔',
-    'Formula: net = price − discount; balance = net − down payment; installments split the balance with the configured rounding and residual rule.':
-        'فارمولا: خالص = قیمت − رعایت؛ بقیہ = خالص − پیشگی ادائیگی؛ قسطیں بقیہ کو ترتیب شدہ راؤنڈنگ اور بقیہ کے اصول کے ساتھ تقسیم کرتی ہیں۔',
+    'Formula: payable down payment = agreed down payment − discount; society installment balance = plot price − agreed down payment.':
+        'فارمولا: قابل ادائیگی ڈاؤن پیمنٹ = طے شدہ ڈاؤن پیمنٹ − رعایت؛ سوسائٹی اقساط کا بقیہ = پلاٹ قیمت − طے شدہ ڈاؤن پیمنٹ۔',
     Customers: 'صارفین',
     'Follow-ups': 'فالو اپ',
     'Customer receipts': 'کسٹمر رسیدیں',
@@ -777,8 +777,8 @@ const ur = {
     'Enter the planned amounts. The server calculates and saves the schedule when you submit.':
         'منصوبہ شدہ رقوم درج کریں۔ جمع کرنے پر سرور شیڈول شمار اور محفوظ کرے گا۔',
     'Admin discount (PKR)': 'ایڈمن رعایت (PKR)',
-    'Enter 0 explicitly for no discount. Applies to the saved proposed gross price.':
-        'رعایت نہ ہونے پر واضح طور پر 0 درج کریں۔ یہ محفوظ مجوزہ مجموعی قیمت پر لاگو ہے۔',
+    'Enter 0 for no discount. This discount reduces only the down payment collected by the company.':
+        'رعایت نہ ہو تو 0 درج کریں۔ یہ رعایت صرف کمپنی کی وصول شدہ ڈاؤن پیمنٹ کم کرتی ہے۔',
     'Only an authorized admin may set, remove or rebase a discount.':
         'صرف مجاز ایڈمن رعایت مقرر، ختم یا دوبارہ بنیاد بنا سکتا ہے۔',
     'Discount reason': 'رعایت کی وجہ',
@@ -794,8 +794,8 @@ const ur = {
         'رعایت پہلے اس رقم پر لاگو ہوتی ہے۔ محفوظ نتیجہ کسٹمر کی اصل قابل ادائیگی ڈاؤن پیمنٹ دکھاتا ہے۔',
     'Choose recognized receipts for this sales contact and enter the exact payable down payment after discount. Unused funds remain customer credit.':
         'اس سیلز رابطے کی تصدیق شدہ رسیدیں منتخب کریں اور رعایت کے بعد درست قابل ادائیگی ڈاؤن پیمنٹ درج کریں۔ غیر استعمال شدہ رقم کسٹمر کریڈٹ رہے گی۔',
-    'The discount reduces both the total contract price and the amount payable at booking. The agreed installment balance remains unchanged.':
-        'رعایت کل معاہدہ قیمت اور بکنگ کے وقت قابل ادائیگی رقم دونوں کو کم کرتی ہے۔ طے شدہ اقساط کا بیلنس تبدیل نہیں ہوتا۔',
+    'The discount reduces only the down payment collected by the company. The plot price and society installment balance remain unchanged.':
+        'رعایت صرف کمپنی کی وصول شدہ ڈاؤن پیمنٹ کم کرتی ہے۔ پلاٹ کی قیمت اور سوسائٹی اقساط کا بقیہ تبدیل نہیں ہوتا۔',
     'A proposal amount, not proof of received or cleared money.':
         'یہ مجوزہ رقم ہے، وصول یا کلیئر شدہ رقم کا ثبوت نہیں۔',
     'Payment plan *': 'ادائیگی منصوبہ *',

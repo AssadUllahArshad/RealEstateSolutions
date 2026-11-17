@@ -6,6 +6,7 @@ use App\Domain\Sales\BookingTransfers;
 use App\Domain\Sales\FinalBookings;
 use App\Models\Booking;
 use App\Models\BookingChangeRequest;
+use App\Support\BusinessClock;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -42,6 +43,7 @@ class FinalBookingController extends Controller
     public function show(Request $request, FinalBookings $bookings, int $booking): Response
     {
         $record = $bookings->query($request->user())->findOrFail($booking);
+        $record->load('fileSubmission.submitter:id,name');
         $allocations = DB::table('booking_allocations')->join('payment_receipts', 'payment_receipts.id', '=', 'booking_allocations.payment_receipt_id')
             ->where('booking_id', $record->id)->get(['payment_receipts.number', 'booking_allocations.amount']);
 
@@ -57,6 +59,9 @@ class FinalBookingController extends Controller
             'changeCommandKey' => (string) Str::uuid(),
             'canRequestChange' => $request->user()->can('sales.changes.request'),
             'canApproveChange' => $request->user()->can('sales.changes.approve') && $request->user()->hasAnyRole(['admin', 'super_admin']),
+            'canSubmitFile' => $request->user()->can('sales.file-submit') && $record->fileSubmission === null,
+            'fileSubmissionCommandKey' => (string) Str::uuid(),
+            'businessDate' => app(BusinessClock::class)->today(),
         ]);
     }
 }

@@ -47,8 +47,9 @@ class RolePermissionSeeder extends Seeder
         Permission::findOrCreate('sales.confirm', 'web');
         Permission::findOrCreate('sales.changes.request', 'web');
         Permission::findOrCreate('sales.changes.approve', 'web');
+        Permission::findOrCreate('sales.file-submit', 'web');
         foreach (['super_admin', 'admin', 'sales_agent', 'accountant'] as $role) {
-            Role::findByName($role, 'web')->givePermissionTo(['sales.confirm', 'sales.changes.request']);
+            Role::findByName($role, 'web')->givePermissionTo(['sales.confirm', 'sales.changes.request', 'sales.file-submit']);
         }
         foreach (['super_admin', 'admin'] as $role) {
             Role::findByName($role, 'web')->givePermissionTo('sales.changes.approve');
@@ -57,10 +58,12 @@ class RolePermissionSeeder extends Seeder
         Permission::findOrCreate('finance.receipts.reverse', 'web');
         Permission::findOrCreate('finance.expenses.view', 'web');
         Permission::findOrCreate('finance.expenses.post', 'web');
+        Permission::findOrCreate('finance.salaries.view', 'web');
+        Permission::findOrCreate('finance.salaries.manage', 'web');
         Permission::findOrCreate('finance.charges.view', 'web');
         Permission::findOrCreate('finance.charges.manage', 'web');
         foreach (['super_admin', 'admin', 'accountant'] as $role) {
-            Role::findByName($role, 'web')->givePermissionTo(['finance.receipts.post', 'finance.expenses.view', 'finance.expenses.post']);
+            Role::findByName($role, 'web')->givePermissionTo(['finance.receipts.post', 'finance.expenses.view', 'finance.expenses.post', 'finance.salaries.view', 'finance.salaries.manage']);
             Role::findByName($role, 'web')->givePermissionTo('finance.charges.view');
         }
         foreach (['super_admin', 'admin'] as $role) {
