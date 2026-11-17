@@ -102,6 +102,16 @@ class CollectionPreparationTest extends TestCase
         $this->actingAs($this->agent)->get('/finance/accounts')->assertForbidden();
     }
 
+    public function test_receipt_accepts_a_human_formatted_pkr_amount(): void
+    {
+        $payload = $this->payload();
+        $payload['amount'] = '1,353,000.00';
+
+        $this->actingAs($this->agent)->post('/finance/receipts', $payload)
+            ->assertSessionHasNoErrors();
+
+        $this->assertSame('1353000.00', ReceiptDraft::firstOrFail()->amount);
+    }
     public function test_edits_versions_noop_and_policy_account_history_are_safe(): void
     {
         $payload = $this->payload();

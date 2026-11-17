@@ -45,6 +45,12 @@ class ReceiptDrafts
     /** @param array<string,mixed> $input */
     public function save(User $actor, array $input, ?int $id = null): ReceiptDraft
     {
+        if (isset($input['amount']) && is_string($input['amount'])) {
+            $amount = trim($input['amount']);
+            if (preg_match('/^(?:\d+|\d{1,3}(?:,\d{3})+)(?:\.\d{1,2})?$/D', $amount)) {
+                $input['amount'] = str_replace(',', '', $amount);
+            }
+        }
         $data = Validator::make($input, [
             'customer_id' => ['required', 'integer'], 'financial_account_id' => ['required', 'integer'], 'booking_draft_id' => ['nullable', 'integer'],
             'amount' => ['required', new PositiveDecimal], 'reported_on' => ['required', 'date_format:Y-m-d', 'after_or_equal:1000-01-01', 'before_or_equal:9999-12-31'],
