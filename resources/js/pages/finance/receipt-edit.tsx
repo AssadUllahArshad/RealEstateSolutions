@@ -219,7 +219,14 @@ function Editor(props: Props & { onDirtyChange: (dirty: boolean) => void }) {
                             onChange={(event) =>
                                 form.setData('amount', event.target.value)
                             }
+                            aria-invalid={!!form.errors.amount}
                         />
+                        <InputError message={form.errors.amount} />
+                        <p className="mt-2 text-xs text-muted-foreground">
+                            {t(
+                                'You may enter the amount with or without comma separators, for example 1,353,000.00.',
+                            )}
+                        </p>
                     </div>
                     <div>
                         <Label htmlFor="receipt-date">
