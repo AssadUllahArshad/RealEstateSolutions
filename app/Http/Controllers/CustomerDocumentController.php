@@ -28,6 +28,9 @@ class CustomerDocumentController extends Controller
         $request->validate(['kind' => ['required', Rule::in(self::KINDS)],
             'file' => ['required', 'file', 'max:10240', 'mimes:jpg,jpeg,png,pdf', 'mimetypes:image/jpeg,image/png,application/pdf'],
             'customer_id' => ['prohibited'], 'uploaded_by' => ['prohibited'], 'path' => ['prohibited'],
+        ], [
+            'file.required' => 'Choose a document to upload. If you already selected one, the server upload temporary directory is unavailable.',
+            'file.uploaded' => 'The server could not receive this document. Check the PHP upload temporary directory and file-size limits.',
         ]);
         $file = $request->file('file');
         abort_unless($file instanceof UploadedFile, 422);

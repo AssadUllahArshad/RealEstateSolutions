@@ -56,13 +56,58 @@ export default function ConfirmBooking(props: Props) {
         confirmed: false,
     });
     useUnsavedChanges(form.isDirty);
-    const blocked =
-        !props.canConfirm ||
-        !term ||
-        props.terms.stale ||
-        props.preparation.checks.some(
-            (check) => check.key !== 'payment' && check.state !== 'recorded',
-        );
+    const blockers = [
+        ...(!props.canConfirm
+            ? [
+                  {
+                      key: 'permission',
+                      title: t('Confirmation permission'),
+                      detail: t(
+                          'Your role cannot finalize this booking. Ask an authorized agent or administrator to complete it.',
+                      ),
+                      href: null,
+                  },
+              ]
+            : []),
+        ...(!term
+            ? [
+                  {
+                      key: 'terms',
+                      title: t('Booking terms'),
+                      detail: t(
+                          'Save the plot price, discount, down payment and installment schedule before final confirmation.',
+                      ),
+                      href: `/sales/${props.draft.id}`,
+                  },
+              ]
+            : props.terms.stale
+              ? [
+                    {
+                        key: 'terms',
+                        title: t('Booking terms'),
+                        detail: t(
+                            'The saved terms are out of date. Review and save the latest pricing before final confirmation.',
+                        ),
+                        href: `/sales/${props.draft.id}`,
+                    },
+                ]
+              : []),
+        ...props.preparation.checks
+            .filter(
+                (check) =>
+                    check.key !== 'payment' && check.state !== 'recorded',
+            )
+            .map((check) => ({
+                key: check.key,
+                title: t(check.title),
+                detail: t(check.detail),
+                href: check.href,
+            })),
+    ];
+    const blocked = blockers.length > 0;
+    const paymentHref = props.preparation.checks.find(
+        (check) => check.key === 'payment',
+    )?.href;
     return (
         <>
             <Head title={t('Confirm booking')} />
@@ -135,8 +180,41 @@ export default function ConfirmBooking(props: Props) {
                             )}
                         </p>
                     )}
+                    {blockers.length > 0 && (
+                        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-950">
+                            <p className="font-semibold">
+                                {t(
+                                    'You can prepare the receipt allocation now. Complete these items before final confirmation:',
+                                )}
+                            </p>
+                            <ul className="mt-3 space-y-3 text-sm">
+                                {blockers.map((blocker) => (
+                                    <li
+                                        key={blocker.key}
+                                        className="flex flex-wrap items-start justify-between gap-3 rounded-lg bg-white/70 p-3"
+                                    >
+                                        <span className="min-w-0 flex-1">
+                                            <span className="block font-semibold">
+                                                {blocker.title}
+                                            </span>
+                                            <span className="mt-1 block leading-6">
+                                                {blocker.detail}
+                                            </span>
+                                        </span>
+                                        {blocker.href && (
+                                            <Button asChild size="sm" variant="outline">
+                                                <Link href={blocker.href}>
+                                                    {t('Resolve')}
+                                                </Link>
+                                            </Button>
+                                        )}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
                     <fieldset
-                        disabled={form.processing || blocked}
+                        disabled={form.processing}
                         className="space-y-4"
                     >
                         {props.credits.map((credit) => {
@@ -242,6 +320,7 @@ export default function ConfirmBooking(props: Props) {
                         </label>
                         <Button
                             disabled={
+                                blocked ||
                                 props.credits.length === 0 ||
                                 !form.data.confirmed ||
                                 form.data.allocations.length === 0
@@ -250,13 +329,6 @@ export default function ConfirmBooking(props: Props) {
                             {t('Confirm booking & allocate payment')}
                         </Button>
                     </fieldset>
-                    {blocked && (
-                        <p className="text-sm text-amber-700">
-                            {t(
-                                'Resolve the checklist and current terms before confirmation. Only authorized staff may confirm.',
-                            )}
-                        </p>
-                    )}
                     {Object.entries(form.errors).map(([key, message]) => (
                         <p
                             role="alert"
