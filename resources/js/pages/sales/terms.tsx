@@ -20,6 +20,8 @@ const frequencies: Record<string, string> = {
 type Row = { due_date: string; amount: string };
 type TermsInput = {
     discount: string;
+    discount_type?: 'fixed' | 'percentage';
+    discount_value?: string;
     discount_reason: string;
     down_payment: string;
     frequency: string;
@@ -80,6 +82,8 @@ function TermsEditor(props: Props) {
         source_version: props.draft.version,
         policy_versions: props.policyVersions,
         discount: saved?.discount ?? '0.00',
+        discount_type: saved?.discount_type ?? ('fixed' as const),
+        discount_value: saved?.discount_value ?? saved?.discount ?? '0.00',
         discount_reason: saved?.discount_reason ?? '',
         down_payment: saved?.down_payment ?? '',
         frequency: saved?.frequency ?? '',
@@ -117,21 +121,52 @@ function TermsEditor(props: Props) {
                 className="space-y-6 p-5 sm:p-6"
             >
                 <div className="grid gap-5 sm:grid-cols-2">
-                    <div>
-                        <Label htmlFor="terms-discount">
-                            {t('Admin discount (PKR)')}
-                        </Label>
-                        <Input
-                            className="mt-2"
-                            id="terms-discount"
-                            inputMode="decimal"
-                            required
-                            readOnly={!props.canDiscount}
-                            value={form.data.discount}
-                            onChange={(event) =>
-                                form.setData('discount', event.target.value)
-                            }
-                        />
+                    <div className="grid gap-4 sm:grid-cols-2">
+                        <div>
+                            <Label htmlFor="terms-discount-type">
+                                {t('Discount type')}
+                            </Label>
+                            <select
+                                id="terms-discount-type"
+                                className="mt-2 h-11 w-full rounded-lg border bg-background px-3 text-sm"
+                                disabled={!props.canDiscount}
+                                value={form.data.discount_type}
+                                onChange={(event) =>
+                                    form.setData(
+                                        'discount_type',
+                                        event.target.value as
+                                            | 'fixed'
+                                            | 'percentage',
+                                    )
+                                }
+                            >
+                                <option value="fixed">{t('Fixed PKR')}</option>
+                                <option value="percentage">
+                                    {t('Percentage of down payment')}
+                                </option>
+                            </select>
+                        </div>
+                        <div>
+                            <Label htmlFor="terms-discount">
+                                {form.data.discount_type === 'percentage'
+                                    ? t('Discount (%)')
+                                    : t('Discount (PKR)')}
+                            </Label>
+                            <Input
+                                className="mt-2"
+                                id="terms-discount"
+                                inputMode="decimal"
+                                required
+                                readOnly={!props.canDiscount}
+                                value={form.data.discount_value}
+                                onChange={(event) =>
+                                    form.setData(
+                                        'discount_value',
+                                        event.target.value,
+                                    )
+                                }
+                            />
+                        </div>
                         <p className="mt-2 text-xs text-muted-foreground">
                             {props.canDiscount
                                 ? t(
@@ -141,6 +176,7 @@ function TermsEditor(props: Props) {
                                       'Only an authorized admin may set, remove or rebase a discount.',
                                   )}
                         </p>
+                        <InputError message={form.errors.discount_value} />
                     </div>
                     <div>
                         <Label htmlFor="terms-reason">

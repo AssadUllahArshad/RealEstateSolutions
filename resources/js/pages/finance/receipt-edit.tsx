@@ -22,6 +22,13 @@ type Props = {
     creationKey: string;
     customers: { id: number; name: string }[];
     customerQuery: string;
+    prefill: {
+        customer_id: number | null;
+        booking_draft_id: number | null;
+        amount: string;
+        financial_account_id: number | null;
+        method: string | null;
+    } | null;
     accounts: Account[];
     draftOptions: { id: number; customer_id: number }[];
     policyVersion: number;
@@ -48,12 +55,20 @@ function Editor(props: Props & { onDirtyChange: (dirty: boolean) => void }) {
     const t = useTranslate();
     const record = props.receipt;
     const form = useForm({
-        customer_id: String(record?.customer_id ?? ''),
-        financial_account_id: String(record?.financial_account_id ?? ''),
-        booking_draft_id: String(record?.booking_draft_id ?? ''),
-        amount: record?.amount ?? '',
+        customer_id: String(
+            record?.customer_id ?? props.prefill?.customer_id ?? '',
+        ),
+        financial_account_id: String(
+            record?.financial_account_id ??
+                props.prefill?.financial_account_id ??
+                '',
+        ),
+        booking_draft_id: String(
+            record?.booking_draft_id ?? props.prefill?.booking_draft_id ?? '',
+        ),
+        amount: record?.amount ?? props.prefill?.amount ?? '',
         reported_on: record?.reported_on ?? '',
-        method: record?.method ?? '',
+        method: record?.method ?? props.prefill?.method ?? '',
         reference: props.privateDetails?.reference ?? '',
         notes: props.privateDetails?.notes ?? '',
         policy_version: props.policyVersion,

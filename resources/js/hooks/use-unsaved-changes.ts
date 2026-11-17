@@ -11,6 +11,7 @@ export function useUnsavedChanges(dirty: boolean) {
         const remove = router.on('before', (event) => {
             if (
                 event.detail.visit.method === 'get' &&
+                !event.detail.visit.prefetch &&
                 !window.confirm('Discard your unsaved changes?')
             )
                 event.preventDefault();

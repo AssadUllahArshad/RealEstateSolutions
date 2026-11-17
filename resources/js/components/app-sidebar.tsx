@@ -12,6 +12,10 @@ import {
     HandCoins,
     Upload,
     Banknote,
+    Calculator,
+    ChartNoAxesCombined,
+    FileChartColumn,
+    Landmark,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavMain } from '@/components/nav-main';
@@ -49,6 +53,7 @@ export function AppSidebar() {
     const items = [...mainNavItems];
     const administration: NavItem[] = [];
     const finance: NavItem[] = [];
+    const reports: NavItem[] = [];
     if (auth.abilities.includes('finance.receipts.view')) {
         finance.push({
             title: 'Customer receipts',
@@ -70,6 +75,13 @@ export function AppSidebar() {
             icon: Banknote,
         });
     }
+    if (auth.abilities.includes('finance.accounts.view')) {
+        finance.push({
+            title: 'Payment accounts',
+            href: '/finance/accounts',
+            icon: Landmark,
+        });
+    }
     if (auth.abilities.includes('import.run')) {
         administration.push({
             title: 'Import data',
@@ -79,6 +91,11 @@ export function AppSidebar() {
     }
     if (auth.abilities.includes('sales.drafts')) {
         items.push({ title: 'Bookings', href: '/sales', icon: FilePenLine });
+        items.push({
+            title: 'Calculator',
+            href: '/calculator',
+            icon: Calculator,
+        });
     }
     if (auth.abilities.includes('customers.view')) {
         items.push(
@@ -98,6 +115,27 @@ export function AppSidebar() {
             title: 'Society setup',
             href: '/inventory/setup',
             icon: Settings2,
+        });
+    }
+    if (auth.abilities.includes('business-settings.manage')) {
+        administration.push({
+            title: 'Business settings',
+            href: '/business-settings/booking',
+            icon: Settings2,
+        });
+    }
+    if (auth.abilities.includes('reports.owners.view')) {
+        reports.push({
+            title: 'Owner reports',
+            href: '/reports/owners',
+            icon: FileChartColumn,
+        });
+    }
+    if (auth.abilities.includes('reports.operations.view')) {
+        reports.push({
+            title: 'Operational reporting',
+            href: '/reports/operations',
+            icon: ChartNoAxesCombined,
         });
     }
     if (auth.abilities.includes('users.view')) {
@@ -129,6 +167,9 @@ export function AppSidebar() {
                 <NavMain items={items} />
                 {finance.length > 0 && (
                     <NavMain label="Finance" items={finance} />
+                )}
+                {reports.length > 0 && (
+                    <NavMain label="Reports" items={reports} />
                 )}
                 {administration.length > 0 && (
                     <NavMain label="Administration" items={administration} />

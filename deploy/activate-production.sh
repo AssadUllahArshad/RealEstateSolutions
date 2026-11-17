@@ -17,7 +17,7 @@ previous_target=""
 [[ -d "${release_dir}" ]] || { echo "Uploaded release does not exist." >&2; exit 2; }
 [[ -f "${shared_dir}/.env" ]] || { echo "Shared production .env is missing." >&2; exit 2; }
 
-mkdir -p "${shared_dir}/storage/app/customer-documents" "${shared_dir}/storage/framework/cache" \
+mkdir -p "${shared_dir}/tmp" "${shared_dir}/storage/app/customer-documents" "${shared_dir}/storage/framework/cache" \
   "${shared_dir}/storage/framework/sessions" "${shared_dir}/storage/framework/views" \
   "${shared_dir}/storage/logs" "${deploy_root}/backups"
 
@@ -60,6 +60,7 @@ if [[ -n "${web_root}" ]]; then
   [[ "${web_root}" =~ ^[a-zA-Z0-9_./-]+$ ]] || { echo "Unsafe public web-root path." >&2; exit 2; }
   [[ -f "${web_root}/.estateflow-public" ]] || { echo "Missing EstateFlow public-root marker." >&2; exit 2; }
   rsync -a --delete --exclude='.estateflow-public' "${release_dir}/public/" "${web_root}/"
+  printf 'upload_tmp_dir="%s"\n' "${shared_dir}/tmp" > "${web_root}/.user.ini"
   sed \
     -e "s#__DIR__.'/../storage#'${deploy_root}/current/storage#g" \
     -e "s#__DIR__.'/../vendor#'${deploy_root}/current/vendor#g" \

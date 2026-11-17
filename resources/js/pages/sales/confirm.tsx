@@ -63,6 +63,9 @@ export default function ConfirmBooking(props: Props) {
         props.preparation.checks.some(
             (check) => check.key !== 'payment' && check.state !== 'recorded',
         );
+    const paymentHref = props.preparation.checks.find(
+        (check) => check.key === 'payment',
+    )?.href;
     return (
         <>
             <Head title={t('Confirm booking')} />
@@ -119,11 +122,20 @@ export default function ConfirmBooking(props: Props) {
                         </p>
                     </div>
                     {props.credits.length === 0 && (
-                        <p className="rounded-lg bg-amber-50 p-4 text-sm text-amber-900">
-                            {t(
-                                'No recognized unallocated credit is available. Prepare and verify the customer payment first.',
+                        <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-amber-50 p-4 text-sm text-amber-900">
+                            <p>
+                                {t(
+                                    'No recognized unallocated credit is available. Prepare and verify the customer payment first.',
+                                )}
+                            </p>
+                            {paymentHref && (
+                                <Button asChild size="sm">
+                                    <Link href={paymentHref}>
+                                        {t('Prepare payment receipt')}
+                                    </Link>
+                                </Button>
                             )}
-                        </p>
+                        </div>
                     )}
                     <fieldset
                         disabled={form.processing || blocked}

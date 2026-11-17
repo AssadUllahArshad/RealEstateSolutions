@@ -67,6 +67,8 @@ class BookingDraftTest extends TestCase
         $this->assertSame('recorded', $checks['policy']['state']);
         $this->assertSame('recorded', $checks['plot']['state']);
         $this->assertSame('action', $checks['payment']['state']);
+        $this->assertStringContainsString('/finance/receipts/new?customer_id='.$this->customer->id, $checks['payment']['href']);
+        $this->assertStringContainsString('booking_draft_id='.$draft->id, $checks['payment']['href']);
         $this->customer->update(['cnic' => '1234512345671', 'address' => 'DEMO private address']);
         BusinessPolicy::create(['key' => 'booking', 'version' => 1, 'updated_by' => $this->admin->id, 'values' => ['required_documents' => ['signed_booking_form', 'payment_evidence'], 'down_payment_type' => 'fixed', 'down_payment_value' => '100.00', 'held_plot_access' => 'holder_or_admin']]);
         foreach (['signed_booking_form', 'payment_evidence'] as $kind) {

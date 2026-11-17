@@ -38,7 +38,7 @@ class BusinessSettingsTest extends TestCase
 
     public function test_new_settings_use_simple_booking_defaults_and_sections_are_bounded(): void
     {
-        $this->actingAs($this->main)->get('/business-settings')->assertInertia(fn (Assert $page) => $page->component('business-settings/index')->has('sections', 8)->where('version', 0)->where('values.down_payment_value', '0.0000')->where('values.required_documents', ['signed_booking_form', 'cnic_copy', 'customer_photo', 'payment_evidence'])->where('values.held_plot_access', 'any_agent')->has('history.data', 0));
+        $this->actingAs($this->main)->get('/business-settings')->assertInertia(fn (Assert $page) => $page->component('business-settings/index')->has('sections', 4)->where('version', 0)->where('values.down_payment_value', '0.0000')->where('values.required_documents', ['signed_booking_form', 'cnic_copy', 'customer_photo', 'payment_evidence'])->where('values.held_plot_access', 'any_agent')->has('history.data', 0));
         $this->get('/business-settings/owners')->assertInertia(fn (Assert $page) => $page->where('values.default_percentage', null));
         $this->assertDatabaseCount('business_policies', 0);
     }

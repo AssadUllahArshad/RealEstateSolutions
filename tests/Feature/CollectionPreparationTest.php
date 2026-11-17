@@ -102,6 +102,17 @@ class CollectionPreparationTest extends TestCase
         $this->actingAs($this->agent)->get('/finance/accounts')->assertForbidden();
     }
 
+    public function test_new_receipt_can_be_prefilled_for_booking_payment(): void
+    {
+        $this->actingAs($this->agent)->get('/finance/receipts/new?customer_id='.$this->customer->id.'&amount=125.50')
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('finance/receipt-edit')
+                ->where('prefill.customer_id', $this->customer->id)
+                ->where('prefill.amount', '125.50')
+                ->where('prefill.financial_account_id', $this->account->id)
+                ->where('prefill.method', 'cash'));
+    }
+
     public function test_edits_versions_noop_and_policy_account_history_are_safe(): void
     {
         $payload = $this->payload();

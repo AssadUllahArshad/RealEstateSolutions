@@ -68,9 +68,25 @@ class ReceiptDraftController extends Controller
         if ($record?->postedReceipt) {
             return to_route('finance.posted.show', $record->postedReceipt->id);
         }
-        $search = $request->validate(['customer_q' => ['nullable', 'string', 'max:160']]);
+        $search = $request->validate([
+            'customer_q' => ['nullable', 'string', 'max:160'],
+            'customer_id' => ['nullable', 'integer'],
+            'booking_draft_id' => ['nullable', 'integer'],
+            'amount' => ['nullable', 'string', 'regex:/^\d{1,16}(?:\.\d{1,2})?$/D'],
+        ]);
         $like = '%'.str_replace(['!', '%', '_'], ['!!', '!%', '!_'], $search['customer_q'] ?? '').'%';
         $customers = $receipts->customers($actor)->whereRaw("name LIKE ? ESCAPE '!'", [$like])->orderBy('name')->orderBy('id')->limit(30)->get(['id', 'name']);
+        $selectedCustomer = null;
+        $selectedDraft = null;
+        if (! $record && isset($search['customer_id'])) {
+            $selectedCustomer = $receipts->customers($actor)->whereKey($search['customer_id'])->firstOrFail(['id', 'name']);
+            if (! $customers->contains('id', $selectedCustomer->id)) {
+                $customers->prepend($selectedCustomer);
+            }
+            if (isset($search['booking_draft_id'])) {
+                $selectedDraft = BookingDraft::where('customer_id', $selectedCustomer->id)->whereKey($search['booking_draft_id'])->firstOrFail(['id']);
+            }
+        }
         $policy = BusinessPolicy::query()->whereKey('collections')->first();
         $values = array_replace(app(BusinessPolicies::class)->defaults('collections'), $policy->values ?? []);
         $definition = PolicyDefinitions::all()['collections'];
@@ -86,6 +102,13 @@ class ReceiptDraftController extends Controller
             'canPrepare' => $actor->can('finance.receipts.prepare') && ! $record?->postedReceipt, 'canConfigure' => $actor->can('business-settings.manage') && $actor->hasRole('super_admin'),
             'posting' => $record && ! $record->postedReceipt ? ['settings' => app(ReceiptPosting::class)->settings(), 'canPost' => app(ReceiptPosting::class)->canPost($actor), 'commandKey' => (string) Str::uuid()] : null,
             'policyChanged' => $record && $record->policy_snapshot['version'] !== ($policy->version ?? 0),
+            'prefill' => $record ? null : [
+                'customer_id' => $selectedCustomer?->id,
+                'booking_draft_id' => $selectedDraft?->id,
+                'amount' => $search['amount'] ?? '',
+                'financial_account_id' => FinancialAccount::where('active', true)->orderBy('id')->value('id'),
+                'method' => array_key_first($methods),
+            ],
             'history' => $record ? ReceiptDraftEvent::where('receipt_draft_id', $record->id)->latest('version')->limit(10)->get() : [],
         ]);
     }

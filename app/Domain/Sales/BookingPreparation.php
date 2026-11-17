@@ -64,9 +64,14 @@ class BookingPreparation
         $purchasers = app(DraftPurchasers::class)->listing($actor, $id);
         $complete = $purchasers !== [] && collect($purchasers)->every(fn ($row) => $row['identity_complete']);
         $add('purchasers', 'Legal purchasers', $complete ? 'recorded' : 'action', $complete ? 'Proposed purchasers and shares recorded. Verify identity, consent and supporting documents before final booking.' : 'Record single or joint purchasers below. Each purchaser needs a complete private identity profile.');
-        $add('payment', 'Verified down payment', 'action', 'On final confirmation, allocate recognized customer credit equal to the positive payable down payment after discount.', '/sales/'.$id.'/confirm');
         $terms = app(DraftTerms::class)->context($actor, $id);
         $prepared = $terms['term'] && ! $terms['stale'];
+        $receiptQuery = http_build_query(array_filter([
+            'customer_id' => $customer->id,
+            'booking_draft_id' => $id,
+            'amount' => $prepared ? $terms['term']->snapshot['down_payment'] : null,
+        ], fn ($value) => $value !== null));
+        $add('payment', 'Verified down payment', 'action', 'Prepare and verify the customer payment, then allocate it during final confirmation.', '/finance/receipts/new?'.$receiptQuery);
         $add('contract', 'Pricing and payment plan', $prepared ? 'recorded' : 'action', $prepared ? 'Proposed pricing and schedule saved for the current proposal and policy versions. Final contract and booking confirmation remain separate.' : 'Prepare pricing and a payment plan, or recalculate when the proposal or settings change.', '/sales/'.$id.'/terms');
 
         return ['checks' => $checks, 'observed_at' => now()->toIso8601String()];

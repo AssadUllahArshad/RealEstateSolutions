@@ -21,7 +21,7 @@ class BusinessSettingsController extends Controller
         abort_unless(isset($definitions[$section]), 404);
         $records = BusinessPolicy::all()->keyBy('key');
         $sections = [];
-        foreach ($definitions as $key => $definition) {
+        foreach (array_intersect_key($definitions, array_flip(['booking', 'installments', 'collections', 'receipt_posting'])) as $key => $definition) {
             $record = $records->get($key);
             $values = $policies->effective($key, $record?->values);
             $sections[] = ['key' => $key, 'title' => $definition['title'], 'saved' => $record !== null, 'missing' => $policies->missing($key, $values)];
