@@ -14,11 +14,15 @@ class InstallmentLedgerController extends Controller
 {
     public function show(Request $request, InstallmentLedger $ledger, int $booking): Response
     {
+        $this->ensureEnabled();
+
         return Inertia::render('finance/ledger', [...$ledger->context($request->user(), $booking), 'commandKey' => (string) Str::uuid()]);
     }
 
     public function allocate(Request $request, InstallmentLedger $ledger, int $booking): RedirectResponse
     {
+        $this->ensureEnabled();
+
         try {
             $ledger->allocate($request->user(), $booking, $request->all());
         } catch (ConflictHttpException $exception) {
@@ -31,6 +35,8 @@ class InstallmentLedgerController extends Controller
 
     public function requestCorrection(Request $request, InstallmentLedger $ledger, int $booking): RedirectResponse
     {
+        $this->ensureEnabled();
+
         try {
             $ledger->requestCorrection($request->user(), $booking, $request->all());
         } catch (ConflictHttpException $exception) {
@@ -43,6 +49,8 @@ class InstallmentLedgerController extends Controller
 
     public function decideCorrection(Request $request, InstallmentLedger $ledger, int $correction): RedirectResponse
     {
+        $this->ensureEnabled();
+
         try {
             $decision = $ledger->decideCorrection($request->user(), $correction, $request->all());
         } catch (ConflictHttpException $exception) {
@@ -51,5 +59,10 @@ class InstallmentLedgerController extends Controller
         Inertia::flash('toast', ['type' => 'success', 'message' => $decision->state === 'approved' ? 'Allocation correction approved.' : 'Allocation correction rejected.']);
 
         return to_route('bookings.ledger', $decision->booking_id);
+    }
+
+    private function ensureEnabled(): void
+    {
+        abort_unless(config('estateflow.post_booking_installments'), 404);
     }
 }

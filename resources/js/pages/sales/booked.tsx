@@ -109,11 +109,6 @@ export default function Booked({
                     title={`Booking #${booking.id}`}
                     description={`${booking.snapshot.customer_name} · Confirmed ${booking.confirmed_on}`}
                 >
-                    <Button asChild>
-                        <Link href={`/bookings/${booking.id}/ledger`}>
-                            {t('Payments & ledger')}
-                        </Link>
-                    </Button>
                     <Button asChild variant="outline">
                         <Link href={`/bookings/${booking.id}/transfer`}>
                             {t('Purchaser transfer')}
@@ -517,7 +512,7 @@ export default function Booked({
                 </section>
                 <p className="text-sm leading-6 text-muted-foreground">
                     {t(
-                        'The confirmed contract and down payment allocation are retained as a permanent record. Transfers, cancellation, refunds and later installment collections require separate controlled workflows. No landowner or commission entitlement has been posted.',
+                        'The confirmed contract, down payment allocation, payment period and agreed installment schedule are retained as permanent records. Subsequent society installments are handled outside EstateFlow. Transfers, cancellation and refunds remain separate controlled workflows.',
                     )}
                 </p>
             </div>

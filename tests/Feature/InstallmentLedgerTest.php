@@ -59,6 +59,23 @@ class InstallmentLedgerTest extends TestCase
         ];
     }
 
+    public function test_post_booking_installment_workflows_can_be_disabled_while_contract_schedule_remains(): void
+    {
+        $f = $this->setupBooking();
+        config(['estateflow.post_booking_installments' => false]);
+
+        $this->actingAs($f['admin'])
+            ->get('/bookings/'.$f['booking']->id.'/ledger')
+            ->assertNotFound();
+        $this->post('/bookings/'.$f['booking']->id.'/allocations', $this->command($f['receipt']->id))
+            ->assertNotFound();
+        $this->get('/finance/receivables')->assertNotFound();
+        $this->get('/bookings/'.$f['booking']->id)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('sales/booked')
+                ->has('booking.snapshot.terms.schedule', 3));
+    }
+
     public function test_exact_partial_allocation_replay_shared_credit_and_scoped_ledger(): void
     {
         $f = $this->setupBooking();

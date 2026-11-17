@@ -15,6 +15,7 @@ class ReceivablesController extends Controller
 {
     public function __invoke(Request $request): Response
     {
+        $this->ensureEnabled();
         Gate::authorize('finance.receipts.view');
         $today = app(BusinessClock::class)->today();
         $filters = $this->filters($request);
@@ -31,6 +32,7 @@ class ReceivablesController extends Controller
 
     public function export(Request $request, CsvExport $export): StreamedResponse
     {
+        $this->ensureEnabled();
         Gate::authorize('finance.receipts.view');
         $today = app(BusinessClock::class)->today();
         $filters = $this->filters($request);
@@ -58,6 +60,11 @@ class ReceivablesController extends Controller
         return $format === 'xlsx'
             ? $export->xlsx('estateflow-receivables.xlsx', $headers, $rows)
             : $export->stream('estateflow-receivables.csv', $headers, $rows);
+    }
+
+    private function ensureEnabled(): void
+    {
+        abort_unless(config('estateflow.post_booking_installments'), 404);
     }
 
     /** @return array{state:string,search:string} */

@@ -33,7 +33,6 @@ type Posted = {
     };
 };
 type Props = {
-    bookingLedgers: { id: number; confirmed_on: string }[];
     receipt: Posted;
     reference: string | null;
     movements: {
@@ -220,28 +219,6 @@ export default function PostedReceipt(props: Props) {
             <Head title={receipt.number} />
             <div className="ef-page">
                 <BrandHeader />
-                {props.bookingLedgers.length > 0 && (
-                    <section
-                        className="ef-panel flex flex-wrap items-center gap-3 p-4"
-                        aria-label={t('Customer booking ledgers')}
-                    >
-                        <span className="text-sm font-semibold">
-                            {t('Customer bookings')}
-                        </span>
-                        {props.bookingLedgers.map((booking) => (
-                            <Button
-                                asChild
-                                key={booking.id}
-                                variant="outline"
-                                size="sm"
-                            >
-                                <Link href={`/bookings/${booking.id}/ledger`}>
-                                    {t('Booking')} #{booking.id} {t('ledger')}
-                                </Link>
-                            </Button>
-                        ))}
-                    </section>
-                )}
                 <PageHeading
                     eyebrow="Finance · Issued receipt"
                     title={receipt.number}

@@ -6,7 +6,6 @@ use App\Domain\Export\CsvExport;
 use App\Domain\Finance\ReceiptDrafts;
 use App\Domain\Finance\ReceiptPosting;
 use App\Models\AccountMovement;
-use App\Models\Booking;
 use App\Models\CommissionPayment;
 use App\Models\CustomerRefund;
 use App\Models\FinancialAccount;
@@ -45,7 +44,6 @@ class ReceiptPostingController extends Controller
         $canReverse = $posting->canReverse($request->user());
 
         return Inertia::render('finance/posted-receipt', ['receipt' => $record, 'reference' => $record->reference,
-            'bookingLedgers' => Booking::where('customer_id', $record->customer_id)->latest('id')->limit(20)->get(['id', 'confirmed_on']),
             'movements' => AccountMovement::where('payment_receipt_id', $record->id)->orderBy('id')->get(),
             'history' => PaymentReceiptEvent::where('payment_receipt_id', $record->id)->latest('version')->get()->map(fn ($event) => [...$event->toArray(), 'note' => $canPost || $canReverse ? $event->private_note : null]),
             'posting' => ['settings' => $settings, 'canPost' => $canPost, 'canReverse' => $canReverse, 'clearKey' => (string) Str::uuid(), 'reverseKey' => (string) Str::uuid()],

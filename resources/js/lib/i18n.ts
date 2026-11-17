@@ -857,6 +857,8 @@ const ur = {
         'مکمل ادائیگی منصوبہ۔ کوئی شیڈول شدہ بقایا نہیں۔',
     'The confirmed contract and down payment allocation are retained as a permanent record. Transfers, cancellation, refunds and later installment collections require separate controlled workflows. No landowner or commission entitlement has been posted.':
         'تصدیق شدہ معاہدہ اور ڈاؤن پیمنٹ تخصیص مستقل ریکارڈ کے طور پر محفوظ ہیں۔ منتقلی، منسوخی، ریفنڈ اور بعد کی قسط وصولی کے لیے الگ کنٹرول شدہ عمل درکار ہیں۔ مالک زمین یا کمیشن کا کوئی حق پوسٹ نہیں ہوا۔',
+    'The confirmed contract, down payment allocation, payment period and agreed installment schedule are retained as permanent records. Subsequent society installments are handled outside EstateFlow. Transfers, cancellation and refunds remain separate controlled workflows.':
+        'تصدیق شدہ معاہدہ، ڈاؤن پیمنٹ کی تخصیص، ادائیگی کی مدت اور طے شدہ اقساط کا شیڈول مستقل ریکارڈ کے طور پر محفوظ رہتے ہیں۔ اس کے بعد سوسائٹی کی اقساط EstateFlow سے باہر سنبھالی جائیں گی۔ منتقلی، منسوخی اور رقم کی واپسی الگ کنٹرول شدہ عمل رہیں گے۔',
     'Welcome,': 'خوش آمدید،',
     'Your society': 'آپ کی سوسائٹی',
     'your office at a glance.': 'آپ کے دفتر کا فوری جائزہ۔',
