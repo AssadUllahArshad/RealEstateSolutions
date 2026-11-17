@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Administration\OperationalRecordDeletion;
 use App\Http\Controllers\AgentCommissionController;
 use App\Http\Controllers\BankReconciliationController;
 use App\Http\Controllers\BookingChangeController;
@@ -12,6 +13,7 @@ use App\Http\Controllers\CalculatorController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CustomerDocumentController;
 use App\Http\Controllers\CustomerRefundController;
+use App\Http\Controllers\DataManagementController;
 use App\Http\Controllers\DocumentPrintController;
 use App\Http\Controllers\DraftTermsController;
 use App\Http\Controllers\FinalBookingController;
@@ -131,6 +133,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('business-settings', [BusinessSettingsController::class, 'index'])->name('business-settings.index');
     Route::get('business-settings/{section}', [BusinessSettingsController::class, 'index'])->name('business-settings.section');
     Route::patch('business-settings/{section}', [BusinessSettingsController::class, 'update'])->middleware('throttle:20,1')->name('business-settings.update');
+    Route::get('data-management', [DataManagementController::class, 'index'])->name('data-management.index');
+    Route::delete('data-management/{table}/{id}', [DataManagementController::class, 'destroy'])
+        ->whereIn('table', array_keys(OperationalRecordDeletion::RESOURCES))
+        ->whereNumber('id')->middleware('throttle:10,1')->name('data-management.destroy');
     Route::get('sales', [BookingDraftController::class, 'index'])->name('sales.index');
     Route::get('sales/export', [BookingDraftController::class, 'export'])->middleware('throttle:10,1')->name('sales.export');
     Route::get('sales/new', [BookingDraftController::class, 'edit'])->name('sales.create');

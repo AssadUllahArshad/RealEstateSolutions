@@ -16,6 +16,7 @@ import {
     ChartNoAxesCombined,
     FileChartColumn,
     Landmark,
+    Trash2,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavMain } from '@/components/nav-main';
@@ -143,6 +144,13 @@ export function AppSidebar() {
             title: 'Team & access',
             href: '/team',
             icon: UsersRound,
+        });
+    }
+    if (auth.isMainAdmin) {
+        administration.push({
+            title: 'Data management',
+            href: '/data-management',
+            icon: Trash2,
         });
     }
     return (
