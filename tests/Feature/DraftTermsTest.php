@@ -90,6 +90,17 @@ class DraftTermsTest extends TestCase
         $this->patch($url, [...$payload, 'version' => 1])->assertSessionHasErrors('conflict');
     }
 
+    public function test_agent_can_prepare_initial_terms_with_an_unnormalized_zero_discount(): void
+    {
+        $term = app(DraftTerms::class)->save($this->agent, $this->draft->id, [
+            ...$this->payload(),
+            'discount' => '0',
+        ]);
+
+        $this->assertSame('0.00', $term->snapshot['discount_applied_to_down_payment']);
+        $this->assertNull($term->snapshot['discount_authorized_by']);
+    }
+
     public function test_only_authorized_admin_controls_discount_and_rebase(): void
     {
         $url = '/sales/'.$this->draft->id.'/terms';

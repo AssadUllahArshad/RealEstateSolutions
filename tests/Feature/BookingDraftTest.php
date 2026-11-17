@@ -153,12 +153,13 @@ class BookingDraftTest extends TestCase
 
     public function test_exact_quote_snapshot_and_replay_have_no_occupancy_or_payment_side_effects(): void
     {
+        $this->customer->update(['cnic' => '1234512345671', 'address' => 'DEMO exact quote address']);
         $payload = $this->payload();
         $this->actingAs($this->agent)->post('/sales', $payload)->assertSessionHasNoErrors();
         $draft = BookingDraft::firstOrFail();
         $this->assertSame('9999999999999999.98', $draft->quoted_price);
         $this->assertSame('9999999999999999.99', $draft->catalogue_price_snapshot);
-        $this->post('/sales', $payload)->assertRedirect('/sales/'.$draft->id);
+        $this->post('/sales', $payload)->assertRedirect('/sales/'.$draft->id.'/terms');
         $this->assertDatabaseCount('booking_drafts', 1);
         $this->assertDatabaseCount('booking_draft_events', 1);
         $this->assertDatabaseCount('plot_holds', 0);

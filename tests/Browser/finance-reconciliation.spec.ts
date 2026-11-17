@@ -1,9 +1,11 @@
 import { expect, test } from '@playwright/test';
+import { execFileSync } from 'node:child_process';
 
 test('accountant prepares and admin finalizes a bank reconciliation', async ({
     page,
 }, testInfo) => {
     test.setTimeout(180000);
+    execFileSync('php', ['artisan', 'cache:clear', '--env=e2e']);
     const suffix =
         `${testInfo.project.name}-${Date.now().toString(36)}`.toUpperCase();
     const code = `REC-${suffix}`;

@@ -122,10 +122,12 @@ class DraftTerms
                 : bcadd($data['discount_value'], '0', 2);
             $term = DraftTerm::where('booking_draft_id', $id)->lockForUpdate()->first();
             $old = $term->snapshot ?? [];
-            $discountChanged = ($old['input']['discount'] ?? '0.00') !== $data['discount']
-                || ($old['input']['discount_type'] ?? 'fixed') !== $data['discount_type']
-                || ($old['input']['discount_value'] ?? $old['input']['discount'] ?? '0.00') !== $data['discount_value']
-                || ($old['input']['discount_reason'] ?? '') !== $data['discount_reason'];
+            $discountChanged = $term === null
+                ? bccomp($data['discount'], '0', 2) > 0
+                : ($old['input']['discount'] ?? '0.00') !== $data['discount']
+                    || ($old['input']['discount_type'] ?? 'fixed') !== $data['discount_type']
+                    || ($old['input']['discount_value'] ?? $old['input']['discount'] ?? '0.00') !== $data['discount_value']
+                    || ($old['input']['discount_reason'] ?? '') !== $data['discount_reason'];
             $discountRebased = bccomp($data['discount'], '0', 2) > 0 && ($old['gross'] ?? null) !== $draft->quoted_price;
             if (($discountChanged || $discountRebased) && ! $this->canDiscount($fresh)) {
                 abort(403, 'Only an authorized admin may set, remove or rebase a discount.');

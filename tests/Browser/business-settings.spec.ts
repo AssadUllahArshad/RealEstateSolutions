@@ -67,26 +67,14 @@ test('main admin configures an exact owner percentage and reviews policy history
         path: testInfo.outputPath('business-settings.png'),
         fullPage: true,
     });
-    await page
-        .getByRole('navigation', { name: 'Business settings sections' })
-        .getByRole('link', { name: /Late payments and charges/ })
-        .click();
-    await page
-        .getByLabel('Late payment fees', { exact: true })
-        .selectOption('disabled');
-    const savedCharges = page.waitForResponse(
-        (response) =>
-            response.request().method() === 'GET' &&
-            response.url().endsWith('/business-settings/charges') &&
-            response.status() === 200,
-    );
-    await page
-        .getByRole('button', { name: 'Save settings', exact: true })
-        .click();
-    expect((await (await savedCharges).json()).props.values.late_fee_mode).toBe(
-        'disabled',
-    );
+    const settingsNavigation = page.getByRole('navigation', {
+        name: 'Business settings sections',
+    });
     await expect(
-        page.getByLabel('Late payment fees', { exact: true }),
-    ).toHaveValue('disabled');
+        settingsNavigation.getByRole('link', { name: /Late payments/ }),
+    ).toHaveCount(0);
+    await settingsNavigation
+        .getByRole('link', { name: /Receiving payments/ })
+        .click();
+    await expect(page.getByLabel('Cash', { exact: true })).toBeVisible();
 });

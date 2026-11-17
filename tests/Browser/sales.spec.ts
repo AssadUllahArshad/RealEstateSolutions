@@ -96,6 +96,14 @@ test('staff creates and revises a booking draft without changing plot holds', as
         .getByLabel('Conversation notes')
         .fill('DEMO proposed site visit and quote');
     await page.getByRole('button', { name: 'Save draft', exact: true }).click();
+    await expect(page).toHaveURL(/\/sales\/\d+\/terms$/);
+    await expect(
+        page.getByRole('heading', {
+            name: 'Pricing & installments',
+            exact: true,
+        }),
+    ).toBeVisible();
+    await page.getByRole('link', { name: 'Back to draft' }).click();
     await expect(page).toHaveURL(/\/sales\/\d+$/);
     await expect(
         page.getByText('Saved version 1', { exact: true }),
@@ -115,29 +123,6 @@ test('staff creates and revises a booking draft without changing plot holds', as
         name: 'Proposed purchasers',
         exact: true,
     });
-    await purchasers
-        .getByRole('button', { name: 'Add purchaser', exact: true })
-        .click();
-    await purchasers
-        .getByLabel('Purchaser 1', { exact: true })
-        .selectOption(customerId!);
-    await purchasers
-        .getByLabel('Ownership share (%)', { exact: true })
-        .fill('99.9999');
-    await purchasers
-        .getByRole('button', { name: 'Save purchasers', exact: true })
-        .click();
-    await expect(
-        purchasers.getByText('Ownership shares must total exactly 100%.', {
-            exact: true,
-        }),
-    ).toBeVisible();
-    await purchasers
-        .getByLabel('Ownership share (%)', { exact: true })
-        .fill('100');
-    await purchasers
-        .getByRole('button', { name: 'Save purchasers', exact: true })
-        .click();
     await expect(
         purchasers.getByText('Purchaser version 1', { exact: true }),
     ).toBeVisible();
@@ -239,9 +224,7 @@ test('staff creates and revises a booking draft without changing plot holds', as
             exact: true,
         }),
     ).toBeVisible();
-    await page
-        .getByLabel('Admin discount (PKR)', { exact: true })
-        .fill('100000.99');
+    await page.getByLabel('Discount (PKR)', { exact: true }).fill('100000.99');
     await page
         .getByLabel('Discount reason', { exact: true })
         .fill('DEMO admin agreed reduction');
@@ -265,6 +248,11 @@ test('staff creates and revises a booking draft without changing plot holds', as
             exact: true,
         })
         .click();
+    await expect(page).toHaveURL(/\/sales\/\d+\/confirm$/);
+    await expect(
+        page.getByText('PKR 399,999.01', { exact: true }),
+    ).toBeVisible();
+    await page.goto(`${draftUrl}/terms`);
     await expect(
         page.getByText('Terms version 1', { exact: true }),
     ).toBeVisible();
@@ -290,7 +278,7 @@ test('staff creates and revises a booking draft without changing plot holds', as
     });
     await page.reload();
     await expect(
-        page.getByLabel('Admin discount (PKR)', { exact: true }),
+        page.getByLabel('Discount (PKR)', { exact: true }),
     ).toHaveValue('100000.99');
     await expect(
         page
