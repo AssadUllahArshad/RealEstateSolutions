@@ -110,6 +110,12 @@ class DraftTerms
                     throw ValidationException::withMessages(['plan' => 'Booking rules are unavailable. Ask the main admin to review Business settings.']);
                 }
             }
+            $data['discount'] = app(InstallmentCalculator::class)->discountAmount(
+                $draft->quoted_price,
+                $data['discount_type'],
+                $data['discount_value'],
+                $effective['installments']['rounding'],
+            );
             $term = DraftTerm::where('booking_draft_id', $id)->lockForUpdate()->first();
             $old = $term->snapshot ?? [];
             $discountChanged = ($old['input']['discount'] ?? '0.00') !== $data['discount'] || ($old['input']['discount_reason'] ?? '') !== $data['discount_reason'];

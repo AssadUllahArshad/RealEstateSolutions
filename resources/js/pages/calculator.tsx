@@ -181,7 +181,7 @@ export default function CalculatorPage({
                                         {t('Fixed PKR')}
                                     </option>
                                     <option value="percentage">
-                                        {t('Percentage of price')}
+                                        {t('Percentage of plot price')}
                                     </option>
                                 </select>
                             </div>
@@ -540,7 +540,7 @@ export default function CalculatorPage({
                         </div>
                         <p className="border-t p-5 text-xs text-muted-foreground">
                             {t(
-                                'The discount reduces both the total contract price and the amount payable at booking. The agreed installment balance remains unchanged.',
+                                'A percentage discount is calculated from the plot price, then deducted from the down payment. The plot price and society installment balance remain unchanged.',
                             )}
                         </p>
                     </section>

@@ -23,6 +23,18 @@ class InstallmentCalculator
         });
     }
 
+    /**
+     * @param  numeric-string  $gross
+     * @param  numeric-string  $value
+     * @return numeric-string
+     */
+    public function discountAmount(string $gross, string $type, string $value, string $rounding): string
+    {
+        return $type === 'percentage'
+            ? $this->round(bcdiv(bcmul($gross, $value, 6), '100', 8), $rounding)
+            : bcadd($value, '0', 2);
+    }
+
     /** @param array<string,mixed> $input
      * @param  array<string,mixed>  $booking
      * @param  array<string,mixed>  $policy

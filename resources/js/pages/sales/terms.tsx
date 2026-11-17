@@ -117,25 +117,56 @@ function TermsEditor(props: Props) {
                 className="space-y-6 p-5 sm:p-6"
             >
                 <div className="grid gap-5 sm:grid-cols-2">
-                    <div>
-                        <Label htmlFor="terms-discount">
-                            {t('Admin discount (PKR)')}
-                        </Label>
-                        <Input
-                            className="mt-2"
-                            id="terms-discount"
-                            inputMode="decimal"
-                            required
-                            readOnly={!props.canDiscount}
-                            value={form.data.discount}
-                            onChange={(event) =>
-                                form.setData('discount', event.target.value)
-                            }
-                        />
+                    <div className="grid gap-4 sm:grid-cols-2">
+                        <div>
+                            <Label htmlFor="terms-discount-type">
+                                {t('Discount type')}
+                            </Label>
+                            <select
+                                id="terms-discount-type"
+                                className="mt-2 h-11 w-full rounded-lg border bg-background px-3 text-sm"
+                                disabled={!props.canDiscount}
+                                value={form.data.discount_type}
+                                onChange={(event) =>
+                                    form.setData(
+                                        'discount_type',
+                                        event.target.value as
+                                            | 'fixed'
+                                            | 'percentage',
+                                    )
+                                }
+                            >
+                                <option value="fixed">{t('Fixed PKR')}</option>
+                                <option value="percentage">
+                                    {t('Percentage of plot price')}
+                                </option>
+                            </select>
+                        </div>
+                        <div>
+                            <Label htmlFor="terms-discount">
+                                {form.data.discount_type === 'percentage'
+                                    ? t('Discount (%)')
+                                    : t('Discount (PKR)')}
+                            </Label>
+                            <Input
+                                className="mt-2"
+                                id="terms-discount"
+                                inputMode="decimal"
+                                required
+                                readOnly={!props.canDiscount}
+                                value={form.data.discount_value}
+                                onChange={(event) =>
+                                    form.setData(
+                                        'discount_value',
+                                        event.target.value,
+                                    )
+                                }
+                            />
+                        </div>
                         <p className="mt-2 text-xs text-muted-foreground">
                             {props.canDiscount
                                 ? t(
-                                      'Enter 0 explicitly for no discount. Applies to the saved proposed gross price.',
+                                      'Enter 0 for no discount. A percentage is calculated from the plot price, then the resulting PKR discount reduces the down payment.',
                                   )
                                 : t(
                                       'Only an authorized admin may set, remove or rebase a discount.',
@@ -176,7 +207,7 @@ function TermsEditor(props: Props) {
                         />
                         <p className="mt-2 text-xs text-muted-foreground">
                             {t(
-                                'The discount is applied to this amount first. The saved result shows the actual down payment payable by the customer.',
+                                'The calculated discount is deducted from this amount. The saved result shows the actual down payment payable by the customer.',
                             )}
                         </p>
                     </div>

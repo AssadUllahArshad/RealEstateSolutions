@@ -124,6 +124,24 @@ class DraftTermsTest extends TestCase
         $this->assertSame('any_agent', $term->snapshot['policy_snapshot']['booking']['held_plot_access']);
     }
 
+    public function test_admin_can_calculate_percentage_discount_from_plot_price_and_apply_it_to_down_payment(): void
+    {
+        $payload = [
+            ...$this->payload(),
+            'discount_type' => 'percentage',
+            'discount_value' => '7.5',
+            'discount_reason' => 'DEMO percentage concession',
+        ];
+
+        $this->actingAs($this->admin)->patch('/sales/'.$this->draft->id.'/terms', $payload)->assertSessionHasNoErrors();
+
+        $snapshot = DraftTerm::firstOrFail()->snapshot;
+        $this->assertSame('75.00', $snapshot['discount']);
+        $this->assertSame('25.00', $snapshot['down_payment']);
+        $this->assertSame('percentage', $snapshot['input']['discount_type']);
+        $this->assertSame('7.5', $snapshot['input']['discount_value']);
+    }
+
     public function test_rounding_modes_remainders_and_calendar_anchors_are_explicit(): void
     {
         $calculator = app(InstallmentCalculator::class);
