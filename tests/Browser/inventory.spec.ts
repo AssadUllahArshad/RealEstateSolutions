@@ -72,7 +72,15 @@ test('administrator configures a society and maintains its custom plot catalogue
     await page
         .getByLabel('Plot size *', { exact: true })
         .selectOption({ label: `${sizeLabel} · 6.75 marla` });
-    await page.getByLabel('List price', { exact: false }).fill('3200000.25');
+    await page
+        .getByLabel('Plot category', { exact: false })
+        .selectOption('commercial');
+    await page
+        .getByLabel('Extra area (square feet)', { exact: true })
+        .fill('125.50');
+    await page
+        .getByLabel('Total plot price', { exact: false })
+        .fill('3200000.25');
     await page
         .getByLabel('Plot owner / admin', { exact: true })
         .selectOption({ label: ownerName });
@@ -91,8 +99,16 @@ test('administrator configures a society and maintains its custom plot catalogue
     await expect(
         page.getByRole('cell', { name: 'PKR 3,200,000.25', exact: true }),
     ).toBeVisible();
+    await expect(
+        page.getByRole('cell', { name: 'Commercial', exact: true }),
+    ).toBeVisible();
+    await expect(
+        page.getByRole('cell', { name: '125.50 sq ft', exact: true }),
+    ).toBeVisible();
     await page.getByRole('button', { name: `Edit plot ${number}` }).click();
-    await page.getByLabel('List price', { exact: false }).fill('3200000.75');
+    await page
+        .getByLabel('Total plot price', { exact: false })
+        .fill('3200000.75');
     await page.getByRole('button', { name: 'Save plot' }).click();
     await expect(
         page.getByRole('heading', { name: 'Edit plot', exact: true }),

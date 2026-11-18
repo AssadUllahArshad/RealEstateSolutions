@@ -48,6 +48,8 @@ class FinalBookingTest extends TestCase
         $this->assertSame('100.01', $booking->down_payment);
         $this->assertSame('released', $hold->fresh()->state);
         $this->assertSame('900.00', $booking->snapshot['terms']['balance']);
+        $this->assertSame('commercial', $booking->snapshot['plot']['category']);
+        $this->assertSame('75.25', $booking->snapshot['plot']['extra_area_sq_ft']);
         $this->assertSame('3520212345671', $booking->private_snapshot['purchasers'][0]['cnic']);
         $this->assertStringNotContainsString('3520212345671', DB::table('bookings')->value('private_snapshot'));
         $this->assertArrayNotHasKey('private_snapshot', $booking->toArray());

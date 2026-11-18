@@ -63,7 +63,7 @@ class BookingDraftController extends Controller
     {
         Gate::authorize('sales.drafts');
         Gate::authorize('inventory.view');
-        $record = $draft ? $drafts->query($request->user())->with(['customer:id,name', 'plot.block:id,code', 'plot.activeHold'])->findOrFail($draft) : null;
+        $record = $draft ? $drafts->query($request->user())->with(['customer:id,name', 'plot.block:id,code', 'plot.size:id,label,area_marla', 'plot.activeHold'])->findOrFail($draft) : null;
         if ($record?->booking) {
             return to_route('bookings.show', $record->booking->id);
         }
@@ -77,7 +77,7 @@ class BookingDraftController extends Controller
             'purchaserHistory' => $record ? DraftPurchaserEvent::where('booking_draft_id', $record->id)->latest('version')->limit(10)->get()->map(fn ($event) => ['version' => $event->version, 'actor_id' => $event->actor_id, 'count' => count($event->after), 'created_at' => $event->created_at->toIso8601String()]) : [],
             'history' => $record ? BookingDraftEvent::where('booking_draft_id', $record->id)->latest('version')->paginate(10)->withQueryString() : null,
             'customers' => app(Customers::class)->query($request->user())->whereRaw("name LIKE ? ESCAPE '!'", [$literal($search['customer_q'] ?? '')])->orderBy('name')->orderBy('id')->limit(30)->get(['id', 'name']),
-            'plots' => Plot::with(['block:id,code', 'activeHold:id,plot_id,kind'])->whereDoesntHave('activeBooking')->whereRaw("number LIKE ? ESCAPE '!'", [$literal($search['plot_q'] ?? '')])->orderBy('number')->orderBy('id')->limit(30)->get(['id', 'block_id', 'number', 'list_price']),
+            'plots' => Plot::with(['block:id,code', 'size:id,label,area_marla', 'activeHold:id,plot_id,kind'])->whereDoesntHave('activeBooking')->whereRaw("number LIKE ? ESCAPE '!'", [$literal($search['plot_q'] ?? '')])->orderBy('number')->orderBy('id')->limit(30)->get(['id', 'block_id', 'plot_size_id', 'number', 'category', 'extra_area_sq_ft', 'list_price']),
             'lookup' => ['customer_q' => $search['customer_q'] ?? '', 'plot_q' => $search['plot_q'] ?? ''],
         ]);
     }

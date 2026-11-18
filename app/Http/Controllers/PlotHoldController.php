@@ -21,7 +21,7 @@ class PlotHoldController extends Controller
 
         return Inertia::render('inventory/hold', [
             'booked' => $plot->activeBooking()->exists(),
-            'plot' => $plot->load(['block:id,code,name', 'size:id,label,area_marla'])->only(['id', 'number', 'block', 'size', 'list_price']),
+            'plot' => $plot->load(['block:id,code,name', 'size:id,label,area_marla'])->only(['id', 'number', 'category', 'extra_area_sq_ft', 'block', 'size', 'list_price']),
             'active' => PlotHold::where('active_plot_id', $plot->id)->with(['creator:id,name'])->first(),
             'history' => PlotHold::where('plot_id', $plot->id)->with(['creator:id,name', 'releaser:id,name'])->latest('id')->paginate(10),
             'requestKey' => (string) Str::uuid(),

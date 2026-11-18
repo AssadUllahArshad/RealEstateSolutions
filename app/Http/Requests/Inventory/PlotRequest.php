@@ -18,6 +18,10 @@ class PlotRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
+        $this->merge([
+            'category' => $this->input('category', 'residential'),
+            'extra_area_sq_ft' => $this->input('extra_area_sq_ft', '0'),
+        ]);
         if (is_string($this->input('number'))) {
             $this->merge(['number' => mb_strtoupper(preg_replace('/\s+/u', ' ', trim($this->input('number'))))]);
         }
@@ -31,6 +35,8 @@ class PlotRequest extends FormRequest
         return [
             'block_id' => ['required', 'integer', 'exists:blocks,id'],
             'plot_size_id' => ['required', 'integer', 'exists:plot_sizes,id'],
+            'category' => ['required', Rule::in(['residential', 'commercial'])],
+            'extra_area_sq_ft' => ['required', 'decimal:0,2', 'min:0', 'max:99999999.99'],
             'number' => ['required', 'string', 'max:64', Rule::unique('plots')->where('block_id', $this->input('block_id'))->ignore($plot instanceof Plot ? $plot->id : null)],
             'list_price' => ['nullable', new PositiveDecimal],
             'plot_owner_id' => [Rule::requiredIf(fn (): bool => PlotOwner::query()->exists()), 'nullable', 'integer', 'exists:plot_owners,id'],

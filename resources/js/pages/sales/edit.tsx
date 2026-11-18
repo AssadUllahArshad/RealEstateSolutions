@@ -248,6 +248,10 @@ function DraftEditor({ draft, creationKey, customers, plots }: Props) {
                             {plotOptions.map((p) => (
                                 <option value={p.id} key={p.id}>
                                     {p.block.code} / {p.number}
+                                    {` · ${p.category === 'commercial' ? t('Commercial') : t('Residential')}`}
+                                    {Number(p.extra_area_sq_ft) > 0
+                                        ? ` · +${p.extra_area_sq_ft} sq ft`
+                                        : ''}
                                     {p.active_hold
                                         ? ` (${p.active_hold.kind === 'block' ? t('Blocked') : t('On hold')})`
                                         : ''}
@@ -331,6 +335,17 @@ function DraftEditor({ draft, creationKey, customers, plots }: Props) {
                         <div className="space-y-4 text-sm">
                             <p className="text-lg font-bold">
                                 {selected.block.code} / {selected.number}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                                {t(
+                                    selected.category === 'commercial'
+                                        ? 'Commercial'
+                                        : 'Residential',
+                                )}{' '}
+                                · {selected.size.label}
+                                {Number(selected.extra_area_sq_ft) > 0
+                                    ? ` + ${selected.extra_area_sq_ft} sq ft`
+                                    : ''}
                             </p>
                             <HoldBadge
                                 kind={

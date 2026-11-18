@@ -17,7 +17,7 @@ class SearchController extends Controller
         $literal = '%'.str_replace(['!', '%', '_'], ['!!', '!%', '!_'], $q).'%';
 
         return Inertia::render('search', ['q' => $q,
-            'plots' => $q !== '' && $request->user()->can('inventory.view') ? Plot::with(['block:id,code', 'size:id,label', 'activeHold:id,plot_id,kind'])->whereRaw("number LIKE ? ESCAPE '!'", [$literal])->orderBy('number')->limit(20)->get() : [],
+            'plots' => $q !== '' && $request->user()->can('inventory.view') ? Plot::with(['block:id,code', 'size:id,label,area_marla', 'activeHold:id,plot_id,kind'])->whereRaw("number LIKE ? ESCAPE '!'", [$literal])->orderBy('number')->limit(20)->get() : [],
             'customers' => $q !== '' && $request->user()->can('customers.view') ? $customers->query($request->user())->whereRaw("name LIKE ? ESCAPE '!'", [$literal])->orderBy('name')->limit(20)->get(['id', 'name', 'phone']) : [],
         ]);
     }

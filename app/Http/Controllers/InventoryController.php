@@ -57,12 +57,14 @@ class InventoryController extends Controller
             $plot->block->code,
             $plot->block->name,
             $plot->number,
+            ucfirst($plot->category),
             $plot->size->label,
             $plot->size->area_marla,
+            $plot->extra_area_sq_ft,
             $plot->list_price ?? '',
             data_get($plot, 'owner.name', 'Unassigned'),
         ]);
-        $headers = ['Block code', 'Block name', 'Plot number', 'Size label', 'Area (marla)', 'List price (PKR)', 'Plot owner'];
+        $headers = ['Block code', 'Block name', 'Plot number', 'Category', 'Size label', 'Base area (marla)', 'Extra area (sq ft)', 'Total plot price (PKR)', 'Plot owner'];
 
         return $format === 'xlsx'
             ? $export->xlsx('estateflow-inventory.xlsx', $headers, $rows)
@@ -72,11 +74,12 @@ class InventoryController extends Controller
     /** @return array<string, mixed> */
     private function filters(Request $request): array
     {
-        $filters = [...['q' => '', 'block_id' => '', 'size_id' => '', 'owner_id' => '', 'hold' => '', 'sort' => 'number', 'view' => 'table'], ...$request->validate([
+        $filters = [...['q' => '', 'block_id' => '', 'size_id' => '', 'category' => '', 'owner_id' => '', 'hold' => '', 'sort' => 'number', 'view' => 'table'], ...$request->validate([
             'owner_id' => ['nullable', 'integer', 'min:0'],
             'q' => ['nullable', 'string', 'max:64'],
             'block_id' => ['nullable', 'integer', 'exists:blocks,id'],
             'size_id' => ['nullable', 'integer', 'exists:plot_sizes,id'],
+            'category' => ['nullable', Rule::in(['residential', 'commercial'])],
             'hold' => ['nullable', Rule::in(['none', 'reservation', 'block', 'booked', 'file_submitted'])],
             'sort' => ['nullable', Rule::in(['number', 'number_desc', 'newest', 'price', 'price_desc'])],
             'view' => ['nullable', Rule::in(['table', 'grid'])],
@@ -104,6 +107,9 @@ class InventoryController extends Controller
         }
         if (! empty($filters['size_id'])) {
             $query->where('plot_size_id', $filters['size_id']);
+        }
+        if (! empty($filters['category'])) {
+            $query->where('category', $filters['category']);
         }
         if (($filters['hold'] ?? '') === 'none') {
             $query->whereDoesntHave('activeHold')->whereDoesntHave('activeBooking');

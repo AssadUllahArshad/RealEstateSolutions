@@ -1,7 +1,7 @@
 @extends('print.layout')
 @section('content')
     <div class="document-heading"><div><p class="eyebrow">{{ __('Booking confirmation') }}</p><h1>Booking #{{ $record->id }}</h1></div><p class="version">{{ __('Confirmed') }} {{ $record->confirmed_on }}</p></div>
-    <section class="status recognized"><h2>{{ __('Booking confirmed') }}</h2><p>Block {{ $record->snapshot['plot']['block']['code'] }} / Plot {{ $record->snapshot['plot']['number'] }} Â· {{ $record->snapshot['plot']['size']['label'] }}</p></section>
+    <section class="status recognized"><h2>{{ __('Booking confirmed') }}</h2><p>Block {{ $record->snapshot['plot']['block']['code'] }} / Plot {{ $record->snapshot['plot']['number'] }} · {{ ucfirst($record->snapshot['plot']['category'] ?? 'residential') }} · {{ $record->snapshot['plot']['size']['label'] }}@if((float) ($record->snapshot['plot']['extra_area_sq_ft'] ?? 0) > 0) + {{ $record->snapshot['plot']['extra_area_sq_ft'] }} sq ft extra area @endif</p></section>
     <dl class="details">
         <div><dt>{{ __('Sales contact at confirmation') }}</dt><dd>{{ $record->snapshot['customer_name'] }}</dd></div>
         <div><dt>{{ __('Contract price after discount') }}</dt><dd>{{ \App\Support\Pkr::format($record->net) }}</dd></div>
