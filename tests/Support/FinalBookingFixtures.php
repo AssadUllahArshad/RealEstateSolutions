@@ -30,7 +30,7 @@ trait FinalBookingFixtures
         $catalogue->society($admin, ['name' => 'DEMO Booking Society']);
         $block = $catalogue->block($admin, ['code' => 'BOOK', 'name' => 'DEMO Booking']);
         $size = $catalogue->size($admin, ['label' => 'DEMO 5 Marla', 'area_marla' => '5']);
-        $plot = $catalogue->plot($admin, ['block_id' => $block->id, 'plot_size_id' => $size->id, 'number' => 'BOOK-1']);
+        $plot = $catalogue->plot($admin, ['block_id' => $block->id, 'plot_size_id' => $size->id, 'number' => 'BOOK-1', 'category' => 'commercial', 'extra_area_sq_ft' => '75.25']);
         $draft = app(BookingDrafts::class)->save($agent, ['customer_id' => $customer->id, 'plot_id' => $plot->id, 'quoted_price' => '1000.01', 'creation_key' => (string) Str::uuid()]);
         foreach (['booking' => ['down_payment_type' => 'fixed', 'down_payment_value' => '100.01', 'required_documents' => ['signed_booking_form'], 'held_plot_access' => 'holder_or_admin'],
             'installments' => ['frequencies' => ['monthly'], 'first_due_date' => 'entered_per_booking', 'month_end' => 'clamp', 'rounding' => 'half_up', 'residual' => 'last'],

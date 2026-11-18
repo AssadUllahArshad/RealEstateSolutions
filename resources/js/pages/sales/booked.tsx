@@ -15,7 +15,13 @@ type Props = {
         down_payment: string;
         snapshot: {
             customer_name: string;
-            plot: { number: string; block: { code: string } };
+            plot: {
+                number: string;
+                category: 'residential' | 'commercial';
+                extra_area_sq_ft: string;
+                block: { code: string };
+                size: { label: string; area_marla: string };
+            };
             purchasers: { customer_id: number; name: string; share: string }[];
             terms: {
                 balance: string;
@@ -128,6 +134,17 @@ export default function Booked({
                             {t('Block')} {booking.snapshot.plot.block.code} /{' '}
                             {t('Plot')} {booking.snapshot.plot.number}
                         </h2>
+                        <p className="mt-2 text-sm text-emerald-100">
+                            {t(
+                                booking.snapshot.plot.category === 'commercial'
+                                    ? 'Commercial'
+                                    : 'Residential',
+                            )}{' '}
+                            · {booking.snapshot.plot.size.label}
+                            {Number(booking.snapshot.plot.extra_area_sq_ft) > 0
+                                ? ` + ${booking.snapshot.plot.extra_area_sq_ft} sq ft`
+                                : ''}
+                        </p>
                         <div className="mt-6 grid gap-3 sm:grid-cols-3">
                             {[
                                 ['Contract price', booking.net],

@@ -154,7 +154,16 @@ export default function PlotHold({
                 </Link>
                 <header>
                     <p className="text-sm text-muted-foreground">
-                        Block {plot.block.code} · {plot.size.label}
+                        Block {plot.block.code} ·{' '}
+                        {t(
+                            plot.category === 'commercial'
+                                ? 'Commercial'
+                                : 'Residential',
+                        )}{' '}
+                        · {plot.size.label}
+                        {Number(plot.extra_area_sq_ft) > 0
+                            ? ' · +' + plot.extra_area_sq_ft + ' sq ft'
+                            : ''}
                     </p>
                     <h1 className="mt-2 text-2xl font-semibold break-words">
                         {t('Plot hold')} {plot.number}

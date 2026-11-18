@@ -74,6 +74,8 @@ function PlotEditor({
         number: plot?.number ?? '',
         block_id: plot ? String(plot.block_id) : '',
         plot_size_id: plot ? String(plot.plot_size_id) : '',
+        category: plot?.category ?? 'residential',
+        extra_area_sq_ft: plot?.extra_area_sq_ft ?? '0.00',
         list_price: plot?.list_price ?? '',
     });
     useUnsavedChanges(form.isDirty);
@@ -150,7 +152,7 @@ function PlotEditor({
                 </div>
                 <div>
                     <Label htmlFor="plot-price">
-                        List price (PKR, optional)
+                        Total plot price (PKR, optional)
                     </Label>
                     <Input
                         className="mt-2"
@@ -165,7 +167,49 @@ function PlotEditor({
                     />
                     <InputError message={form.errors.list_price} />
                     <p className="mt-1 text-xs text-muted-foreground">
-                        A catalogue reference price, not an agreed sale amount.
+                        Include any extra-area price in this total. No separate
+                        rate is calculated automatically.
+                    </p>
+                </div>
+                <div>
+                    <Label htmlFor="plot-category">Plot category *</Label>
+                    <select
+                        className={`${selectClass} mt-2 w-full`}
+                        id="plot-category"
+                        value={form.data.category}
+                        onChange={(event) =>
+                            form.setData(
+                                'category',
+                                event.target.value as
+                                    | 'residential'
+                                    | 'commercial',
+                            )
+                        }
+                        required
+                    >
+                        <option value="residential">Residential</option>
+                        <option value="commercial">Commercial</option>
+                    </select>
+                    <InputError message={form.errors.category} />
+                </div>
+                <div>
+                    <Label htmlFor="plot-extra-area">
+                        Extra area (square feet)
+                    </Label>
+                    <Input
+                        className="mt-2"
+                        id="plot-extra-area"
+                        inputMode="decimal"
+                        value={form.data.extra_area_sq_ft}
+                        onChange={(event) =>
+                            form.setData('extra_area_sq_ft', event.target.value)
+                        }
+                        required
+                        placeholder="0.00"
+                    />
+                    <InputError message={form.errors.extra_area_sq_ft} />
+                    <p className="mt-1 text-xs text-muted-foreground">
+                        Recorded in addition to the selected standard plot size.
                     </p>
                 </div>
                 <div className="sm:col-span-2">
@@ -273,6 +317,7 @@ export default function Inventory({
         q: filters.q ?? '',
         block_id: String(filters.block_id ?? ''),
         size_id: String(filters.size_id ?? ''),
+        category: filters.category ?? '',
         hold: filters.hold ?? '',
         sort: filters.sort ?? 'number',
     });
@@ -493,6 +538,25 @@ export default function Inventory({
                                 ))}
                             </select>
                             <select
+                                aria-label={t('Filter by category')}
+                                className={selectClass}
+                                value={search.category}
+                                onChange={(event) =>
+                                    setSearch({
+                                        ...search,
+                                        category: event.target.value,
+                                    })
+                                }
+                            >
+                                <option value="">{t('All categories')}</option>
+                                <option value="residential">
+                                    {t('Residential')}
+                                </option>
+                                <option value="commercial">
+                                    {t('Commercial')}
+                                </option>
+                            </select>
+                            <select
                                 aria-label={t('Sort plots')}
                                 className={selectClass}
                                 value={search.sort}
@@ -643,7 +707,15 @@ export default function Inventory({
                                                 t('Unassigned owner')}
                                         </p>
                                         <p className="mt-2 text-xs text-muted-foreground">
-                                            {plot.size.label}
+                                            {t(
+                                                plot.category === 'commercial'
+                                                    ? 'Commercial'
+                                                    : 'Residential',
+                                            )}{' '}
+                                            · {plot.size.label}
+                                            {Number(plot.extra_area_sq_ft) > 0
+                                                ? ` + ${plot.extra_area_sq_ft} sq ft`
+                                                : ''}
                                         </p>
                                         <p className="mt-2 text-xs break-words">
                                             {formatPkr(plot.list_price)}
@@ -692,7 +764,9 @@ export default function Inventory({
                                         {[
                                             'Plot number',
                                             'Block',
+                                            'Category',
                                             'Size',
+                                            'Extra area',
                                             'List price',
                                             'Owner',
                                             'Hold',
@@ -720,7 +794,21 @@ export default function Inventory({
                                                 {plot.block.code}
                                             </td>
                                             <td className="p-4 whitespace-nowrap">
+                                                {t(
+                                                    plot.category ===
+                                                        'commercial'
+                                                        ? 'Commercial'
+                                                        : 'Residential',
+                                                )}
+                                            </td>
+                                            <td className="p-4 whitespace-nowrap">
                                                 {plot.size.label}
+                                            </td>
+                                            <td className="p-4 whitespace-nowrap">
+                                                {Number(plot.extra_area_sq_ft) >
+                                                0
+                                                    ? `${plot.extra_area_sq_ft} sq ft`
+                                                    : '—'}
                                             </td>
                                             <td className="p-4 whitespace-nowrap">
                                                 {formatPkr(plot.list_price)}

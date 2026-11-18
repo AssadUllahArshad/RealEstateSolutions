@@ -22,6 +22,8 @@ export type Plot = {
     number: string;
     block_id: number;
     plot_size_id: number;
+    category: 'residential' | 'commercial';
+    extra_area_sq_ft: string;
     list_price: string | null;
     block: Block;
     size: PlotSize;
@@ -36,6 +38,7 @@ export type InventoryFilters = {
     q?: string;
     block_id?: string;
     size_id?: string;
+    category?: string;
     hold?: string;
     sort?: string;
     view?: string;

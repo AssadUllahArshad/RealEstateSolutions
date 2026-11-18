@@ -65,7 +65,18 @@ export default function Search({
                                                 </p>
                                                 <p className="mt-1 text-xs text-muted-foreground">
                                                     Block {plot.block.code} ·{' '}
-                                                    {plot.size.label}
+                                                    {plot.category ===
+                                                    'commercial'
+                                                        ? 'Commercial'
+                                                        : 'Residential'}{' '}
+                                                    · {plot.size.label}
+                                                    {Number(
+                                                        plot.extra_area_sq_ft,
+                                                    ) > 0
+                                                        ? ' + ' +
+                                                          plot.extra_area_sq_ft +
+                                                          ' sq ft'
+                                                        : ''}
                                                 </p>
                                             </div>
                                             <HoldBadge

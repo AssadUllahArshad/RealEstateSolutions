@@ -221,6 +221,16 @@ class ImportService
         } elseif ($block && Plot::where('block_id', $block->id)->where('number', $number)->exists()) {
             $errors[] = 'A plot with this number already exists in the block.';
         }
+        $category = trim($row['category'] ?? '');
+        if (! in_array($category, ['residential', 'commercial'], true)) {
+            $errors[] = 'Category must be residential or commercial.';
+        }
+        $extraArea = trim($row['extra_area_sq_ft'] ?? '');
+        if ($extraArea === '' || ! preg_match('/^\d+(\.\d{1,2})?$/', $extraArea)) {
+            $errors[] = 'Extra area must be zero or a positive square-foot amount with up to 2 decimals.';
+        } elseif (bccomp($this->numeric($extraArea), '99999999.99', 2) > 0) {
+            $errors[] = 'Extra area is too large.';
+        }
         $price = trim($row['list_price'] ?? '');
         if ($price !== '' && ! preg_match('/^\d+(\.\d{1,2})?$/', $price)) {
             $errors[] = 'List price must be a positive amount with up to 2 decimals.';
@@ -378,6 +388,8 @@ class ImportService
             'block_id' => $block->id,
             'plot_size_id' => $size->id,
             'number' => trim($row['number']),
+            'category' => trim($row['category'] ?? '') ?: 'residential',
+            'extra_area_sq_ft' => trim($row['extra_area_sq_ft'] ?? '') ?: '0',
             'list_price' => $price !== '' ? $price : null,
             'plot_owner_id' => $owner?->id,
             'owner_percentage' => $ownerPercentage !== '' ? $ownerPercentage : null,

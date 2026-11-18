@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
-#[Fillable(['block_id', 'plot_size_id', 'number', 'list_price', 'plot_owner_id', 'owner_percentage'])]
+#[Fillable(['block_id', 'plot_size_id', 'number', 'category', 'extra_area_sq_ft', 'list_price', 'plot_owner_id', 'owner_percentage'])]
 class Plot extends Model
 {
     /** @return BelongsTo<PlotOwner, $this> */
@@ -30,7 +30,7 @@ class Plot extends Model
 
     protected function casts(): array
     {
-        return ['list_price' => 'decimal:2', 'owner_percentage' => 'decimal:4'];
+        return ['extra_area_sq_ft' => 'decimal:2', 'list_price' => 'decimal:2', 'owner_percentage' => 'decimal:4'];
     }
 
     /** @return BelongsTo<Block, $this> */

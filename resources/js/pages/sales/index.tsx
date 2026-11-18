@@ -20,7 +20,10 @@ export type DraftRecord = {
     plot: {
         id: number;
         number: string;
+        category: 'residential' | 'commercial';
+        extra_area_sq_ft: string;
         block: { code: string };
+        size: { label: string; area_marla: string };
         active_hold?: { kind: string } | null;
     };
 };

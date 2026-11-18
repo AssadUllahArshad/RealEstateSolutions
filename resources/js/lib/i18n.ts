@@ -1,6 +1,12 @@
 import { usePage } from '@inertiajs/react';
 
 const ur = {
+    Residential: 'رہائشی',
+    Commercial: 'کمرشل',
+    Category: 'قسم',
+    'Extra area': 'اضافی رقبہ',
+    'Filter by category': 'قسم کے مطابق فلٹر کریں',
+    'All categories': 'تمام اقسام',
     Overview: 'جائزہ',
     'Finance overview': 'مالیاتی جائزہ',
     'Finance · Operational control': 'مالیات · عملی کنٹرول',

@@ -4,7 +4,7 @@ namespace App\Domain\Import;
 
 class ImportTemplates
 {
-    public const VERSION = 1;
+    public const VERSION = 2;
 
     /** @return array<string,array{label:string,headers:list<string>,example:list<string>}> */
     public static function all(): array
@@ -22,8 +22,8 @@ class ImportTemplates
             ],
             'inventory' => [
                 'label' => 'Plot inventory',
-                'headers' => ['block_code', 'size_label', 'number', 'list_price', 'owner_name', 'owner_percentage'],
-                'example' => ['A', '5 Marla', 'A-1', '5000000.00', 'DEMO Owner', '20.0000'],
+                'headers' => ['block_code', 'size_label', 'number', 'category', 'extra_area_sq_ft', 'list_price', 'owner_name', 'owner_percentage'],
+                'example' => ['A', '5 Marla', 'A-1', 'commercial', '125.50', '5000000.00', 'DEMO Owner', '20.0000'],
             ],
             'bookings' => [
                 'label' => 'Confirmed bookings',

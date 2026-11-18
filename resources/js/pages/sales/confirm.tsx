@@ -105,9 +105,6 @@ export default function ConfirmBooking(props: Props) {
             })),
     ];
     const blocked = blockers.length > 0;
-    const paymentHref = props.preparation.checks.find(
-        (check) => check.key === 'payment',
-    )?.href;
     return (
         <>
             <Head title={t('Confirm booking')} />
@@ -202,7 +199,11 @@ export default function ConfirmBooking(props: Props) {
                                             </span>
                                         </span>
                                         {blocker.href && (
-                                            <Button asChild size="sm" variant="outline">
+                                            <Button
+                                                asChild
+                                                size="sm"
+                                                variant="outline"
+                                            >
                                                 <Link href={blocker.href}>
                                                     {t('Resolve')}
                                                 </Link>
@@ -213,10 +214,7 @@ export default function ConfirmBooking(props: Props) {
                             </ul>
                         </div>
                     )}
-                    <fieldset
-                        disabled={form.processing}
-                        className="space-y-4"
-                    >
+                    <fieldset disabled={form.processing} className="space-y-4">
                         {props.credits.map((credit) => {
                             const row = form.data.allocations.find(
                                 (item) => item.receipt_id === credit.id,

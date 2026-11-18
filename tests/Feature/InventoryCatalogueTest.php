@@ -66,7 +66,7 @@ class InventoryCatalogueTest extends TestCase
         $rows = array_map(static fn ($line) => str_getcsv($line, ',', '"', ''), explode("\n", trim($csv)));
         $this->assertCount(27, $rows);
         $this->assertSame('MATCH-25', $rows[1][2]);
-        $this->assertSame('9999999999999999.99', $rows[1][5]);
+        $this->assertSame('9999999999999999.99', $rows[1][7]);
         $this->assertSame('MATCH-00', $rows[26][2]);
         $safe = $this->get('/inventory/export?q=%3DHYPERLINK')->streamedContent();
         $this->assertStringContainsString("'=HYPERLINK", $safe);
@@ -174,6 +174,34 @@ class InventoryCatalogueTest extends TestCase
         $this->assertSame($actor->id, $plot->created_by);
         $this->get('/inventory')->assertInertia(fn (Assert $page) => $page->component('inventory/index')
             ->where('plots.data.0.list_price', '9999999999999999.99')->missing('plots.data.0.status'));
+    }
+
+    public function test_commercial_category_and_extra_square_feet_are_recorded_and_filterable(): void
+    {
+        $actor = $this->administrator();
+        [$block, $size] = $this->catalogue($actor);
+        $this->actingAs($actor)->post('/inventory/plots', [
+            'number' => 'COMM-01',
+            'block_id' => $block->id,
+            'plot_size_id' => $size->id,
+            'category' => 'commercial',
+            'extra_area_sq_ft' => '125.50',
+            'list_price' => '5500000.00',
+        ])->assertSessionHasNoErrors();
+
+        $plot = Plot::where('number', 'COMM-01')->firstOrFail();
+        $this->assertSame('commercial', $plot->category);
+        $this->assertSame('125.50', $plot->extra_area_sq_ft);
+        $this->assertSame('5500000.00', $plot->list_price);
+        $this->get('/inventory?category=commercial')->assertInertia(
+            fn (Assert $page) => $page
+                ->has('plots.data', 1)
+                ->where('plots.data.0.category', 'commercial')
+                ->where('plots.data.0.extra_area_sq_ft', '125.50'),
+        );
+        $this->get('/inventory?category=residential')->assertInertia(
+            fn (Assert $page) => $page->has('plots.data', 0),
+        );
     }
 
     public function test_plot_numbers_are_unique_per_block_and_case_insensitive(): void
