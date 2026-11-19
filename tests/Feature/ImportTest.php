@@ -116,8 +116,8 @@ class ImportTest extends TestCase
         $fixture = $this->fixture();
         $owner = PlotOwner::create(['name' => 'DEMO Import Owner', 'admin_user_id' => $fixture['admin']->id, 'default_percentage' => '50.0000', 'created_by' => $fixture['admin']->id]);
 
-        $csv = "block_code,size_label,number,list_price,owner_name,owner_percentage\n"
-            ."BOOK,DEMO 5 Marla,BOOK-IMPORT-1,5000000.00,{$owner->name},50.0000\n";
+        $csv = "block_code,size_label,number,category,extra_area_sq_ft,list_price,owner_name,owner_percentage\n"
+            ."BOOK,DEMO 5 Marla,BOOK-IMPORT-1,commercial,85.25,5000000.00,{$owner->name},50.0000\n";
 
         $file = UploadedFile::fake()->createWithContent('inventory.csv', $csv);
 
@@ -131,14 +131,16 @@ class ImportTest extends TestCase
 
         $this->actingAs($fixture['admin'])->post("/imports/{$batch->id}/commit")->assertRedirect();
 
-        $this->assertTrue(Plot::where('number', 'BOOK-IMPORT-1')->exists());
+        $plot = Plot::where('number', 'BOOK-IMPORT-1')->firstOrFail();
+        $this->assertSame('commercial', $plot->category);
+        $this->assertSame('85.25', $plot->extra_area_sq_ft);
     }
 
     public function test_inventory_import_rejects_a_missing_owner(): void
     {
         $fixture = $this->fixture();
-        $csv = "block_code,size_label,number,list_price,owner_name,owner_percentage\n"
-            ."BOOK,DEMO 5 Marla,BOOK-IMPORT-NO-OWNER,5000000.00,,\n";
+        $csv = "block_code,size_label,number,category,extra_area_sq_ft,list_price,owner_name,owner_percentage\n"
+            ."BOOK,DEMO 5 Marla,BOOK-IMPORT-NO-OWNER,residential,0,5000000.00,,\n";
 
         $this->actingAs($fixture['admin'])->post('/imports/dry-run', [
             'template' => 'inventory',
