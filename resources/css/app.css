@@ -77,9 +77,9 @@
 }
 
 :root {
-    --background: #f7f6f1;
-    --foreground: #20271f;
-    --card: #fffef9;
+    --background: #f4f5f2;
+    --foreground: #18211c;
+    --card: #ffffff;
     --card-foreground: #20271f;
     --popover: #fffef9;
     --popover-foreground: #20271f;
@@ -87,14 +87,14 @@
     --primary-foreground: #ffffff;
     --secondary: #eee9dc;
     --secondary-foreground: #293127;
-    --muted: #f0eee7;
-    --muted-foreground: #687066;
+    --muted: #ebece7;
+    --muted-foreground: #5d685f;
     --accent: #e9e1cc;
     --accent-foreground: #293127;
     --destructive: oklch(0.577 0.245 27.325);
     --destructive-foreground: oklch(0.577 0.245 27.325);
-    --border: #dfdbcf;
-    --input: #d8d2c2;
+    --border: #d8ddd6;
+    --input: #c8d0c8;
     --ring: #a78f48;
     --chart-1: oklch(0.646 0.222 41.116);
     --chart-2: oklch(0.6 0.118 184.704);
@@ -167,6 +167,95 @@
             );
         min-height: 100vh;
     }
+
+    ::selection {
+        background: color-mix(in srgb, var(--primary) 24%, transparent);
+    }
+
+    :focus-visible {
+        scroll-margin: 1rem;
+    }
+
+    select,
+    textarea {
+        width: 100%;
+        border: 1px solid var(--input);
+        border-radius: 0.75rem;
+        background-color: var(--card);
+        color: var(--foreground);
+        box-shadow: 0 1px 2px rgb(15 23 42 / 0.035);
+        outline: none;
+        transition:
+            border-color 150ms ease,
+            box-shadow 150ms ease,
+            background-color 150ms ease;
+    }
+
+    select {
+        min-height: 2.75rem;
+        padding-inline: 0.875rem 2.25rem;
+    }
+
+    textarea {
+        min-height: 7rem;
+        padding: 0.75rem 0.875rem;
+        resize: vertical;
+    }
+
+    select:hover,
+    textarea:hover {
+        border-color: color-mix(in srgb, var(--primary) 42%, var(--input));
+    }
+
+    select:focus-visible,
+    textarea:focus-visible {
+        border-color: var(--ring);
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring) 22%, transparent);
+    }
+
+    select:disabled,
+    textarea:disabled {
+        cursor: not-allowed;
+        background: var(--muted);
+        opacity: 0.7;
+    }
+
+    input::placeholder,
+    textarea::placeholder {
+        color: color-mix(in srgb, var(--muted-foreground) 82%, transparent);
+    }
+
+    * {
+        scrollbar-color: color-mix(
+                in srgb,
+                var(--muted-foreground) 45%,
+                transparent
+            )
+            transparent;
+        scrollbar-width: thin;
+    }
+
+    *::-webkit-scrollbar {
+        width: 0.65rem;
+        height: 0.65rem;
+    }
+
+    *::-webkit-scrollbar-thumb {
+        border: 2px solid transparent;
+        border-radius: 999px;
+        background: color-mix(
+            in srgb,
+            var(--muted-foreground) 45%,
+            transparent
+        );
+        background-clip: padding-box;
+    }
+
+    *::-webkit-scrollbar-thumb:hover {
+        background: color-mix(in srgb, var(--primary) 60%, transparent);
+        background-clip: padding-box;
+    }
+
     html[lang='ur'] body {
         font-family: 'Noto Nastaliq Urdu', 'Manrope', serif;
         line-height: 2;
@@ -178,7 +267,7 @@
         @apply mx-auto w-full max-w-[1500px] space-y-6 p-4 sm:p-5 md:p-8;
     }
     .ef-panel {
-        @apply rounded-2xl border bg-card shadow-[0_5px_20px_rgba(16,34,58,0.035)];
+        @apply rounded-2xl border bg-card shadow-[0_8px_30px_rgba(16,34,58,0.055)];
     }
     .ef-panel-heading {
         @apply flex flex-wrap items-center justify-between gap-3 border-b px-6 py-5;
@@ -187,7 +276,7 @@
         @apply flex flex-wrap items-center justify-between gap-4 border-b bg-muted/20 p-4 sm:p-5;
     }
     .ef-form-section {
-        @apply rounded-2xl border bg-muted/15 p-4 sm:p-5;
+        @apply rounded-2xl border bg-muted/35 p-4 sm:p-5;
     }
     .ef-action-bar {
         @apply flex flex-wrap items-center gap-2 border-t bg-card/90 pt-5;
@@ -207,15 +296,56 @@
     .ef-table tbody tr {
         @apply transition-colors hover:bg-accent/40;
     }
-    .ef-page select,
-    .ef-page textarea {
-        @apply rounded-xl border border-input bg-background px-3.5 text-sm shadow-xs transition-[border-color,box-shadow] outline-none hover:border-primary/30 focus:border-ring focus:ring-3 focus:ring-ring/50;
+    [data-slot='dialog-content'] {
+        background-image: linear-gradient(
+            to bottom,
+            color-mix(in srgb, var(--card) 98%, var(--primary)),
+            var(--card) 8rem
+        );
     }
-    .ef-page select {
-        @apply h-11;
+    [data-slot='dialog-content'] form,
+    [data-slot='dialog-content'] section[aria-label] {
+        @apply rounded-xl border bg-muted/30 p-4 sm:p-5;
     }
-    .ef-page textarea {
-        @apply min-h-28 py-3;
+    [data-slot='dialog-content'] [data-slot='dialog-header'] {
+        @apply border-b pe-8 pb-4;
+    }
+    [data-slot='dialog-content'] [data-slot='dialog-footer'] {
+        @apply border-t pt-4;
+    }
+    [data-slot='input'],
+    [data-slot='select-trigger'] {
+        background-color: var(--card);
+    }
+    [data-slot='input']:hover,
+    [data-slot='select-trigger']:hover {
+        border-color: color-mix(in srgb, var(--primary) 42%, var(--input));
+    }
+    [data-slot='label'] {
+        @apply tracking-[-0.01em];
+    }
+    [data-slot='card'] {
+        box-shadow: 0 8px 28px rgb(16 34 58 / 0.055);
+    }
+    [data-slot='dialog-close'],
+    [data-slot='sheet-close'] {
+        @apply flex size-9 items-center justify-center rounded-full border bg-card text-muted-foreground shadow-sm hover:bg-accent hover:text-foreground;
+    }
+    [data-slot='select-content'],
+    [data-slot='dropdown-menu-content'] {
+        box-shadow: 0 16px 40px rgb(15 23 42 / 0.16);
+    }
+    [data-slot='select-item'] {
+        @apply min-h-9 rounded-lg;
+    }
+    [data-slot='button'] {
+        @apply min-w-fit;
+    }
+    html[dir='rtl'] input,
+    html[dir='rtl'] textarea,
+    html[dir='rtl'] select,
+    html[dir='rtl'] [data-slot='select-trigger'] {
+        text-align: right;
     }
     [data-sidebar='menu-button'] {
         @apply h-11 rounded-lg px-3 text-[13px];

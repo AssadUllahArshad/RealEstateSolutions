@@ -81,7 +81,7 @@ function PlotEditor({
     useUnsavedChanges(form.isDirty);
     useEffect(() => onDirtyChange(form.isDirty), [form.isDirty, onDirtyChange]);
     return (
-        <section className="bg-card" aria-label="Plot details">
+        <section aria-label="Plot details">
             <p className="mt-1 text-sm text-muted-foreground">
                 Catalogue details only. This does not reserve or allot the plot.
             </p>
