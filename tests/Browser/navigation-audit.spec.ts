@@ -40,6 +40,18 @@ test('every role can open its workspace pages and admin controls remain usable i
     ];
 
     await signIn(page, 'demo.admin@estateflow.test');
+    await page.getByRole('button', { name: 'Toggle sidebar' }).click();
+    await expect(
+        page.locator('[data-slot="sidebar"][data-state="collapsed"]'),
+    ).toBeVisible();
+    expect(
+        await page.evaluate(
+            () => document.documentElement.scrollWidth <= window.innerWidth + 1,
+        ),
+        'collapsed navigation must remain inside the viewport',
+    ).toBe(true);
+    await page.getByRole('button', { name: 'Toggle sidebar' }).click();
+
     for (const path of adminPages) {
         const response = await page.goto(path);
         expect(response?.status(), path).toBe(200);
