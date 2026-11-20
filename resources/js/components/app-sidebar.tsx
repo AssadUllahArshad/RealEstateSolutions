@@ -201,10 +201,14 @@ export function AppSidebar() {
             variant="sidebar"
             side={locale === 'ur' ? 'right' : 'left'}
         >
-            <SidebarHeader className="px-4 pt-6 pb-4">
+            <SidebarHeader className="border-b border-sidebar-border/80 px-3 pt-4 pb-4 group-data-[collapsible=icon]:px-2">
                 <SidebarMenu>
                     <SidebarMenuItem>
-                        <SidebarMenuButton size="lg" asChild>
+                        <SidebarMenuButton
+                            size="lg"
+                            asChild
+                            className="h-auto! rounded-xl px-2 py-2 group-data-[collapsible=icon]:p-0! hover:bg-white/5"
+                        >
                             <Link href={dashboard()} prefetch>
                                 <AppLogo />
                             </Link>
@@ -213,7 +217,7 @@ export function AppSidebar() {
                 </SidebarMenu>
             </SidebarHeader>
 
-            <SidebarContent>
+            <SidebarContent className="px-1 pb-3">
                 <NavMain items={items} />
                 {finance.length > 0 && (
                     <NavMain label="Finance" items={finance} />
@@ -224,9 +228,16 @@ export function AppSidebar() {
             </SidebarContent>
 
             <SidebarFooter>
-                <p className="px-3 py-2 text-xs text-muted-foreground group-data-[collapsible=icon]:hidden">
-                    {t('Society operations')} · PKR
-                </p>
+                <div className="mx-1 flex items-center gap-2 rounded-lg border border-sidebar-border/70 bg-black/10 px-3 py-2.5 text-[11px] text-sidebar-foreground/65 group-data-[collapsible=icon]:hidden">
+                    <span className="relative flex size-2">
+                        <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-400 opacity-40" />
+                        <span className="relative inline-flex size-2 rounded-full bg-emerald-400" />
+                    </span>
+                    <span className="truncate">{t('Society operations')}</span>
+                    <span className="ms-auto font-semibold text-sidebar-primary">
+                        PKR
+                    </span>
+                </div>
                 <NavUser />
             </SidebarFooter>
         </Sidebar>
